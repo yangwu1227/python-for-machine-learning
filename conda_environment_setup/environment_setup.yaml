@@ -28,6 +28,17 @@ dependencies:
       # Modeling & Machine Learning
       - scikit-learn==0.23.2
       - pycaret==2.3.9
+      - kneed
+      - yellowbrick
+      - mlflow
+      - mlflow-skinny
+      - optuna
+      - scikit-optimize
+      - tune-sklearn
+
+      # AWS
+      - boto3
+      - psycopg2==2.8.6
 
       # Jupyter
       - jupyterlab==3.0.14
