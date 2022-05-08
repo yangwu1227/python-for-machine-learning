@@ -1,0 +1,4 @@
+artifact_location: file:///Users/kenwu/Desktop/Python/Python%20for%20Machine%20Learning/california_housing_price_project/jupyter_notebooks/mlruns/1
+experiment_id: '1'
+lifecycle_stage: active
+name: california_housing

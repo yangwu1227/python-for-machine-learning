@@ -1,0 +1,15 @@
+artifact_uri: file:///Users/kenwu/Desktop/Python/Python%20for%20Machine%20Learning/california_housing_price_project/jupyter_notebooks/mlruns/1/c76ff498fd4e4658a3e46f0a3f760765/artifacts
+end_time: null
+entry_point_name: ''
+experiment_id: '1'
+lifecycle_stage: active
+name: ''
+run_id: c76ff498fd4e4658a3e46f0a3f760765
+run_uuid: c76ff498fd4e4658a3e46f0a3f760765
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1651959591776
+status: 1
+tags: []
+user_id: kenwu
