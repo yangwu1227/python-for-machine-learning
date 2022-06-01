@@ -2,3 +2,6 @@
 .DS_Store
 # Jupyter Notebook
 .ipynb_checkpoints
+
+# Pickle files that are too large
+tree_based_models/ensemble/models/bagging/*.pkl
