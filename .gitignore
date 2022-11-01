@@ -5,3 +5,6 @@
 
 # Pickle files that are too large
 tree_based_models/ensemble/models/bagging/*.pkl
+
+# Cache
+**__pycache__
