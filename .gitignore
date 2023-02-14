@@ -3,6 +3,9 @@
 # Jupyter Notebook
 .ipynb_checkpoints
 
+# Vscode setting
+.vscode
+
 # Pickle files that are too large
 tree_based_models/ensemble/models/bagging/*.pkl
 
