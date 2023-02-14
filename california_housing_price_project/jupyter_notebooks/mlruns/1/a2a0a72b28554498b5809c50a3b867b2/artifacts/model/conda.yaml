@@ -1,8 +1,0 @@
-channels:
-- conda-forge
-dependencies:
-- pip<=22.0.4
-- pip:
-  - mlflow
-  - pycaret==2.3.9
-name: california_housing-env
