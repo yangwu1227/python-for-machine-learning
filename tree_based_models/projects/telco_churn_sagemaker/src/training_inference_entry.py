@@ -66,7 +66,7 @@ def input_fn(input_data: bytes, content_type: str) -> pd.DataFrame:
     content-type. The SageMaker Scikit-learn model server will invoke an “input_fn” function in this hosting script,
     passing in these two pieces of information.
     
-    We implement this to override the default since the first step of the custom data preprocesing pipeline requires
+    We implement this to override the default since the first step of the custom data preprocessing pipeline requires
     dataframe inputs (no support numpy).
     
     Parameters
