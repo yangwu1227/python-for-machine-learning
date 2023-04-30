@@ -56,6 +56,8 @@ def parse_args() -> argparse.Namespace:
 
 def get_logger(name: str) -> logging.Logger:
     """
+    Create logger for logging.
+    
     Parameters
     ----------
     name : str
