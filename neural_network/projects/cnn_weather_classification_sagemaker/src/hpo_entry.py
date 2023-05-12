@@ -202,6 +202,3 @@ if __name__ == '__main__':
     
     # Save to model_dir for persistent storage
     best_model.save(os.path.join(args.model_dir, '00000000'))
-
-    
-    

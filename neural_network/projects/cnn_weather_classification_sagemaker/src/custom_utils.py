@@ -16,6 +16,12 @@ import numpy as np
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'  # Nopep8
 import tensorflow as tf
 
+import bokeh
+import bokeh.io
+from bokeh.plotting import figure, show
+from bokeh.models import HoverTool
+from sagemaker.analytics import HyperparameterTuningJobAnalytics
+
 # ---------------------------------- Logger ---------------------------------- #
 
 
@@ -66,6 +72,19 @@ def parser() -> argparse.Namespace:
     parser.add_argument('--study_name', type=str, default='optuna_cnn')
     parser.add_argument('--region_name', type=str, default='us-east-1')
     parser.add_argument('--n_trials', type=int, default=20)
+    
+    # Hyperparameters for fine-tuning via sagemaker tuning job
+    parser.add_argument('--dense_units', type=int)
+    parser.add_argument('--dense_weight_decay', type=float)
+    parser.add_argument('--random_contrast_factor', type=float)
+    parser.add_argument('--random_flip_mode', type=str)
+    parser.add_argument('--random_rotation_factor', type=float)
+    parser.add_argument('--random_zoom_factor', type=float)
+    parser.add_argument('--learning_rate', type=float)
+    parser.add_argument('--clipnorm', type=float)
+    parser.add_argument('--dropout_rate', type=float)
+    parser.add_argument('--batch_size', type=int)
+    parser.add_argument('--epochs', type=int)
     
     # Data, model, and output directories 
     parser.add_argument('--model_dir', type=str, default=os.environ['SM_MODEL_DIR'])
@@ -163,14 +182,53 @@ def get_secret(secret_name: str, region_name: str = 'ur-east-1') -> Union[Dict, 
             decoded_binary_secret = base64.b64decode(get_secret_value_response['SecretBinary'])
             return decoded_binary_secret
 
+# ---------------------- Class for plotting HPO results ---------------------- #
+
+class HoverHelper:
+    def __init__(self, tuning_analytics: HyperparameterTuningJobAnalytics):
+        self.tuner = tuning_analytics
+
+    def hovertool(self) -> HoverTool:
+        """
+        Create a hovertool for the plot.
+
+        Returns
+        -------
+        HoverTool
+            A hovertool for the plot.
+        """
+        tooltips = [
+            ("FinalObjectiveValue", "@FinalObjectiveValue"),
+            ("TrainingJobName", "@TrainingJobName"),
+        ]
+        for k in self.tuner.tuning_ranges.keys():
+            tooltips.append((k, "@{%s}" % k))
+        ht = HoverTool(tooltips=tooltips)
+        return ht
+
+    def tools(self, standard_tools="pan,crosshair,wheel_zoom,zoom_in,zoom_out,undo,reset") -> List:
+        """
+        Return a list of tools for the plot.
+
+        Parameters
+        ----------
+        standard_tools : str, optional
+            A list of tools, by default "pan,crosshair,wheel_zoom,zoom_in,zoom_out,undo,reset"
+
+        Returns
+        -------
+        List
+            A list of tools for the plot.
+        """
+        return [self.hovertool(), standard_tools]
+    
 # ------------------------- Function for building cnn ------------------------ #
 
 def baseline_cnn(conv_params: Dict[str, Any], 
                  dense_params: Dict[str, Any],
                  aug_params: Dict[str, Any],
                  opt_params: Dict[str, Any],
-                 input_shape: Tuple[int] = (256, 256, 3),
-                 verbose: int = 2) -> tf.keras.models.Sequential:
+                 input_shape: Tuple[int] = (256, 256, 3)) -> tf.keras.models.Sequential:
     """
     Build and compile a convolutional neural network.
     
@@ -185,7 +243,7 @@ def baseline_cnn(conv_params: Dict[str, Any],
     opt_params : Dict[str, Any]
         Hyperparameters for optimizer.
     input_shape : Tuple[int], optional
-        Dimension of the input feature vector, by default (256, 256, 3)
+        Dimension of the input feature vector, by default (256, 256, 3).
         
     Returns
     -------
