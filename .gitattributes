@@ -5,3 +5,5 @@
 *.cbm filter=lfs diff=lfs merge=lfs -text
 *.txt filter=lfs diff=lfs merge=lfs -text
 *.parquet filter=lfs diff=lfs merge=lfs -text
+
+*.ipynb linguist-vendored
