@@ -173,6 +173,3 @@ if __name__ == '__main__':
     
     # Save model, a version number is needed for the TF serving container to load the model
     unet_model.save(os.path.join(args.model_dir, '00000000'))
-    
-    
-    
