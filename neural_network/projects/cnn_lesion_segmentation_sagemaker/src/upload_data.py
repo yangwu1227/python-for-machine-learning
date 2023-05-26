@@ -93,20 +93,21 @@ def ingest_images_and_masks(path_queue: Queue, image_paths: list, mask_paths: st
         masks[mask_index] = ingest_mask(mask_path, image_size)
         path_queue.task_done()
 
+
 if __name__ == '__main__':
-    
+
     random_seed = 1227
     image_size = (256, 256)
     num_channels = 1
     s3_bucket = 'yang-ml-sagemaker'
     s3_key = 'lesion-segmentation'
-    
+
     logger = get_logger(__name__)
-    
+
     # ------------------------- Download zip file from s3 ------------------------ #
-    
+
     logger.info('Downloading zip file from s3...')
-    
+
     # Create a folder in the parent directory of the directory of this python script to store the raw data
     raw_data_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'data')
     if not os.path.exists(raw_data_dir):
@@ -120,24 +121,33 @@ if __name__ == '__main__':
         f'unzip -q {raw_data_dir}/lesion-segmentation.zip -d {raw_data_dir}',
         shell=True
     )
-    
-    image_paths = os.listdir(os.path.join(raw_data_dir, 'frames'))
-    image_paths = [os.path.join(raw_data_dir, 'frames', image_path) for image_path in image_paths]
-    mask_paths = os.listdir(os.path.join(raw_data_dir, 'masks'))
-    mask_paths = [os.path.join(raw_data_dir, 'masks', mask_path) for mask_path in mask_paths]
+
+    # Ensure that the images paths and mask paths are sorted
+    image_dir = os.path.join(raw_data_dir, 'frames')
+    image_paths = sorted([os.path.join(image_dir, image_path)
+                         for image_path in os.listdir(image_dir)])
+    mask_dir = os.path.join(raw_data_dir, 'masks')
+    mask_paths = sorted([os.path.join(mask_dir, mask_path)
+                        for mask_path in os.listdir(mask_dir)])
     num_images = len(image_paths)
-    
-    # Randomly shuffle paths in-place
-    random.Random(random_seed).shuffle(image_paths)
-    random.Random(random_seed).shuffle(mask_paths)
-    
+
+    # Combine the image paths and mask paths into pairs
+    image_mask_pairs = list(zip(image_paths, mask_paths))
+    # Shuffle pairs in place a few times
+    for i in range(5):
+        random.Random(random_seed).shuffle(image_mask_pairs)
+    # Separate the pairs back into separate lists
+    image_paths, mask_paths = zip(*image_mask_pairs)
+
     # -------------------- Ingest images and masks in parallel ------------------- #
-    
+
     logger.info('Ingesting images and masks in parallel...')
-    
+
     # Instantiate empty arrays
-    images = np.zeros((num_images, ) + image_size + (num_channels, ), dtype='float32') 
-    masks = np.zeros((num_images, ) + image_size + (num_channels, ), dtype='float32')
+    images = np.zeros((num_images, ) + image_size +
+                      (num_channels, ), dtype='float32')
+    masks = np.zeros((num_images, ) + image_size +
+                     (num_channels, ), dtype='float32')
 
     # Create a thread-safe queue to store the paths
     path_queue = Queue()
@@ -156,30 +166,35 @@ if __name__ == '__main__':
 
         # Wait for all tasks to complete
         futures.wait(future_tasks)
-        
+
     # -------------------------- Train, val, test split -------------------------- #
-    
+
     logger.info('Splitting data into train, val, and test sets...')
-    
-    train_images, test_images, train_masks, test_masks = train_test_split(images, masks, test_size=0.2, random_state=random_seed)
-    
-    train_images, val_images, train_masks, val_masks = train_test_split(train_images, train_masks, test_size=0.2, random_state=random_seed)
-    
+
+    train_images, test_images, train_masks, test_masks = train_test_split(
+        images, masks, test_size=0.2, random_state=random_seed)
+
+    train_images, val_images, train_masks, val_masks = train_test_split(
+        train_images, train_masks, test_size=0.2, random_state=random_seed)
+
     # Fix non-binary masks
-    train_masks = np.where(np.logical_or(train_masks == 0, train_masks == 255), train_masks, 255)
-    val_masks = np.where(np.logical_or(val_masks == 0, val_masks == 255), val_masks, 255)
-    test_masks = np.where(np.logical_or(test_masks == 0, test_masks == 255), test_masks, 255)
- 
+    train_masks = np.where(np.logical_or(
+        train_masks == 0, train_masks == 255), train_masks, 255)
+    val_masks = np.where(np.logical_or(
+        val_masks == 0, val_masks == 255), val_masks, 255)
+    test_masks = np.where(np.logical_or(
+        test_masks == 0, test_masks == 255), test_masks, 255)
+
     # Scale masks to [0, 1] (images will be scaled after data augmentation)
     train_masks /= 255.
     val_masks /= 255.
     test_masks /= 255.
-    
+
     logger.info(f'Training set has shape {train_images.shape}')
     logger.info(f'Validation set has shape {val_images.shape}')
     logger.info(f'Test set has shape {test_images.shape}')
     logger.info('Saving train, val, and test sets locally...')
-    
+
     data_save_paths = {
         'train': os.path.join(raw_data_dir, 'train'),
         'val': os.path.join(raw_data_dir, 'val'),
@@ -189,33 +204,34 @@ if __name__ == '__main__':
     for key, path in data_save_paths.items():
         if not os.path.exists(path):
             os.makedirs(path)
-            
+
     for key, path in data_save_paths.items():
-        np.save(file=os.path.join(path, f'{key}_images.npy'), arr=eval(f'{key}_images'))
-        np.save(file=os.path.join(path, f'{key}_masks.npy'), arr=eval(f'{key}_masks'))
-    
+        np.save(file=os.path.join(
+            path, f'{key}_images.npy'), arr=eval(f'{key}_images'))
+        np.save(file=os.path.join(
+            path, f'{key}_masks.npy'), arr=eval(f'{key}_masks'))
+
     # ------------------------------- Upload to s3 ------------------------------- #
-    
+
     logger.info('Uploading data to s3...')
-    
+
     sm_session = sagemaker.Session(default_bucket=s3_bucket)
     s3_uploader = sagemaker.s3.S3Uploader()
-    
-    
+
     for key in data_save_paths:
         upload_uri = s3_uploader.upload(
             local_path=data_save_paths[key],
             desired_s3_uri=f's3://{s3_bucket}/{s3_key}/input-data/{key}',
             sagemaker_session=sm_session
         )
-        
+
     logger.info('Finished uploading data to s3!')
-    
+
     # --------------------------------- Clean-up --------------------------------- #
-    
+
     subprocess.run(
         f'rm -rf {raw_data_dir}',
         shell=True
     )
-    
+
     del sm_session, s3_uploader
