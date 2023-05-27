@@ -5,6 +5,8 @@ import sys
 from typing import Union, List, Dict, Tuple
 from functools import partial
 
+from PIL import Image
+import sagemaker
 import numpy as np
 
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'  # Nopep8
@@ -128,6 +130,49 @@ def load_data(paths: Dict[str, str], test_mode: bool = False) -> Tuple[np.ndarra
         return train_images, train_masks, val_images, val_masks, test_images, test_masks
 
     return train_images, train_masks, val_images, val_masks
+
+# ---------------------------- Image deserializer ---------------------------- #
+
+class ImageDeserializer(sagemaker.deserializers.BaseDeserializer):
+
+    def __init__(self, accept: str = 'image/png'):
+        """
+        Construct a ImageDeserializer.
+
+        Parameters
+        ----------
+        accept : str, optional
+            The accept content type expected by the ImageDeserializer.  By default, 'image/png'.
+        """
+        self.accept = accept
+
+    @property
+    def ACCEPT(self):
+        """
+        Get the accept content type expected by the ImageDeserializer.
+        """
+        return (self.accept,)
+
+    def deserialize(self, stream, content_type) -> np.ndarray:
+        """
+        Deserialize a stream of bytes returned from an inference endpoint.
+        
+        Parameters
+        ----------
+        stream : botocore.response.StreamingBody
+            A stream of bytes.
+        content_type : str
+            The MIME type of the data.
+
+        Returns
+        -------
+        numpy.ndarray
+            The numpy array of class labels per pixel
+        """
+        try:
+            return np.array(Image.open(stream))
+        finally:
+            stream.close()
 
 # ----------------------------------- U-net ---------------------------------- #
 
