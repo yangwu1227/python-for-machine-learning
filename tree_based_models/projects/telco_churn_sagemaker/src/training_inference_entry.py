@@ -19,7 +19,7 @@ import xgboost as xgb
 
 # --------------------- Parse argument from command line --------------------- #
 
-def parser():
+def parser() -> argparse.Namespace:
     """
     Function that parses arguments from command line.
 
