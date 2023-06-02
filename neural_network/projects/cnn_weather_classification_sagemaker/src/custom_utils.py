@@ -88,8 +88,8 @@ def parser() -> argparse.Namespace:
     
     # Data, model, and output directories 
     parser.add_argument('--model_dir', type=str, default=os.environ['SM_MODEL_DIR'])
-    parser.add_argument('--train', type=str, default=os.environ.get('SM_CHANNEL_TRAIN'))
-    parser.add_argument('--val', type=str, default=os.environ.get('SM_CHANNEL_VAL'))
+    parser.add_argument('--train', type=str, default=os.environ['SM_CHANNEL_TRAIN'])
+    parser.add_argument('--val', type=str, default=os.environ['SM_CHANNEL_VAL'])
     # For storing job name as a 'optuna.trial' attribute
     parser.add_argument('--training_env', type=str, default=json.loads(os.environ['SM_TRAINING_ENV']))
 

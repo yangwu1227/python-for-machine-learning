@@ -175,8 +175,8 @@ def parser() -> argparse.Namespace:
     # Data sources from s3 (not used since we use our own custom class for data ingestion)
     parser.add_argument('--s3_bucket', type=str, default='yang-ml-sagemaker')
     parser.add_argument('--s3_key', type=str, default='mnist')
-    parser.add_argument('--train', type=str, default=os.environ.get('SM_CHANNEL_TRAIN'))
-    parser.add_argument('--val', type=str, default=os.environ.get('SM_CHANNEL_EVAL'))
+    parser.add_argument('--train', type=str, default=os.environ['SM_CHANNEL_TRAIN'])
+    parser.add_argument('--val', type=str, default=os.environ['SM_CHANNEL_VAL'])
 
     # Model directory: we will use the default set by SageMaker, /opt/ml/model
     parser.add_argument('--model_dir', type=str, default=os.environ.get('SM_MODEL_DIR'))

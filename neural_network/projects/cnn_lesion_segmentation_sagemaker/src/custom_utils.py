@@ -87,12 +87,9 @@ def parser() -> argparse.Namespace:
     parser.add_argument('--epochs', type=int)
 
     # Data, model, and output directories
-    parser.add_argument('--model_dir', type=str,
-                        default=os.environ['SM_MODEL_DIR'])
-    parser.add_argument('--train', type=str,
-                        default=os.environ.get('SM_CHANNEL_TRAIN'))
-    parser.add_argument('--val', type=str,
-                        default=os.environ.get('SM_CHANNEL_VAL'))
+    parser.add_argument('--model_dir', type=str, default=os.environ['SM_MODEL_DIR'])
+    parser.add_argument('--train', type=str, default=os.environ['SM_CHANNEL_TRAIN'])
+    parser.add_argument('--val', type=str, default=os.environ['SM_CHANNEL_VAL'])
 
     args, _ = parser.parse_known_args()
 
