@@ -4,6 +4,7 @@ on:
   push:
     paths:
       - 'requirements.txt'
+  workflow_dispatch:
 
 jobs:
   check-dependencies:
