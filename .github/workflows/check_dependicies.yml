@@ -40,4 +40,5 @@ jobs:
     - name: Check requirements
       shell: bash -l {0}
       run: |
+        conda activate myenv
         python -m pip check
