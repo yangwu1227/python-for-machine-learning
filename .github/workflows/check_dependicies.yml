@@ -16,7 +16,7 @@ jobs:
     - name: Set up Python
       uses: actions/setup-python@v4
       with:
-        python-version: '3.10'
+        python-version: '3.9'
 
     - name: Set up Miniconda
       uses: conda-incubator/setup-miniconda@v2
@@ -26,13 +26,13 @@ jobs:
     - name: Create Conda Environment
       shell: bash -l {0}
       run: |
-        conda create --name myenv python=3.10
-        conda activate myenv
+        conda create --name myenv python=3.9.12
 
     # This will fail if some dependencies are imcompatible
     - name: Install requirements
       shell: bash -l {0}
       run: |
+        conda activate myenv
         conda install pip
         pip install -r requirements.txt
 
