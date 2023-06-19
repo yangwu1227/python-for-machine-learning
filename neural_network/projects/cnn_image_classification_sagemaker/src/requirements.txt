@@ -1,3 +1,1 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:76c0787761c712a4660af66fbbacb68b8fb4d5b1073178afcd22870e21087193
-size 12
+bokeh==2.4.3

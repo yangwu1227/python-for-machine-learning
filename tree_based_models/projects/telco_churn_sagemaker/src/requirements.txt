@@ -1,3 +1,3 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:51186242f0f1ffe6801771c26a10af9b0bd6a265c3c6ff1cffa7e92e606d3bfc
-size 53
+category-encoders==2.6.0
+optuna==3.1.0
+xgboost==1.7.5
