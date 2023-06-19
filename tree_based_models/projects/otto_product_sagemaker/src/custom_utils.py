@@ -71,7 +71,7 @@ def parser() -> argparse.ArgumentParser:
 
 # ------ Function decorator for adding additional command line arguments ----- #
 
-def add_additional_args(parser_func: Callable, additional_args: Dict[str, type]) -> argparse.Namespace:
+def add_additional_args(parser_func: Callable, additional_args: Dict[str, type]) -> Callable:
     """
     Function decorator that adds additional command line arguments to the parser.
     This allows for adding additional arguments without having to change the base
@@ -87,8 +87,8 @@ def add_additional_args(parser_func: Callable, additional_args: Dict[str, type])
 
     Returns
     -------
-    argparse.Namespace
-        The parser with additional arguments.
+    Callable
+        A parser function that returns the ArgumentParser object with the additional arguments added to it.
     """
     def wrapper():
         # Call the original parser function to get the parser object
