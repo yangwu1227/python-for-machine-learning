@@ -1,0 +1,29 @@
+# AWS
+s3_bucket: 'yang-ml-sagemaker'
+s3_key: 'icr-classification'
+train_use_spot_instances: true
+max_run: 86400
+max_retry_attempts: 2
+model_dir: '/opt/ml/model'
+framework_version: '1.2-1'
+py_version: 'py3'
+# Optuna
+stack_name: 'optuna-stack'
+# File system
+src_dir_path: /home/ec2-user/SageMaker/icr-classification/src
+notebook_dir_path: /home/ec2-user/SageMaker/icr-classification/notebooks
+
+# Training 
+num_feat: ['AB', 'AF', 'AH', 'AM', 'AR', 'AX', 'AY', 'AZ', 'BC', 'BD', 
+           'BN', 'BP', 'BQ', 'BR', 'BZ', 'CB', 'CC', 'CD', 'CF', 'CH', 
+           'CL', 'CR', 'CS', 'CU', 'CW', 'DA', 'DE', 'DF', 'DH', 'DI', 
+           'DL', 'DN', 'DU', 'DV', 'DY', 'EB', 'EE', 'EG', 'EH', 'EL', 
+           'EP', 'EU', 'FC', 'FD', 'FE', 'FI', 'FL', 'FR', 'FS', 'GB', 
+           'GE', 'GF', 'GH', 'GI', 'GL']
+cat_feat: ['EJ']
+
+# Group config
+defaults:
+  - _self_
+  - baseline: baseline
+  - xgboost: xgboost
