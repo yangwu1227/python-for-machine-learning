@@ -19,7 +19,6 @@ from cuml import TruncatedSVD
 
 # ---------------------------------- Logger ---------------------------------- #
 
-
 def get_logger(name: str) -> logging.Logger:
     """
     Parameters
@@ -33,13 +32,14 @@ def get_logger(name: str) -> logging.Logger:
         A logger with the specified name.
     """
     logger = logging.getLogger(name)  # Return a logger with the specified name
+    
     log_format = '%(asctime)s %(levelname)s %(name)s: %(message)s'
-    logging.basicConfig(
-        format=log_format,
-        level=logging.INFO,
-        handlers=[logging.StreamHandler(sys.stdout)]
-    )
+    handler = logging.StreamHandler(sys.stdout)
+    handler.setFormatter(logging.Formatter(log_format))
+    logger.addHandler(handler)
+
     logger.setLevel(logging.INFO)
+    
     return logger
 
 # --------------------- Parse argument from command line --------------------- #

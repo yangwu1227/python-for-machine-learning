@@ -26,10 +26,8 @@ from custom_utils import load_data
 
 # ---------------------------------- Logger ---------------------------------- #
 
-def get_logger(name: str) -> logging.Logger:  
+def get_logger(name: str) -> logging.Logger:
     """
-    Instantiate logger instance.
-
     Parameters
     ----------
     name : str
@@ -39,21 +37,14 @@ def get_logger(name: str) -> logging.Logger:
     -------
     logging.Logger
         A logger with the specified name.
-    """    
+    """
     logger = logging.getLogger(name)  # Return a logger with the specified name
-    log_format = '%(asctime)s %(levelname)s %(name)s: %(message)s'
-    log_path = os.path.join(os.path.dirname(__file__), 'xgb_tuner.log')
     
-    logging.basicConfig(
-        format=log_format,
-        level=logging.INFO,
-        handlers=[
-            # Overwrite the log file, each time the program is run
-            logging.FileHandler(log_path, mode='w'),
-            # Print the log to the standard output
-            logging.StreamHandler(sys.stdout)
-        ]
-    )
+    log_format = '%(asctime)s %(levelname)s %(name)s: %(message)s'
+    handler = logging.StreamHandler(sys.stdout)
+    handler.setFormatter(logging.Formatter(log_format))
+    logger.addHandler(handler)
+
     logger.setLevel(logging.INFO)
     
     return logger
@@ -235,9 +226,3 @@ if __name__ == '__main__':
     s3.Bucket(args.s3_bucket).upload_file(storage_path, os.path.join(args.s3_key, 'hpo/trial_history.db'))
         
     logger.info(f'Best hyperparameters: {study.best_params}')
-    
-
-
-
-
-

@@ -54,10 +54,10 @@ def parse_args() -> argparse.Namespace:
 # ---------------------------------------------------------------------------- #
 
 
+# ---------------------------------- Logger ---------------------------------- #
+
 def get_logger(name: str) -> logging.Logger:
     """
-    Create logger for logging.
-    
     Parameters
     ----------
     name : str
@@ -69,14 +69,16 @@ def get_logger(name: str) -> logging.Logger:
         A logger with the specified name.
     """
     logger = logging.getLogger(name)  # Return a logger with the specified name
+    
     log_format = '%(asctime)s %(levelname)s %(name)s: %(message)s'
-    # The logging.basicConfig() function does basic configuration for the logging system
-    # The 'format' argument is a format string for the log message
-    # The 'level' argument is the root logger level, telling how important a given log message is; in this project, we set it to INFO
-    # The 'info' level is used for reporting events that occur during 'normal' operation of a program
-    logging.basicConfig(format=log_format, level=logging.INFO)
+    handler = logging.StreamHandler(sys.stdout)
+    handler.setFormatter(logging.Formatter(log_format))
+    logger.addHandler(handler)
+
     logger.setLevel(logging.INFO)
+    
     return logger
+
 # ---------------------------------------------------------------------------- #
 #                    Function to load, split, and save data                    #
 # ---------------------------------------------------------------------------- #
