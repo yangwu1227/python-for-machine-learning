@@ -1,0 +1,10 @@
+entry_point: 'xgboost_entry.py'
+train_job_name: 'xgboost-training'
+endpoint_name: 'xgboost-endpoint'
+model_name: 'xgboost-model'
+study_name: 'xgboost_hpo'
+instance_type: 'ml.c5.4xlarge'
+instance_count: 1
+# Feature engineering
+top_5_feat: ['num__DU', 'num__BQ', 'num__AB', 'num__CR', 'num__GL']
+top_15_feat: ['num__DU', 'num__BQ', 'num__AB', 'num__CR', 'num__GL', 'num__FL', 'num__AF', 'num__DA', 'num__DI', 'num__CD', 'num__EE', 'num__BC', 'num__DE', 'num__CC', 'num__FI']
