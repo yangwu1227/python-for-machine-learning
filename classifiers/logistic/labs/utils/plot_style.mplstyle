@@ -1,4 +1,4 @@
-# see https://matplotlib.org/stable/tutorials/introductory/customizing.html
+# See https://matplotlib.org/stable/tutorials/introductory/customizing.html
 lines.linewidth: 4
 lines.solid_capstyle: butt
 
@@ -7,12 +7,12 @@ legend.fancybox: true
 # Verdana" for non-math text,
 # Cambria Math
 
-#Blue (Crayon-Aqua) 0096FF
-#Dark Red C00000
-#Orange (Apple Orange) FF9300
-#Black 000000
-#Magenta FF40FF
-#Purple 7030A0
+# Blue (Crayon-Aqua) 0096FF
+# Dark Red C00000
+# Orange (Apple Orange) FF9300
+# Black 000000
+# Magenta FF40FF
+# Purple 7030A0
 
 axes.prop_cycle: cycler('color', ['0096FF', 'FF9300', 'FF40FF', '7030A0', 'C00000'])
 #axes.facecolor: f0f0f0 # grey
@@ -121,4 +121,3 @@ font.monospace:  DejaVu Sans Mono, Bitstream Vera Sans Mono, Computer Modern Typ
 ## See https://matplotlib.org/api/artist_api.html#module-matplotlib.text
 ## for more information on text properties
 #text.color: black
-

@@ -1,54 +1,101 @@
 """
-plot_overfit
-    class and assocaited routines that plot an interactive example of overfitting and its solutions
+PlotOverfit
+    Class and associated routines that plot an interactive example of overfitting and its solutions
 """
 import math
 from ipywidgets import Output
 from matplotlib.gridspec import GridSpec
 from matplotlib.widgets import Button, CheckButtons
 from sklearn.linear_model import LogisticRegression, Ridge
-from lab_utils_common import np, plt, dlc, predict_logistic, plot_data, zscore_normalize_features
+from utils.lab_utils_common import np, plt, dlc, predict_logistic, plot_data, zscore_normalize_features
+
 
 def map_one_feature(X1, degree):
     """
-    Feature mapping function to polynomial features
+    Feature mapping function to polynomial features.
+
+    Parameters
+    ----------
+    X1 : array_like
+        The input array.
+    degree : int
+        The degree of the polynomial.
+
+    Returns
+    -------
+    out : array_like
+        The mapped features.
+    string : str
+        The string representation of the polynomial.
     """
     X1 = np.atleast_1d(X1)
     out = []
-    string = ""
+    string = ''
     k = 0
     for i in range(1, degree+1):
         out.append((X1**i))
-        string = string + f"w_{{{k}}}{munge('x_0',i)} + "
+        string = string + f'w_{{{k}}}{munge("x_0",i)} + '
         k += 1
-    string = string + ' b' #add b to text equation, not to data
+    string = string + ' b'  # Add b to text equation, not to data
     return np.stack(out, axis=1), string
 
 
 def map_feature(X1, X2, degree):
     """
-    Feature mapping function to polynomial features
+    Feature mapping function to polynomial features.
+
+    Parameters
+    ----------
+    X1 : array_like
+        The first input array.
+    X2 : array_like
+        The second input array.
+    degree : int
+        The degree of the polynomial.
+
+    Returns
+    -------
+    out : array_like
+        The mapped features.
+    string : str
+        The string representation of the polynomial.
     """
     X1 = np.atleast_1d(X1)
     X2 = np.atleast_1d(X2)
 
     out = []
-    string = ""
+    string = ''
     k = 0
     for i in range(1, degree+1):
         for j in range(i + 1):
             out.append((X1**(i-j) * (X2**j)))
-            string = string + f"w_{{{k}}}{munge('x_0',i-j)}{munge('x_1',j)} + "
+            string = string + f'w_{{{k}}}{munge("x_0",i-j)}{munge("x_1",j)} + '
             k += 1
-    #print(string + 'b')
     return np.stack(out, axis=1), string + ' b'
 
+
 def munge(base, exp):
+    """
+    Helper function to format the base and exponent.
+
+    Parameters
+    ----------
+    base : str
+        The base string.
+    exp : int
+        The exponent.
+
+    Returns
+    -------
+    str
+        The formatted string.
+    """
     if exp == 0:
         return ''
     if exp == 1:
         return base
     return base + f'^{{{exp}}}'
+
 
 def plot_decision_boundary(ax, x0r,x1r, predict,  w, b, scaler = False, mu=None, sigma=None, degree=None):
     """
@@ -78,7 +125,6 @@ def plot_decision_boundary(ax, x0r,x1r, predict,  w, b, scaler = False, mu=None,
     contour = ax.contour(xx, yy, Z, levels = [0.5], colors='g')
     return contour
 
-# use this to test the above routine
 def plot_decision_boundary_sklearn(x0r, x1r, predict, degree,  scaler = False):
     """
     Plots a decision boundary
@@ -90,31 +136,21 @@ def plot_decision_boundary_sklearn(x0r, x1r, predict, degree,  scaler = False):
       scaler  : not sure
     """
 
-    h = .01  # step size in the mesh
-    # create a mesh to plot in
+    h = .01 
     xx, yy = np.meshgrid(np.arange(x0r[0], x0r[1], h),
                          np.arange(x1r[0], x1r[1], h))
 
-    # Plot the decision boundary. For that, we will assign a color to each
-    # point in the mesh [x_min, m_max]x[y_min, y_max].
     points = np.c_[xx.ravel(), yy.ravel()]
     Xm = map_feature(points[:, 0], points[:, 1],degree)
     if scaler:
         Xm = scaler.transform(Xm)
     Z = predict(Xm)
 
-    # Put the result into a color plot
     Z = Z.reshape(xx.shape)
     plt.contour(xx, yy, Z, colors='g')
-    #plot_data(X_train,y_train)
 
-#for debug, uncomment the #@output statments below for routines you want to get error output from
-# In the notebook that will call these routines, import  `output`
-# from plt_overfit import overfit_example, output
-# then, in a cell where the error messages will be the output of..
-#display(output)
 
-output = Output() # sends hidden error messages to display when using widgets
+output = Output() # Sends hidden error messages to display when using widgets
 
 class button_manager:
     ''' Handles some missing features of matplotlib check buttons
@@ -125,7 +161,7 @@ class button_manager:
         maintains single button on state, calls call_on_click
     '''
 
-    @output.capture()  # debug
+    @output.capture()  
     def __init__(self,fig, dim, labels, init, call_on_click):
         '''
         dim: (list)     [leftbottom_x,bottom_y,width,height]
@@ -133,7 +169,7 @@ class button_manager:
         init: (list)    for example [True, False, False, False, False, False]
         '''
         self.fig = fig
-        self.ax = plt.axes(dim)  #lx,by,w,h
+        self.ax = plt.axes(dim) 
         self.init_state = init
         self.call_on_click = call_on_click
         self.button  = CheckButtons(self.ax,labels,init)
@@ -141,29 +177,22 @@ class button_manager:
         self.status = self.button.get_status()
         self.call_on_click(self.status.index(True),firsttime=True)
 
-    @output.capture()  # debug
+    @output.capture()  
     def reinit(self):
         self.status = self.init_state
-        self.button.set_active(self.status.index(True))      #turn off old, will trigger update and set to status
+        self.button.set_active(self.status.index(True))    
 
-    @output.capture()  # debug
+    @output.capture()  
     def button_click(self, event):
         ''' maintains one-on state. If on-button is clicked, will process correctly '''
-        #new_status = self.button.get_status()
-        #new = [self.status[i] ^ new_status[i] for i in range(len(self.status))]
-        #newidx = new.index(True)
         self.button.eventson = False
-        self.button.set_active(self.status.index(True))  #turn off old or reenable if same
+        self.button.set_active(self.status.index(True))  
         self.button.eventson = True
         self.status = self.button.get_status()
         self.call_on_click(self.status.index(True))
 
 class overfit_example():
     """ plot overfit example """
-    # pylint: disable=too-many-instance-attributes
-    # pylint: disable=too-many-locals
-    # pylint: disable=missing-function-docstring
-    # pylint: disable=attribute-defined-outside-init
     def __init__(self, regularize=False):
         self.regularize=regularize
         self.lambda_=0
@@ -181,16 +210,10 @@ class overfit_example():
         self.ax = [ax0,ax1,ax2]
         self.fig = fig
 
-        self.axfitdata = plt.axes([0.26,0.124,0.12,0.1 ])  #lx,by,w,h
+        self.axfitdata = plt.axes([0.26,0.124,0.12,0.1 ])  
         self.bfitdata  = Button(self.axfitdata , 'fit data', color=dlc['dlblue'])
         self.bfitdata.label.set_fontsize(12)
         self.bfitdata.on_clicked(self.fitdata_clicked)
-
-        #clear data is a future enhancement
-        #self.axclrdata = plt.axes([0.26,0.06,0.12,0.05 ])  #lx,by,w,h
-        #self.bclrdata  = Button(self.axclrdata , 'clear data', color='white')
-        #self.bclrdata.label.set_fontsize(12)
-        #self.bclrdata.on_clicked(self.clrdata_clicked)
 
         self.cid = fig.canvas.mpl_connect('button_press_event', self.add_data)
 
@@ -205,12 +228,8 @@ class overfit_example():
             self.lambut = button_manager(fig,[0.6,0.02,0.15,0.2 ], ['0.0','0.2','0.4','0.6','0.8','1'],
                                         [True, False, False, False, False, False], self.updt_lambda)
 
-        #self.regbut =  button_manager(fig, [0.8, 0.08,0.24,0.15], ["Regularize"],
-        #                               [False], self.toggle_reg)
-        #self.logistic_data()
 
     def updt_lambda(self, idx, firsttime=False):
-      # pylint: disable=unused-argument
         self.lambda_ = idx * 0.2
 
     def toggle_type(self, idx, firsttime=False):
@@ -223,15 +242,15 @@ class overfit_example():
         if not firsttime:
             self.degrbut.reinit()
 
-    @output.capture()  # debug
+    @output.capture()  
     def logistic_data(self,redraw=False):
         if not redraw:
             m = 50
             n = 2
             np.random.seed(2)
             X_train = 2*(np.random.rand(m,n)-[0.5,0.5])
-            y_train = X_train[:,1]+0.5  > X_train[:,0]**2 + 0.5*np.random.rand(m) #quadratic + random
-            y_train = y_train + 0  #convert from boolean to integer
+            y_train = X_train[:,1]+0.5  > X_train[:,0]**2 + 0.5*np.random.rand(m)
+            y_train = y_train + 0 
             self.X = X_train
             self.y = y_train
             self.x_ideal = np.sort(X_train[:,0])
@@ -254,7 +273,7 @@ class overfit_example():
             np.random.seed(1)
             y_ideal = x_train**2 + c
             y_train = y_ideal + 0.7 * y_ideal*(np.random.sample((m,))-0.5)
-            self.x_ideal = x_train #for redraw when new data included in X
+            self.x_ideal = x_train 
             self.X = x_train
             self.y = y_train
             self.y_ideal = y_ideal
@@ -275,20 +294,20 @@ class overfit_example():
             self.ylim = self.ax[0].get_ylim()
 
 
-    @output.capture()  # debug
+    @output.capture()  
     def add_data(self, event):
         if self.logistic:
             self.add_data_logistic(event)
         else:
             self.add_data_linear(event)
 
-    @output.capture()  # debug
+    @output.capture()  
     def add_data_logistic(self, event):
         if event.inaxes == self.ax[0]:
             x0_coord = event.xdata
             x1_coord = event.ydata
 
-            if event.key is None:  #shift not pressed
+            if event.key is None: 
                 self.ax[0].scatter(x0_coord, x1_coord, marker='x', s=10, c = 'red', label="y=1")
                 self.y = np.append(self.y,1)
             else:
@@ -309,15 +328,7 @@ class overfit_example():
             self.X = np.append(self.X,x_coord)
             self.fig.canvas.draw()
 
-    #@output.capture()  # debug
-    #def clrdata_clicked(self,event):
-    #    if self.logistic == True:
-    #        self.X = np.
-    #    else:
-    #        self.linear_regression()
-
-
-    @output.capture()  # debug
+    @output.capture()  
     def fitdata_clicked(self,event):
         if self.logistic:
             self.logistic_regression()
@@ -328,21 +339,18 @@ class overfit_example():
         self.ax[0].clear()
         self.fig.canvas.draw()
 
-        # create and fit the model using our mapped_X feature set.
         self.X_mapped, _ =  map_one_feature(self.X, self.degree)
         self.X_mapped_scaled, self.X_mu, self.X_sigma  = zscore_normalize_features(self.X_mapped)
 
-        #linear_model = LinearRegression()
         linear_model = Ridge(alpha=self.lambda_, normalize=True, max_iter=10000)
         linear_model.fit(self.X_mapped_scaled, self.y )
         self.w = linear_model.coef_.reshape(-1,)
         self.b = linear_model.intercept_
-        x = np.linspace(*self.xlim,30)  #plot line idependent of data which gets disordered
+        x = np.linspace(*self.xlim,30) 
         xm, _ =  map_one_feature(x, self.degree)
         xms = (xm - self.X_mu)/ self.X_sigma
         y_pred = linear_model.predict(xms)
 
-        #self.fig.canvas.draw()
         self.linear_data(redraw=True)
         self.ax0yfit = self.ax[0].plot(x, y_pred, color = "blue", label="y_fit")
         self.ax0ledgend = self.ax[0].legend(loc='lower right')
@@ -352,7 +360,6 @@ class overfit_example():
         self.ax[0].clear()
         self.fig.canvas.draw()
 
-        # create and fit the model using our mapped_X feature set.
         self.X_mapped, _ =  map_feature(self.X[:, 0], self.X[:, 1], self.degree)
         self.X_mapped_scaled, self.X_mu, self.X_sigma  = zscore_normalize_features(self.X_mapped)
         if not self.regularize or self.lambda_ == 0:
@@ -362,24 +369,20 @@ class overfit_example():
             lr = LogisticRegression(C=C, max_iter=10000)
 
         lr.fit(self.X_mapped_scaled,self.y)
-        #print(lr.score(self.X_mapped_scaled, self.y))
         self.w = lr.coef_.reshape(-1,)
         self.b = lr.intercept_
-        #print(self.w, self.b)
         self.logistic_data(redraw=True)
         self.contour = plot_decision_boundary(self.ax[0],[-1,1],[-1,1], predict_logistic, self.w, self.b,
                        scaler=True, mu=self.X_mu, sigma=self.X_sigma, degree=self.degree )
         self.fig.canvas.draw()
 
-    @output.capture()  # debug
+    @output.capture()  
     def update_equation(self, idx, firsttime=False):
-        #print(f"Update equation, index = {idx}, firsttime={firsttime}")
         self.degree = idx+1
         if firsttime:
             self.eqtext = []
         else:
             for artist in self.eqtext:
-                #print(artist)
                 artist.remove()
             self.eqtext = []
         if self.logistic:
