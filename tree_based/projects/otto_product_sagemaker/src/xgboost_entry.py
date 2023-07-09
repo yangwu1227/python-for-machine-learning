@@ -40,7 +40,7 @@ def create_xgb_estimator(hyperparameters: Dict[str, Any], validation: bool) -> x
         rounds=50, 
         metric_name='mlogloss',
         data_name='validation_1' if validation else 'validation_0', # When training on the entire training set, use the training set as the single validation set with index 0
-        maximize=False,
+        maximize=True,
         save_best=True # Save the best model
     )
 
