@@ -1,0 +1,312 @@
+<<<<<<< HEAD
+# AWS
+framework_version: '2.12.0'
+py_version: py310
+entry_point: tf_keras_entry.py
+serving_image_uri: '722696965592.dkr.ecr.us-east-1.amazonaws.com/ml-sagemaker:ubuntu20.04-py3.8.10-sagemaker-serve'
+
+instance_type: ml.p3.8xlarge
+inference_instance_type: ml.c5.9xlarge
+instance_count: 1
+
+base_job_name: tf-keras-training
+endpoint_name: tf-keras-endpoint
+model_name: tf-keras-model
+study_name: tf_keras_hpo
+
+# Loading data for keras
+train_shuffle: true
+val_shuffle: false
+# An int specifying the number of times this tf.dataset is repeated (if none, cycles through foreverxs)
+num_epochs: 1
+# If set to False, the transformation is allowed to yield elements out of order to trade determinism for performance
+deterministic: false
+header: false
+# In distributed training, this can be a global batch size where each of the 'x' GPUs can processes a batch of (batch_size / x) samples
+batch_size: 128
+na_value: '?'
+num_oov_indices: 0
+
+target_labels: 
+  - ' <=50K'
+  - ' >50K'
+weight_feat: fnlwgt
+num_feat:
+  - age
+  - education_num
+  - capital_gain
+  - capital_loss
+  - hours_per_week
+cat_feat_vocab:
+  workclass: 
+    - ' ?'
+    - ' Federal-gov'
+    - ' Local-gov'
+    - ' Never-worked'
+    - ' Private'
+    - ' Self-emp-inc'
+    - ' Self-emp-not-inc'
+    - ' State-gov'
+    - ' Without-pay'
+  education:
+    - ' 10th'
+    - ' 11th'
+    - ' 12th'
+    - ' 1st-4th'
+    - ' 5th-6th'
+    - ' 7th-8th'
+    - ' 9th'
+    - ' Assoc-acdm'
+    - ' Assoc-voc'
+    - ' Bachelors'
+    - ' Doctorate'
+    - ' HS-grad'
+    - ' Masters'
+    - ' Preschool'
+    - ' Prof-school'
+    - ' Some-college'
+  marital_status:
+    - ' Divorced'
+    - ' Married-AF-spouse'
+    - ' Married-civ-spouse'
+    - ' Married-spouse-absent'
+    - ' Never-married'
+    - ' Separated'
+    - ' Widowed'
+  occupation:
+    - ' ?'
+    - ' Adm-clerical'
+    - ' Armed-Forces'
+    - ' Craft-repair'
+    - ' Exec-managerial'
+    - ' Farming-fishing'
+    - ' Handlers-cleaners'
+    - ' Machine-op-inspct'
+    - ' Other-service'
+    - ' Priv-house-serv'
+    - ' Prof-specialty'
+    - ' Protective-serv'
+    - ' Sales'
+    - ' Tech-support'
+    - ' Transport-moving'
+  relationship:
+    - ' Husband'
+    - ' Not-in-family'
+    - ' Other-relative'
+    - ' Own-child'
+    - ' Unmarried'
+    - ' Wife'
+  race:
+    - ' Amer-Indian-Eskimo'
+    - ' Asian-Pac-Islander'
+    - ' Black'
+    - ' Other'
+    - ' White'
+  gender:
+    - ' Female'
+    - ' Male'
+  native_country:
+    - ' ?'
+    - ' Cambodia'
+    - ' Canada'
+    - ' China'
+    - ' Columbia'
+    - ' Cuba'
+    - ' Dominican-Republic'
+    - ' Ecuador'
+    - ' El-Salvador'
+    - ' England'
+    - ' France'
+    - ' Germany'
+    - ' Greece'
+    - ' Guatemala'
+    - ' Haiti'
+    - ' Holand-Netherlands'
+    - ' Honduras'
+    - ' Hong'
+    - ' Hungary'
+    - ' India'
+    - ' Iran'
+    - ' Ireland'
+    - ' Italy'
+    - ' Jamaica'
+    - ' Japan'
+    - ' Laos'
+    - ' Mexico'
+    - ' Nicaragua'
+    - ' Outlying-US(Guam-USVI-etc)'
+    - ' Peru'
+    - ' Philippines'
+    - ' Poland'
+    - ' Portugal'
+    - ' Puerto-Rico'
+    - ' Scotland'
+    - ' South'
+    - ' Taiwan'
+    - ' Thailand'
+    - ' Trinadad&Tobago'
+    - ' United-States'
+    - ' Vietnam'
+    - ' Yugoslavia'
+# Default values for numerical and categorical features
+default_num:
+  - 0.0
+default_cat:
+  - NA
+||||||| parent of 082db0f (update: tab transformer project sagemaker)
+=======
+# AWS
+framework_version: '2.12.0'
+py_version: py310
+entry_point: tf_keras_entry.py
+serving_image_uri: '722696965592.dkr.ecr.us-east-1.amazonaws.com/ml-sagemaker:ubuntu20.04-py3.8.10-sagemaker-serve'
+
+instance_type: ml.p3.8xlarge
+inference_instance_type: ml.c5.9xlarge
+instance_count: 1
+
+base_job_name: tf-keras-training
+endpoint_name: tf-keras-endpoint
+model_name: tf-keras-model
+study_name: tf_keras_hpo
+
+# Loading data for keras
+train_shuffle: true
+val_shuffle: false
+# An int specifying the number of times this tf.dataset is repeated (if none, cycles through foreverxs)
+num_epochs: 1
+# If set to False, the transformation is allowed to yield elements out of order to trade determinism for performance
+deterministic: false
+header: false
+# In distributed training, this can be a global batch size where each of the 'x' GPUs can processes a batch of (batch_size / x) samples
+batch_size: 128
+na_value: '?'
+num_oov_indices: 0
+
+target_labels: 
+  - ' <=50K'
+  - ' >50K'
+weight_feat: fnlwgt
+num_feat:
+  - age
+  - education_num
+  - capital_gain
+  - capital_loss
+  - hours_per_week
+cat_feat_vocab:
+  workclass: 
+    - ' ?'
+    - ' Federal-gov'
+    - ' Local-gov'
+    - ' Never-worked'
+    - ' Private'
+    - ' Self-emp-inc'
+    - ' Self-emp-not-inc'
+    - ' State-gov'
+    - ' Without-pay'
+  education:
+    - ' 10th'
+    - ' 11th'
+    - ' 12th'
+    - ' 1st-4th'
+    - ' 5th-6th'
+    - ' 7th-8th'
+    - ' 9th'
+    - ' Assoc-acdm'
+    - ' Assoc-voc'
+    - ' Bachelors'
+    - ' Doctorate'
+    - ' HS-grad'
+    - ' Masters'
+    - ' Preschool'
+    - ' Prof-school'
+    - ' Some-college'
+  marital_status:
+    - ' Divorced'
+    - ' Married-AF-spouse'
+    - ' Married-civ-spouse'
+    - ' Married-spouse-absent'
+    - ' Never-married'
+    - ' Separated'
+    - ' Widowed'
+  occupation:
+    - ' ?'
+    - ' Adm-clerical'
+    - ' Armed-Forces'
+    - ' Craft-repair'
+    - ' Exec-managerial'
+    - ' Farming-fishing'
+    - ' Handlers-cleaners'
+    - ' Machine-op-inspct'
+    - ' Other-service'
+    - ' Priv-house-serv'
+    - ' Prof-specialty'
+    - ' Protective-serv'
+    - ' Sales'
+    - ' Tech-support'
+    - ' Transport-moving'
+  relationship:
+    - ' Husband'
+    - ' Not-in-family'
+    - ' Other-relative'
+    - ' Own-child'
+    - ' Unmarried'
+    - ' Wife'
+  race:
+    - ' Amer-Indian-Eskimo'
+    - ' Asian-Pac-Islander'
+    - ' Black'
+    - ' Other'
+    - ' White'
+  gender:
+    - ' Female'
+    - ' Male'
+  native_country:
+    - ' ?'
+    - ' Cambodia'
+    - ' Canada'
+    - ' China'
+    - ' Columbia'
+    - ' Cuba'
+    - ' Dominican-Republic'
+    - ' Ecuador'
+    - ' El-Salvador'
+    - ' England'
+    - ' France'
+    - ' Germany'
+    - ' Greece'
+    - ' Guatemala'
+    - ' Haiti'
+    - ' Holand-Netherlands'
+    - ' Honduras'
+    - ' Hong'
+    - ' Hungary'
+    - ' India'
+    - ' Iran'
+    - ' Ireland'
+    - ' Italy'
+    - ' Jamaica'
+    - ' Japan'
+    - ' Laos'
+    - ' Mexico'
+    - ' Nicaragua'
+    - ' Outlying-US(Guam-USVI-etc)'
+    - ' Peru'
+    - ' Philippines'
+    - ' Poland'
+    - ' Portugal'
+    - ' Puerto-Rico'
+    - ' Scotland'
+    - ' South'
+    - ' Taiwan'
+    - ' Thailand'
+    - ' Trinadad&Tobago'
+    - ' United-States'
+    - ' Vietnam'
+    - ' Yugoslavia'
+# Default values for numerical and categorical features
+default_num:
+  - 0.0
+default_cat:
+  - NA
+>>>>>>> 082db0f (update: tab transformer project sagemaker)

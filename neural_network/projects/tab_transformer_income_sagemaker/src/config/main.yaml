@@ -1,0 +1,44 @@
+# AWS
+s3_bucket: yang-ml-sagemaker
+s3_key: census-income-classification
+model_dir: /opt/ml/model
+volume_size: 30
+# Spot training
+use_spot_instances: true
+max_run: 86400
+max_retry_attempts: 2
+
+# File system
+src_dir_path: /home/ec2-user/SageMaker/census-income-classification/src
+notebook_dir_path: /home/ec2-user/SageMaker/census-income-classification/notebooks
+
+# Meta data for ingestion and uploading to s3
+train_data_url: https://archive.ics.uci.edu/ml/machine-learning-databases/adult/adult.data
+test_data_url: https://archive.ics.uci.edu/ml/machine-learning-databases/adult/adult.test
+csv_header:
+  - age
+  - workclass
+  - fnlwgt
+  - education
+  - education_num
+  - marital_status
+  - occupation
+  - relationship
+  - race
+  - gender
+  - capital_gain
+  - capital_loss
+  - hours_per_week
+  - native_country
+  - income_bracket
+target: income_bracket
+validation_size: 0.2
+random_seed: 1227
+index: false
+
+# Optuna
+stack_name: optuna-stack
+
+defaults:
+  - _self_
+  - tf_keras: tf_keras
