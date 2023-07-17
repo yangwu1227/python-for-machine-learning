@@ -33,7 +33,7 @@ csv_header:
   - income_bracket
 target: income_bracket
 validation_size: 0.2
-random_seed: 1227
+random_seed: 12
 index: false
 
 # Optuna
