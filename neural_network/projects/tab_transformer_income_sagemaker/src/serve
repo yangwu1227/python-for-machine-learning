@@ -99,7 +99,7 @@ def serve() -> None:
             # Convert to tf.data.Dataset
             dataset = tf.data.Dataset.from_tensor_slices(dict(data)).batch(256)
 
-            # Add an extra dimension to match the model's expected input shape (each x is a )
+            # Add an extra dimension to match the model's expected input shape (each x is a feature_name -> value dict)
             dataset = dataset.map(lambda x: {k: tf.expand_dims(v, 1) for k, v in x.items()})
 
         except Exception as e:
