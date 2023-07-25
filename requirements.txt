@@ -104,7 +104,7 @@ grpcio==1.51.3
 h11==0.14.0
 h5netcdf==1.1.0
 h5py==3.8.0
-hdbscan==0.8.29
+hdbscan @ file:///Users/runner/miniforge3/conda-bld/hdbscan_1689708165428/work
 holidays==0.28
 htmltools==0.2.1
 httpcore==0.17.3
