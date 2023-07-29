@@ -86,7 +86,7 @@ def fine_tune_cnn(logger: logging.Logger,
     inputs = tf.keras.Input(shape=input_shape)
     x = data_augmentation(inputs)
     x = tf.keras.applications.vgg16.preprocess_input(x)
-    x = conv_base(x)
+    x = conv_base(x, training=False)
     x = tf.keras.layers.Flatten()(x)
     x = DefaultDense(units=dense_params['dense_units'])(x)
     x = tf.keras.layers.Dropout(rate=dropout_rate)(x)
