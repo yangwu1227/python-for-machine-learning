@@ -292,7 +292,7 @@ class AugmentationModel(object):
                 raise ValueError(f'Augmentation layer arguments should be provided as a dictionary for layer: {layer_name}')
             self._add_augmentation_layer(layer_name, **args)
 
-        model = tf.keras.Sequential([self.base_model])
+        model = tf.keras.Sequential([self.base_model], name='data_augmentation_layers')
 
         return model
 
