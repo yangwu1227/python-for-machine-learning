@@ -1,0 +1,9 @@
+entry_point: 'baseline_entry.py'
+training_name: 'baseline-training'
+tuning_name: 'baseline-hpo'
+instance_type: 'ml.c5.9xlarge'
+instance_count: 1
+train_use_spot_instances: True
+max_run: 86400
+max_retry_attempts: 2
+  

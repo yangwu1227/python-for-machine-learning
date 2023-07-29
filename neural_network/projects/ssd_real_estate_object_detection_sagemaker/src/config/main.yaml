@@ -1,0 +1,16 @@
+validation_size: 0.2
+class_label_map:
+  other_fridge: 0
+  stainless_fridge: 1
+  granite: 2
+  laminate: 3 
+# AWS configs
+model_dir: /opt/ml/model
+s3_bucket: yang-ml-homepartners
+s3_key: object-detection
+src_dir_path: /home/ec2-user/SageMaker/ds_sagemaker_object_detection/src
+test_images: /home/ec2-user/SageMaker/ds_sagemaker_object_detection/test_images
+# These are group configs specific to the entry scripts
+defaults:
+  - _self_
+  - built_in: built_in

@@ -1,0 +1,30 @@
+# These are the global configs
+num_classes: 9
+random_seed: 1227
+image_size: [256, 256]
+validation_size: 0.2
+num_channels: 3
+class_label_map: 
+  backyard: 0
+  bathroom: 1
+  bedroom: 2
+  diningRoom: 3
+  frontyard: 4
+  hall: 5
+  kitchen: 6
+  livingRoom: 7
+  plan: 8
+# AWS configs
+py_version: 'py39'
+framework_version: '2.8'
+model_dir: '/opt/ml/model'
+s3_bucket: 'yang-ml-homepartners'
+s3_key: 'scene-classification'
+src_dir_path: /home/ec2-user/SageMaker/ds_sagemaker_scene_classification/src
+dfw_s3_path: s3://hpa-data-lake/raw/mls/resized_photos/dfw/websize
+best_model_s3_path: s3://yang-ml-homepartners/scene-classification/model/fine-tune-hpo-230710-1525-030-cf221d8d/output/model.tar.gz
+# These are group configs specific to the entry scripts
+defaults:
+  - _self_
+  - baseline: baseline
+  - fine_tune: fine_tune
