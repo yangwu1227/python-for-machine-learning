@@ -6,10 +6,14 @@ class_label_map:
   laminate: 3 
 # AWS configs
 model_dir: /opt/ml/model
-s3_bucket: yang-ml-homepartners
+s3_bucket: yang-ml-sagemaker
 s3_key: object-detection
 src_dir_path: /home/ec2-user/SageMaker/ds_sagemaker_object_detection/src
 test_images: /home/ec2-user/SageMaker/ds_sagemaker_object_detection/test_images
+code_location: s3://yang-ml-sagemaker/object-detection/code
+use_spot_instances: true
+max_run: 86400
+max_retry_attempts: 2
 # These are group configs specific to the entry scripts
 defaults:
   - _self_

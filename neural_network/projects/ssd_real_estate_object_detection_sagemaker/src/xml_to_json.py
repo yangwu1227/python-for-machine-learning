@@ -18,6 +18,7 @@ import matplotlib.patches as patches
 from PIL import Image
 
 from hydra import core, initialize, compose
+from omegaconf import OmegaConf
 
 # -------------------------------- XML parser -------------------------------- #
 
@@ -255,8 +256,9 @@ def main() -> None:
     parser.add_argument('--val_split', action='store_true')
     args, _ =parser.parse_known_args()
 
+    core.global_hydra.GlobalHydra.instance().clear()
     initialize(version_base='1.2', config_path='config', job_name='xml_to_json_annotations')
-    config = compose(config_name='main')
+    config = OmegaConf.to_container(compose(config_name='main'), resolve=True)
 
     logger = get_logger(name=__name__)
 

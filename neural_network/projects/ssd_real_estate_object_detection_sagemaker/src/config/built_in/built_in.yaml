@@ -6,6 +6,3 @@ base_job_name: od-built-in-training
 base_tuning_job_name: od-built-in-hpo
 endpoint_name: od-built-in-endpoint
 model_name: od-built-in-model
-use_spot_instances: true
-max_run: 86400
-max_retry_attempts: 2
