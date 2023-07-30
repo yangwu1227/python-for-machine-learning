@@ -10,6 +10,7 @@ from sklearn.utils.class_weight import compute_sample_weight
 from sklearn.metrics import log_loss
 
 from hydra import compose, initialize, core
+from omegaconf import OmegaConf
 import pandas as pd
 import numpy as np
 import optuna
@@ -143,10 +144,10 @@ def xgboost_objective(trial: optuna.Trial,
         scale_pos_weight = np.sum(y_train == 0) / np.sum(y_train == 1)
 
         fold_preprocessor = preprocessor_func(
-            top_5_feat=list(config.xgboost.top_5_feat),
-            top_15_feat=list(config.xgboost.top_15_feat),
-            num_feat=list(config.num_feat),
-            cat_feat=list(config.cat_feat)
+            top_5_feat=list(config['xgboost.top_5_feat']),
+            top_15_feat=list(config['xgboost.top_15_feat']),
+            num_feat=list(config['num_feat']),
+            cat_feat=list(config['cat_feat'])
         )
 
         logger.info(f'Preprocessing training and validation data for trial {trial.number} fold {fold + 1}...')
@@ -196,10 +197,10 @@ def xgboost_objective(trial: optuna.Trial,
 
     # Create pipeline and insert estimator
     model_pipeline = preprocessor_func(
-        top_5_feat=list(config.xgboost.top_5_feat),
-        top_15_feat=list(config.xgboost.top_15_feat),
-        num_feat=list(config.num_feat),
-        cat_feat=list(config.cat_feat)
+        top_5_feat=list(config['xgboost.top_5_feat']),
+        top_15_feat=list(config['xgboost.top_15_feat']),
+        num_feat=list(config['num_feat']),
+        cat_feat=list(config['cat_feat'])
     )
     # Apply preprocessing to training data
     X_train = model_pipeline.fit_transform(X_train, y_train)
@@ -245,8 +246,8 @@ if __name__ == '__main__':
 
     # Hydra
     core.global_hydra.GlobalHydra.instance().clear()
-    initialize(version_base='1.2', config_path='config', job_name='baseline')
-    config = compose(config_name='main')
+    initialize(version_base='1.2', config_path='config', job_name='xgboost_training')
+    config = OmegaConf.to_container(compose(config_name='main'), resolve=True)
 
     # --------------------------------- Load data -------------------------------- #
 

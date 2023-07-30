@@ -1,5 +1,5 @@
-entry_point: 'baseline_entry.py'
-train_job_name: 'baseline-training'
-study_name: 'baseline_hpo'
-instance_type: 'ml.c5.4xlarge'
+entry_point: baseline_entry.py
+base_job_name: baseline-training
+study_name: baseline_hpo
+instance_type: ml.c5.4xlarge
 instance_count: 1

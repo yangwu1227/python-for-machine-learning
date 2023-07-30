@@ -1,14 +1,17 @@
 # AWS
-s3_bucket: 'yang-ml-sagemaker'
-s3_key: 'icr-classification'
-train_use_spot_instances: true
+s3_bucket: yang-ml-sagemaker
+s3_key: icr-classification
+use_spot_instances: true
 max_run: 86400
 max_retry_attempts: 2
-model_dir: '/opt/ml/model'
-framework_version: '1.2-1'
-py_version: 'py3'
+model_dir: /opt/ml/model
+output_path: s3://yang-ml-sagemaker/icr-classification/models
+code_location: s3://yang-ml-sagemaker/icr-classification/code
+volume_size: 30
+framework_version: 1.2-1
+py_version: py3
 # Optuna
-stack_name: 'optuna-stack'
+stack_name: optuna-stack
 # File system
 src_dir_path: /home/ec2-user/SageMaker/icr-classification/src
 notebook_dir_path: /home/ec2-user/SageMaker/icr-classification/notebooks

@@ -12,7 +12,8 @@ from sklearn.model_selection import StratifiedKFold
 from sklearn.utils.class_weight import compute_sample_weight
 from sklearn.metrics import log_loss
 
-from hydra import compose, initialize
+from hydra import compose, initialize, core
+from omegaconf import OmegaConf
 import pandas as pd
 import numpy as np
 import optuna
@@ -194,8 +195,9 @@ if __name__ == '__main__':
     job_name = args.training_env['job_name']
 
     # Hydra
+    core.global_hydra.GlobalHydra.instance().clear()
     initialize(version_base='1.2', config_path='config', job_name='baseline')
-    config = compose(config_name='main')
+    config = OmegaConf.to_container(compose(config_name='main'), resolve=True)
 
     # --------------------------------- Load data -------------------------------- #
 
@@ -225,13 +227,13 @@ if __name__ == '__main__':
         return baseline_objective(
             trial=trial,
             aws_params={
-                's3_bucket': config.s3_bucket,
-                's3_key': config.s3_key,
+                's3_bucket': config['s3_bucket'],
+                's3_key': config['s3_key'],
                 'job_name': job_name
             },
             pipeline_func=create_baseline,
-            num_feat=list(config.num_feat),
-            cat_feat=list(config.cat_feat),
+            num_feat=list(config['num_feat']),
+            cat_feat=list(config['cat_feat']),
             train_data=(X, y),
             test_mode=args.test_mode,
             logger=logger
