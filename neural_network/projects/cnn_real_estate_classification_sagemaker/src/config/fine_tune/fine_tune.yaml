@@ -1,9 +1,6 @@
-entry_point: 'fine_tune_entry.py'
-training_name: 'fine-tune-training'
-tuning_name: 'fine-tune-hpo'
-endpoint_name: 'fine-tune-endpoint'
-instance_type: 'ml.p3.8xlarge'
+entry_point: fine_tune_entry.py
+base_job_name: fine-tune-training
+base_tuning_job_name: fine-tune-hpo
+endpoint_name: fine-tune-endpoint
+instance_type: ml.p3.8xlarge
 instance_count: 1
-train_use_spot_instances: true
-max_run: 86400
-max_retry_attempts: 2

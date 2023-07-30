@@ -12,7 +12,8 @@ from sklearn.utils.class_weight import compute_class_weight, compute_sample_weig
 
 import numpy as np
 
-from hydra import compose, initialize
+from hydra import compose, initialize, core
+from omegaconf import OmegaConf
 from custom_utils import get_logger, parser, add_additional_args, load_data, AugmentationModel
 
 # ------------------------------- Baseline CNN ------------------------------- #
@@ -156,8 +157,9 @@ if __name__ == '__main__':
 
     # -------------------------- Compose configurations -------------------------- #
 
+    core.global_hydra.GlobalHydra.instance().clear()
     initialize(version_base='1.2', config_path='config', job_name='baseline')
-    config = compose(config_name='main')
+    config = OmegaConf.to_container(compose(config_name='main'), resolve=True)
 
     # ---------------------------------- Set up ---------------------------------- #
 
@@ -250,8 +252,8 @@ if __name__ == '__main__':
             'epochs': args.epochs,
             'use_sample_weights': args.use_sample_weights
         },
-        num_classes=config.num_classes,
-        input_shape=tuple(config.image_size + [config.num_channels])
+        num_classes=config['num_classes'],
+        input_shape=tuple(config['image_size'] + [config['num_channels']])
     )
 
     logger.info(f'Best validation accuracy: {early_stopper.best}')

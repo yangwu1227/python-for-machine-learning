@@ -10,7 +10,8 @@ import sagemaker
 import numpy as np
 from sklearn.model_selection import StratifiedShuffleSplit
 
-from hydra import compose, initialize
+from hydra import compose, initialize, core
+from omegaconf import OmegaConf
 from custom_utils import get_logger
 
 if __name__ == '__main__':
@@ -18,7 +19,7 @@ if __name__ == '__main__':
     # --------------------------- Compose configuration -------------------------- #
 
     initialize(version_base='1.2', config_path='config', job_name='ingest_data')
-    config = compose(config_name='main')
+    config = OmegaConf.to_container(compose(config_name='config'), resolve=True)
 
     logger = get_logger(__name__)
 
@@ -42,7 +43,7 @@ if __name__ == '__main__':
     for file_name in file_names:
         # Download the zip file from s3
         subprocess.run(
-            f'aws s3 cp s3://{config.s3_bucket}/{config.s3_key}/raw-data/{file_name} {raw_data_dir}/{file_name}',
+            f'aws s3 cp s3://{config["s3_bucket"]}/{config["s3_key"]}/raw-data/{file_name} {raw_data_dir}/{file_name}',
             shell=True
         )
         # Unzip the file
@@ -60,9 +61,9 @@ if __name__ == '__main__':
         labels='inferred',
         label_mode='int',
         batch_size=None,
-        image_size=tuple(config.image_size),
+        image_size=tuple(config['image_size']),
         shuffle=True,
-        seed=config.random_seed,
+        seed=config['random_seed'],
         interpolation='bilinear'
     )
 
@@ -71,9 +72,9 @@ if __name__ == '__main__':
         labels='inferred',
         label_mode='int',
         batch_size=None,
-        image_size=tuple(config.image_size),
+        image_size=tuple(config['image_size']),
         shuffle=True,
-        seed=config.random_seed,
+        seed=config['random_seed'],
         interpolation='bilinear'
     )
 
@@ -106,7 +107,7 @@ if __name__ == '__main__':
     logger.info('Splitting train and validation data...')
 
     # Split the train data into train and validation data
-    sss = StratifiedShuffleSplit(n_splits=1, test_size=config.validation_size, random_state=config.random_seed)
+    sss = StratifiedShuffleSplit(n_splits=1, test_size=config['validation_size'], random_state=config['random_seed'])
     for train_index, val_index in sss.split(X_train, y_train):
         X_train, X_val = X_train[train_index], X_train[val_index]
         y_train, y_val = y_train[train_index], y_train[val_index]
@@ -126,7 +127,7 @@ if __name__ == '__main__':
 
     logger.info('Uploading data to s3...')
 
-    sm_session = sagemaker.Session(default_bucket=config.s3_bucket)
+    sm_session = sagemaker.Session(default_bucket=config['s3_bucket'])
     s3_uploader = sagemaker.s3.S3Uploader()
 
     # Create directory for uploading datasets to s3
@@ -144,7 +145,7 @@ if __name__ == '__main__':
     for key in data_save_paths:
         s3_uploader.upload(
             local_path=data_save_paths[key],
-            desired_s3_uri=f's3://{config.s3_bucket}/{config.s3_key}/input-data/{key}',
+            desired_s3_uri=f's3://{config["s3_bucket"]}/{config["s3_key"]}/input-data/{key}',
             sagemaker_session=sm_session
         )
 
