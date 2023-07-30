@@ -2,6 +2,7 @@
 s3_bucket: yang-ml-sagemaker
 s3_key: census-income-classification
 model_dir: /opt/ml/model
+code_location: s3://yang-ml-sagemaker/census-income-classification/code
 volume_size: 30
 # Spot training
 use_spot_instances: true
