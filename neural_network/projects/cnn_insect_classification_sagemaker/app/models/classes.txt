@@ -1,0 +1,102 @@
+0 Rice Leaf Roller
+1 Rice Leaf Caterpillar
+2 Paddy Stem Maggot
+3 Asiatic Rice Borer
+4 Yellow Rice Borer
+5 Rice Gall Midge
+6 Rice Stemfly
+7 Brown Plant Hopper
+8 White Backed Plant Hopper
+9 Small Brown Plant Hopper
+10 Rice Water Weevil
+11 Rice Leafhopper
+12 Grain Spreader Thrips
+13 Rice Shell Pest
+14 Grub
+15 Mole Cricket
+16 Wireworm
+17 White Margined Moth
+18 Black Cutworm
+19 Large Cutworm
+20 Yellow Cutworm
+21 Red Spider
+22 Corn Borer
+23 Army Worm
+24 Aphids
+25 Potosiabre Vitarsis
+26 Peach Borer
+27 English Grain Aphid
+28 Green Bug
+29 Bird Cherry-oataphid
+30 Wheat Blossom Midge
+31 Penthaleus Major
+32 Longlegged Spider Mite
+33 Wheat Phloeothrips
+34 Wheat Sawfly
+35 Cerodonta Denticornis
+36 Beet Fly
+37 Flea Beetle
+38 Cabbage Army Worm
+39 Beet Army Worm
+40 Beet Spot Flies
+41 Meadow Moth
+42 Beet Weevil
+43 Sericaorient Alismots Chulsky
+44 Alfalfa Weevil
+45 Flax Budworm
+46 Alfalfa Plant Bug
+47 Tarnished Plant Bug
+48 Locustoidea
+49 Lytta Polita
+50 Legume Blister Beetle
+51 Blister Beetle
+52 Therioaphis Maculata Buckton
+53 Odontothrips Loti
+54 Thrips
+55 Alfalfa Seed Chalcid
+56 Pieris Canidia
+57 Apolygus Lucorum
+58 Limacodidae
+59 Viteus Vitifoliae
+60 Colomerus Vitis
+61 Brevipoalpus Lewisi Mcgregor
+62 Oides Decempunctata
+63 Polyphagotars Onemus Latus
+64 Pseudococcus Comstocki Kuwana
+65 Parathrene Regalis
+66 Ampelophaga
+67 Lycorma Delicatula
+68 Xylotrechus
+69 Cicadella Viridis
+70 Miridae
+71 Trialeurodes Vaporariorum
+72 Erythroneura Apicalis
+73 Papilio Xuthus
+74 Panonchus Citri Mcgregor
+75 Phyllocoptes Oleiverus Ashmead
+76 Icerya Purchasi Maskell
+77 Unaspis Yanonensis
+78 Ceroplastes Rubens
+79 Chrysomphalus Aonidum
+80 Parlatoria Zizyphus Lucus
+81 Nipaecoccus Vastalor
+82 Aleurocanthus Spiniferus
+83 Tetradacus C Bactrocera Minax
+84 Dacus Dorsalis(hendel)
+85 Bactrocera Tsuneonis
+86 Prodenia Litura
+87 Adristyrannus
+88 Phyllocnistis Citrella Stainton
+89 Toxoptera Citricidus
+90 Toxoptera Aurantii
+91 Aphis Citricola Vander Goot
+92 Scirtothrips Dorsalis Hood
+93 Dasineura Sp
+94 Lawana Imitata Melichar
+95 Salurnis Marginella Guerr
+96 Deporaus Marginatus Pascoe
+97 Chlumetia Transversa
+98 Mango Flat Beak Leafhopper
+99 Rhytidodera Bowrinii White
+100 Sternochetus Frigidus
+101 Cicadellidae
