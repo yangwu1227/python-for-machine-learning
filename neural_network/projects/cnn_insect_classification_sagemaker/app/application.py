@@ -73,17 +73,6 @@ def process_image(image_file: FileStorage) -> np.ndarray:
     image_np = np.expand_dims(np.array(image), axis=0).astype(np.int16)
 
     return image_np
-    
-def predict_class(model: tf.keras.models.Model, image_np: np.ndarray) -> str:
-    """
-    Use the model to predict the class of the image.
-    Returns the name of the predicted class.
-    """
-    # Prediction
-    predicted_label = tf.nn.softmax(model.predict(image_np)).numpy().argmax()
-    class_name = classes[predicted_label]
-
-    return class_name
 
 def predict_class(model: tf.keras.models.Model, image_np: np.ndarray) -> str:
     """
