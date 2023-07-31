@@ -158,4 +158,4 @@ def upload_and_predict():
 if __name__ == '__main__':
     
     # This is only for running locally since AWS Elastic Beanstalk imports application.py as a module and runs it on its own server
-    application.run(port=5000)
+    application.run()
