@@ -179,7 +179,8 @@ class BaseTrainer(object):
         """
         This function creates a model directory for the given worker. If the worker is the chief worker, 
         then the model directory will be returned as a string. Otherwise, a temporary directory will be
-        created and returned as a string. This is so that 
+        created and returned as a string. This is so that the chief worker can save the model to the
+        original model directory, while the other workers can save the model to their own temporary directories.
 
         Parameters
         ----------
