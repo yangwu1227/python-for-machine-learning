@@ -1,8 +1,8 @@
 import os
-from queue import Queue
 import logging
 import sys
 import argparse
+import json
 from typing import Dict, Callable, Tuple, List
 from IPython.display import Image
 
@@ -62,9 +62,10 @@ def parser() -> argparse.ArgumentParser:
     parser.add_argument('--model_dir', type=str, default=os.environ['SM_MODEL_DIR'])
     parser.add_argument('--train', type=str, default=os.environ['SM_CHANNEL_TRAIN'])
     parser.add_argument('--val', type=str, default=os.environ['SM_CHANNEL_VAL'])
+    parser.add_argument('--training_env', type=str, default=json.loads(os.environ['SM_TRAINING_ENV']))
 
     # Other
-    parser.add_argument('--local_test_mode', type=int, default=0)
+    parser.add_argument('--test_mode', type=int, default=0)
 
     return parser
 
@@ -103,32 +104,26 @@ def add_additional_args(parser_func: Callable, additional_args: Dict[str, type])
 
 # ------------------------- Function for loading data ------------------------ #
 
-def load_data(paths: Dict[str, str], test_mode: bool = False) -> Tuple[np.ndarray]:
+def load_dataset(dir: str, batch_size: int) -> tf.data.Dataset:
     """
-    Load data from the given path.
+    Read in the dataset from the specified directory and return a tf.data.Dataset object.
 
     Parameters
     ----------
-    path : List[str]
-        List of key: path to the data directories.
-    test_mode : bool, optional
-        Whether to load the test set, by default False.
+    dir : str
+        The directory where the dataset is located, which can conveinently be S3 with tensorflow-io.
+    batch_size : int
+        The batch size.
 
     Returns
     -------
-    Tuple[np.ndarray]
-        A tuple of numpy arrays--- X_train, y_train, X_val, y_val, X_test, y_test.
+    tf.data.Dataset
+        The dataset with the specified batch size.
     """
-    X_train = np.load(file=os.path.join(paths['train'], 'X_train.npy'))
-    y_train = np.load(file=os.path.join(paths['train'], 'y_train.npy'))
-    X_val = np.load(file=os.path.join(paths['val'], 'X_val.npy'))
-    y_val = np.load(file=os.path.join(paths['val'], 'y_val.npy'))
-    if test_mode:
-        X_test = np.load(file=os.path.join(paths['test'], 'X_test.npy'))
-        y_test = np.load(file=os.path.join(paths['test'], 'y_test.npy'))
-        return X_train, y_train, X_val, y_val, X_test, y_test
-    
-    return X_train, y_train, X_val, y_val
+    # Load data as tensorflow dataset
+    dataset = tf.data.Dataset.load(dir).batch(batch_size)
+
+    return dataset
 
 # --------------------------- Precision and recall --------------------------- #
 

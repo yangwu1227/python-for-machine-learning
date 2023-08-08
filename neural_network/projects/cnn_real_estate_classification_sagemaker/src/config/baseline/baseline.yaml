@@ -1,6 +1,0 @@
-entry_point: baseline_entry.py
-base_job_name: baseline-training
-base_tuning_job_name: baseline-hpo
-instance_type: ml.c5.9xlarge
-instance_count: 1
-  

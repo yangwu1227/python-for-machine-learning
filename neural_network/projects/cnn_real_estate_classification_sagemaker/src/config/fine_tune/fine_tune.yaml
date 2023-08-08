@@ -2,5 +2,6 @@ entry_point: fine_tune_entry.py
 base_job_name: fine-tune-training
 base_tuning_job_name: fine-tune-hpo
 endpoint_name: fine-tune-endpoint
-instance_type: ml.p3.8xlarge
-instance_count: 1
+instance_type: 'ml.p3.8xlarge'
+inference_instance_type: 'ml.c5.9xlarge'
+instance_count: 2
