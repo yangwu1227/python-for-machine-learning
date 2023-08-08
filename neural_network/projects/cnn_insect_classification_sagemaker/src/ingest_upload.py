@@ -231,9 +231,7 @@ def main() -> int:
         # Save to s3 directory
         logger.info(f'Saving {dir_key} data to s3...')
 
-        dataset.save(
-            f's3://{config["s3_bucket"]}/{config["s3_key"]}/input-data/{dir_key}',
-        )
+        dataset.save(f's3://{config["s3_bucket"]}/{config["s3_key"]}/input-data/{dir_key}')
         # Also save the class percentages to s3
         with fs.open(f's3://{config["s3_bucket"]}/{config["s3_key"]}/input-data/{dir_key}_weights.json', 'w') as f:
             json.dump(calculate_class_weights(class_counts), f)
