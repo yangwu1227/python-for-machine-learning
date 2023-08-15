@@ -23,7 +23,7 @@ class FineTuneTrainer(BaseTrainer):
     trained again with a reduced learning rate.
     """
     def __init__(self, 
-                 hyperparameters: Dict[str, any],
+                 hyperparameters: Dict[str, Any],
                  config: Dict[str, Any],
                  job_name: str,
                  train_dataset: tf.data.Dataset,
@@ -38,7 +38,7 @@ class FineTuneTrainer(BaseTrainer):
 
         Parameters
         ----------
-        hyperparameters : Dict[str, any]
+        hyperparameters : Dict[str, Any]
             A dictionary containing the hyperparameters for model training.
         config : Dict[str, Any]
             A dictionary containing the configuration for model training.

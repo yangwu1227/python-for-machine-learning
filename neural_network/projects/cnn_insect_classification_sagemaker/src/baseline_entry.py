@@ -23,7 +23,7 @@ class BaselineTrainer(BaseTrainer):
     This class is used to train an image classification model.
     """
     def __init__(self, 
-                 hyperparameters: Dict[str, any],
+                 hyperparameters: Dict[str, Any],
                  config: Dict[str, Any],
                  job_name: str,
                  train_dataset: tf.data.Dataset,
@@ -38,7 +38,7 @@ class BaselineTrainer(BaseTrainer):
 
         Parameters
         ----------
-        hyperparameters : Dict[str, any]
+        hyperparameters : Dict[str, Any]
             A dictionary containing the hyperparameters for model training.
         config : Dict[str, Any]
             A dictionary containing the configuration for model training.
