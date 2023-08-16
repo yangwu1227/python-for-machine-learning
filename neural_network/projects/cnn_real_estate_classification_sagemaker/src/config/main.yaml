@@ -27,6 +27,8 @@ s3_key: scene-classification
 model_dir: /opt/ml/model
 output_path: s3://yang-ml-homepartners/scene-classification/models
 code_location: s3://yang-ml-homepartners/scene-classification/code
+dfw_s3_path: s3://hpa-data-lake/raw/mls/resized_photos/dfw/websize
+best_model_s3_path: s3://yang-ml-homepartners/scene-classification/models/fine-tune-hpo-230710-1525-030-cf221d8d/output/model.tar.gz
 # Spot training
 train_use_spot_instances: true
 max_run: 86400
@@ -40,3 +42,4 @@ src_dir_path: /home/ec2-user/SageMaker/ds_sagemaker_scene_classification/src
 defaults:
   - _self_
   - fine_tune: fine_tune
+  - vision_transformer: vision_transformer

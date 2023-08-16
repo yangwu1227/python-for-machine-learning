@@ -1,0 +1,7 @@
+entry_point: vision_transformer_entry.py
+base_job_name: vit-training
+base_tuning_job_name: vit-hpo
+endpoint_name: vit-endpoint
+instance_type: 'ml.p3.8xlarge'
+inference_instance_type: 'ml.c5.9xlarge'
+instance_count: 2
