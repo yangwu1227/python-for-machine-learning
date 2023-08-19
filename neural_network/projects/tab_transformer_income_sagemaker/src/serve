@@ -12,8 +12,7 @@ from typing import List, Dict, Any, Union, Tuple
 
 import flask
 import tensorflow as tf
-import numpy as np
-import pandas as pd
+import polars as pl
 from flask import Flask, Response
 
 def serve() -> None:
@@ -78,26 +77,26 @@ def serve() -> None:
 
             # Specify the feature names and types
             feature_dtypes = {
-                'age': np.float32,
+                'age': float,
                 'workclass': str,
                 'education': str,
-                'education_num': np.float32,
+                'education_num': float,
                 'marital_status': str,
                 'occupation': str,
                 'relationship': str,
                 'race': str,
                 'gender': str,
-                'capital_gain': np.float32,
-                'capital_loss': np.float32,
-                'hours_per_week': np.float32,
+                'capital_gain': float,
+                'capital_loss': float,
+                'hours_per_week': float,
                 'native_country': str
             }
 
             # Convert the list of lists to a numpy array with the specified dtype
-            data = pd.DataFrame(data_list, columns=feature_dtypes.keys()).astype(feature_dtypes)
+            data = pl.DataFrame(data=data_list, schema=feature_dtypes)
 
             # Convert to tf.data.Dataset
-            dataset = tf.data.Dataset.from_tensor_slices(dict(data)).batch(256)
+            dataset = tf.data.Dataset.from_tensor_slices(data.to_dict()).batch(256)
 
             # Add an extra dimension to match the model's expected input shape (each x is a feature_name -> value dict)
             dataset = dataset.map(lambda x: {k: tf.expand_dims(v, 1) for k, v in x.items()})

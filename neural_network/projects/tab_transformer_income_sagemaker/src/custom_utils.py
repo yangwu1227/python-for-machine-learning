@@ -7,13 +7,13 @@ import sys
 import json
 import base64
 import ast
+import s3fs
 from IPython.display import Image
 
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'  # Nopep8
 import tensorflow as tf
 
-import numpy as np
-import pandas as pd
+import polars as pl
 import optuna 
 from optuna.trial import TrialState
 import boto3
@@ -378,7 +378,8 @@ class StudyVisualizer:
 def dataset_from_csv(file_path: str, 
                      config: Dict[str, Any],
                      train: bool,
-                     **kwargs) -> tf.data.Dataset:
+                     batch_size: int,
+                     **kwargs) -> Tuple[int, tf.data.Dataset]:
     """
     Create tf.data.Dataset from csv file.
 
@@ -390,18 +391,21 @@ def dataset_from_csv(file_path: str,
         Configuration dictionary.
     train : bool
         Whether to create training dataset (shuffle) or validation or test (no shuffle).
+    batch_size: int
+        Batch size.
     **kwargs
         Keyword arguments to pass to tf.data.experimental.make_csv_dataset.
 
     Returns
     -------
-    tf.data.Dataset
-        Dataset.
+    Tuple[int, tf.data.Dataset]
+        Tuple of number of batches and tf.data.Dataset.
     """
     target_label_lookup = tf.keras.layers.StringLookup(
         vocabulary=config['tf_keras']['target_labels'], 
         # OOV inputs will cause an error when calling the layer
-        num_oov_indices=config['tf_keras']['num_oov_indices']
+        num_oov_indices=config['tf_keras']['num_oov_indices'],
+        mask_token=None
     )
 
     # List of default values based on feature dtype
@@ -436,42 +440,48 @@ def dataset_from_csv(file_path: str,
 
     dataset = tf.data.experimental.make_csv_dataset(
         file_pattern=file_path,
-        batch_size=config['tf_keras']['batch_size'],
+        batch_size=batch_size,
         column_names=config['csv_header'],
         column_defaults=column_defaults,
-        header=config['tf_keras']['header'],
+        header=config['header'],
         label_name=config['target'],
         num_epochs=config['tf_keras']['num_epochs'],
         na_value=config['tf_keras']['na_value'],
-        shuffle=config['tf_keras']['train_shuffle'] if train else config['tf_keras']['val_shuffle'],
+        shuffle=True if train else False,
         **kwargs
-    ).map(
+    )
+
+    # Number of batches
+    num_batches = dataset.reduce(0, lambda x, _: x + 1).numpy()
+
+    # Apply process_sample function to each batch
+    dataset = dataset.map(
         map_func=process_sample,
         num_parallel_calls=tf.data.AUTOTUNE,
         deterministic=config['tf_keras']['deterministic']
     )
 
-    return dataset.cache() if train else dataset
+    return num_batches, dataset.cache()
 
 # ----------------------------- Stratified sample ---------------------------- #
 
-def stratified_sample(data: pd.DataFrame, cat_feat: List[str], n_samples: int) -> pd.DataFrame:
+def stratified_sample(data: pl.DataFrame, cat_feat: List[str]) -> pl.DataFrame:
     """
     Stratified sample of a dataframe ensuring representation of all unique values from 
-    categorical features.
+    categorical features. This is useful for creating a small sample of the data for
+    testing purposes. If not all unique values are present in the dataframe, then the
+    'tf.keras.layers.StringLookup' layer will throw an error.
 
     Parameters
     ----------
-    data : pd.DataFrame
+    data : pl.DataFrame
         The original dataframe from which to sample.
     cat_feat : List[str]
         List of the names of the categorical feature columns.
-    n_samples : int
-        The number of samples to draw from df.
 
     Returns
     -------
-    DataFrame
+    pl.DataFrame
         A new dataframe which is a stratified sample from the original dataframe.
     """
     # Initialize an empty DataFrame to store the result
@@ -484,15 +494,59 @@ def stratified_sample(data: pd.DataFrame, cat_feat: List[str], n_samples: int) -
         
         # Iterate over each unique value and get a sample for each
         for value in unique_values:
-            sample = data[data[feat] == value].sample(1)
+            sample = data.filter(data[feat] == value).sample(n=1)
             samples.append(sample)
+            # If there is '?'in this categorical feature, then sample it too
+            na_data = data.filter(data[feat] == '?')
+            if na_data.shape[0] != 0:
+                na_sample = na_data.sample(n=1)
+                samples.append(na_sample)
 
     # Row-bind all the samples together
-    result = pd.concat(samples, axis=0)
-    
-    # If the number of unique instances is less than n_samples, sample additional instances from the original DataFrame until we have n_samples instances
-    if len(result) < n_samples:
-        additional_samples = data.drop(result.index).sample(n_samples - len(result))
-        result = pd.concat([result, additional_samples])
+    result = pl.concat(samples, how='vertical')
     
     return result
+
+# ---------------------------- Sample for testing ---------------------------- #
+
+def test_sample(file_path: str, 
+                config: Dict[str, Any],
+                train: bool,
+                batch_size: int,
+                **kwargs) -> Tuple[int, tf.data.Dataset]:
+    """
+    Read csv files directly from S3, stratified sample, and create tf.data.Dataset. 
+    This dataset is used for testing purposes using SageMaker local mode.
+
+    Parameters
+    ----------
+    file_path : str
+        S3 Path to the csv file.
+    config: Dict[str, Any]
+        Configuration dictionary.
+    train : bool
+        Whether to create training dataset (shuffle) or validation or test (no shuffle).
+    batch_size: int
+        Batch size.
+    **kwargs
+        Keyword arguments to pass to tf.data.experimental.make_csv_dataset.
+
+    Returns
+    -------
+    Tuple[int, tf.data.Dataset]
+        Tuple of number of batches and tf.data.Dataset.
+    """
+    s3_fs = s3fs.S3FileSystem(anon=False)
+    with s3_fs.open(file_path, 'rb') as f:
+        data = pl.read_csv(f, new_columns=config['csv_header'])
+
+    sampled_data = stratified_sample(data, list(config['tf_keras']['cat_feat_vocab'].keys()))
+
+    sampled_data.write_csv(
+        '/tmp/sample.csv',
+        has_header=config['header']
+    )
+
+    num_batches, dataset = dataset_from_csv('/tmp/sample.csv', config, train, batch_size, **kwargs)
+
+    return num_batches, dataset

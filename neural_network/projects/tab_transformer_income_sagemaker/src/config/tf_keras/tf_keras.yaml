@@ -1,28 +1,24 @@
 # AWS
-framework_version: '2.12.0'
+framework_version: '2.13.0'
 py_version: py310
 entry_point: tf_keras_entry.py
-serving_image_uri: '722696965592.dkr.ecr.us-east-1.amazonaws.com/ml-sagemaker:ubuntu20.04-py3.8.10-sagemaker-serve'
+ecr_repository: ml-sagemaker
 
 instance_type: ml.p3.8xlarge
 inference_instance_type: ml.c5.9xlarge
 instance_count: 1
 
-base_job_name: tf-keras-training
+base_job_name: tf-tab-transformer
 endpoint_name: tf-keras-endpoint
 model_name: tf-keras-model
 study_name: tf_keras_hpo
 
-# Loading data for keras
-train_shuffle: true
-val_shuffle: false
 # An int specifying the number of times this tf.dataset is repeated (if none, cycles through foreverxs)
 num_epochs: 1
 # If set to False, the transformation is allowed to yield elements out of order to trade determinism for performance
 deterministic: false
-header: false
-# In distributed training, this can be a global batch size where each of the 'x' GPUs can processes a batch of (batch_size / x) samples
-batch_size: 128
+# In distributed training, this can be multiplied by the number of replicas to a global batch size where each of the 'x' GPUs can processes a batch of (batch_size / x) samples
+batch_size: 32
 na_value: '?'
 num_oov_indices: 0
 
@@ -148,7 +144,7 @@ cat_feat_vocab:
     - ' Vietnam'
     - ' Yugoslavia'
 # Default values for numerical and categorical features
-default_num:
+default_num: 
   - 0.0
-default_cat:
+default_cat: 
   - NA

@@ -1,11 +1,12 @@
 # See https://hub.docker.com/r/tensorflow/tensorflow/
-FROM tensorflow/tensorflow:2.12.0
+FROM tensorflow/tensorflow:2.13.0
 
 RUN apt-get update && \
     apt-get install -y --no-install-recommends nginx curl && \
     pip3 install \
     sagemaker \
     sagemaker-training \
+    polars \
     boto3 \
     flask 
 
