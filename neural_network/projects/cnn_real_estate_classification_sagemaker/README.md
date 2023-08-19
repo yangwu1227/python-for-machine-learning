@@ -16,6 +16,47 @@ $ pip install -r ./src/requirements.txt
 
 Documentations for important API's are include in the `docs` directory.
 
+## Structure of Source Directory
+
+The src directory contains entry point scripts, utilities, and the `requirements.txt` required to successfully run the image classification project on AWS SageMaker. The src directory contains the following files:
+
+```
+src
+├── __init__.py
+├── base_trainer.py
+├── config
+│   ├── fine_tune
+│   │   └── fine_tune.yaml
+│   ├── vision_transformer
+│   │   └── vision_transformer.yaml
+│   └── main.yaml
+├── custom_utils.py
+├── fine_tune_entry.py
+├── ingest_data.py
+├── requirements.txt
+└── vision_transformer_entry.py
+```
+
+* The `config` directory contains the `hydra` configuration yaml files. The typical configurations include:
+
+    - AWS configurations: S3 bucket, region, framework version, etc.
+    - Meta data for training: class labels, number of channels, image size, validation size, etc.
+    - Other configurations for training: computing resources (instance types), spot instance set up, etc.
+ 
+* The `ingest_data.py` script loads the raw data zip file from s3, reshapes the images, splits the data into train-val-test, and uploads the images as tensorflow dataset objects `tf.data.Dataset`. This part of the workflow is more ad-hoc and can benefit from more iterations and scoping as we move to better ways to store and access new images.
+
+* The `vision_transformer_entry` and `fine_tune_entry.py` scripts are entry points that are used for SageMaker training jobs and hyperparameter jobs.
+
+    - For the fine-tuning, the model is first initialized and trained at the top (dense layers) and then fine-tuned with more layers released (see training scripts for more details). We can choose from one of three state-of-the-art CNN architectures--- ResNet50v2, Xception, and VGG19, which is a hyperparameter. We enable three training modes--- local (CPU-based), single host multi-device (GPUs), and multiworker multi-device (GPUs).
+
+    - For the vision-transformer, we implement an improved version of the architecture based on the paper [Vision Transformer for Small-Size Datasets](https://arxiv.org/abs/2112.13492v1).
+ 
+    A note on the implementation is that all the modeling is carried out using tensorflow 2.12.0 at the time of writing this documentation. Since then, tensorflow 2.13.0 has become available as a SageMaker training image, and so we can swtich to take advantage of the new focal loss function, which is an improved loss function for handling class imbalance. This option can be toggled using the `use_focal_loss` hyperparameter.
+
+* The `custom_utils.py` module contains utility functions for training and analysis.
+
+When training begins, the files located in the `src` directory (including the `requirements.txt` file) will be copied onto the training docker image.
+
 ---
 
 &nbsp;
