@@ -440,7 +440,7 @@ class VisionTransformerTrainer(BaseTrainer):
                  model_dir: str,
                  logger: logging.Logger) -> None:
         """
-        Constructor for the BaselineTrainer class.
+        Constructor for the VisionTransformerTrainer class.
 
         Parameters
         ----------

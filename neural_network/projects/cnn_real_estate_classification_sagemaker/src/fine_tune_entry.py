@@ -91,7 +91,7 @@ class FineTuneTrainer(BaseTrainer):
                  model_dir: str,
                  logger: logging.Logger) -> None:
         """
-        Constructor for the BaselineTrainer class.
+        Constructor for the FineTuneTrainer class.
 
         Parameters
         ----------
