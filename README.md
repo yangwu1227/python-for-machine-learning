@@ -1,6 +1,6 @@
 # Machine Learning with Python
 
-A repository for machine learning application and learning. To reproduce the `conda` environment:
+A repository for machine learning application and learning. To reproduce the `conda` environment on macOS (`x86_64`):
 
 ```shell
 $ yes | conda create --name dev_env python=3.9.12
