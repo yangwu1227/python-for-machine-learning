@@ -1,6 +1,6 @@
 # Real Estate Scene Classification
 
-The goal of the project is to classify the images into one of 9 categories--- kitchens, bathrooms, backyard, etc. This helps with downstream tasks such as object detection, which is highly scene-dependent. For instance, we would want to detection features like granite countertops and stainless fridges in the kitchens, walk-in showers or bathtubs in the bathrooms, patios and grills in the backyards, and so on.
+The goal of the project is to classify the real estate images into one of 9 categories--- kitchens, bathrooms, backyard, etc. This helps with downstream tasks such as object detection, which is highly scene-dependent. For instance, we would want to detect features like granite countertops and stainless fridges in the kitchens, walk-in showers or bathtubs in the bathrooms, patios and grills in the backyards, and so on.
 
 ## Environment
 
