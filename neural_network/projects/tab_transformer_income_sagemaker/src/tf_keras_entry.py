@@ -531,7 +531,7 @@ def tf_objective(trial: optuna.Trial,
 
     logger.info(f'Retraining model for trial {trial.number} on the entire training dataset...')
 
-    # Concateate the train and validation datasets
+    # Concatenate the train and validation datasets
     full_train_data = train_dataset.concatenate(val_dataset).shuffle(buffer_size=train_num_batches + val_num_batches)
 
     trainer = TabTransformerTrainer(
