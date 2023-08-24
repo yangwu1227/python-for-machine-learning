@@ -1,6 +1,6 @@
 ## Census Income Classification
 
-This project tackles a binary classification (structure data) problem; the task is to predict whether a person is likely to be making over USD 50,000 a year. We use the [TabTransformer](https://arxiv.org/abs/2012.06678) architecture, which is an advanced modeling structure designed for both supervised and semi-supervised learning, especially for structured data. It leverages the power of Transformer layers, which are grounded in self-attention mechanisms. These layers enhance the embeddings of categorical variables, producing context-rich embeddings.
+This project tackles a binary classification (structured or tabular data) problem; the task is to predict whether a person is likely to be making over USD 50,000 a year. We use the [TabTransformer](https://arxiv.org/abs/2012.06678) architecture, which is an advanced modeling structure designed for both supervised and semi-supervised learning, especially for structured data. It leverages the power of Transformer layers, which are grounded in self-attention mechanisms. These layers enhance the embeddings of categorical variables, producing context-rich embeddings.
 
 The data can be loaded using the `ingest_upload.py` script from the URLs specified in the configuration files.
 
@@ -42,9 +42,9 @@ src
  
 * The `ingest_data.py` script loads the raw data from the web and uploads the train-val-test splits to s3.
 
-* The `tf_keras_entry.py` script is entry point that are used for SageMaker training jobs and hyperparameter jobs. The implementation of the TabTransformer is contained within and we also use [Optuna](https://optuna.org/) for hyperparameter tuning. The CloudFormation yaml file that sets up the resources required for running Optuna on AWS can be found [here](https://github.com/aws-samples/amazon-sagemaker-optuna-hpo-blog).
+* The `tf_keras_entry.py` script is the entry point used for SageMaker training jobs and hyperparameter jobs. The implementation of the TabTransformer is contained within and we also use [Optuna](https://optuna.org/) for hyperparameter tuning. The CloudFormation yaml file that sets up the resources required for running Optuna on AWS can be found [here](https://github.com/aws-samples/amazon-sagemaker-optuna-hpo-blog).
  
-All the modeling is carried out using tensorflow 2.13.0 and we take advantage of the new focal loss function, which is an improved loss function for handling class imbalance. This option can be toggled using the `use_focal_loss` hyperparameter.
+All the modeling is carried out using tensorflow 2.13.0 and we take advantage of the new [focal loss](https://arxiv.org/abs/1708.02002) function, which is an improved loss function for handling class imbalance. This option can be toggled using the `use_focal_loss` hyperparameter.
 
 * The `custom_utils.py` module contains utility functions for training and analysis.
 
