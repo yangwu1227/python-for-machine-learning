@@ -1,0 +1,19 @@
+framework_version: '2.13.0'
+py_version: py310
+entry_point: gru_entry.py
+ecr_repository: ml-sagemaker
+
+instance_type: ml.p3.8xlarge
+inference_instance_type: ml.c5.9xlarge
+preprocess_instance_type: ml.t3.2xlarge
+instance_count: 1
+
+train_base_job_name: gru
+base_tuning_job_name: gru-hpo
+preprocess_base_job_name: gru-preprocess
+endpoint_name: gru-endpoint
+model_name: gru-model
+
+# Preprocessing hyperparamters
+num_predictions: 5
+series_len: 18
