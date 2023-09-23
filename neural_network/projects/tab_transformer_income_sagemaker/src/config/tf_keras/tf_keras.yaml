@@ -5,14 +5,17 @@ entry_point: tf_keras_entry.py
 ecr_repository: ml-sagemaker
 
 instance_type: ml.p3.8xlarge
-inference_instance_type: ml.c5.9xlarge
+inference_instance_type: ml.c5.xlarge
 instance_count: 1
 
-base_job_name: tf-tab-transformer
+train_base_job_name: tab-transformer-hpo
+preprocess_base_job_name: tab-transformer-preprocess
 endpoint_name: tf-keras-endpoint
 model_name: tf-keras-model
 study_name: tf_keras_hpo
 
+# Stop training if the loss is not improving in this many epochs
+patience: 3
 # An int specifying the number of times this tf.dataset is repeated (if none, cycles through foreverxs)
 num_epochs: 1
 # If set to False, the transformation is allowed to yield elements out of order to trade determinism for performance

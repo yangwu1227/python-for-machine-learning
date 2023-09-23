@@ -4,8 +4,6 @@ import os
 from hydra import compose, initialize
 from omegaconf import OmegaConf
 import pytest
-import numpy as np
-import pandas as pd
 import optuna
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'  # Nopep8
 import tensorflow as tf

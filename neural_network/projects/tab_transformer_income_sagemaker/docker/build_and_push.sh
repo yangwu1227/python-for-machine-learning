@@ -1,30 +1,50 @@
 #!/bin/bash
 
-############################################################################
-# This script should be executed in the same directory that contains 'src' #
-############################################################################
+# Always anchor the execution to the directory it is in, so we can run this bash script from anywhere
+SCRIPT_DIR=$(python3 -c "import os; print(os.path.dirname(os.path.realpath('$0')))")
 
-# Check if argument is provided, where [-z string]: True if the string is null (an empty string)
-if [ -z "$1" ] || [ -z "$2" ]; then
-  echo "Please provide the entry point python script name and the custom image tag name"
+# Set BUILD_CONTEXT as the parent directory of SCRIPT_DIR
+BUILD_CONTEXT=$(dirname "$SCRIPT_DIR")
+
+# Check if arguments are passed, otherwise prompt
+if [ "$#" -eq 3 ]; then
+    image_tag="$1"
+    mode="$2"
+    ecr_repo="$3"
+else
+    read -p "Enter the custom image tag name: " image_tag
+    read -p "Serve or preprocess: " mode
+    read -p "Enter the ECR repository name: " ecr_repo
+fi
+
+# Check if the image tag is provided where [-z string]: True if the string is null (an empty string)
+if [ -z "$image_tag" ] || [ -z "$ecr_repo" ]; then
+  echo "Please provide both the custom image tag name and the ECR repository name."
   exit 1
+fi
+
+# Choose Dockerfile based on mode
+if [ "$mode" == "serve" ]; then
+    DOCKERFILE_PATH="$SCRIPT_DIR/$mode.Dockerfile"
+elif [ "$mode" == "preprocess" ]; then
+    DOCKERFILE_PATH="$SCRIPT_DIR/$mode.Dockerfile"
+else
+    echo "Invalid mode specified, which must either be 'serving' or 'preprocess'."
+    exit 1
 fi
 
 # Variables
 account_id=$(aws sts get-caller-identity --query Account --output text)
 region=$(aws configure get region)
-entry_point="$1"
-image_tag="$2"
-# The image name must follow the following format, where the repository should already be created
-image_name="$account_id.dkr.ecr.$region.amazonaws.com/ml-sagemaker:ubuntu20.04-py3.8.10-sagemaker-$image_tag"
+image_name="$account_id.dkr.ecr.$region.amazonaws.com/$ecr_repo:$image_tag"
 
-# Login to ECR
+# Login to ECR based on 'https://docs.aws.amazon.com/AmazonECR/latest/userguide/registry_auth.html'
 aws ecr get-login-password --region "$region" | docker login --username AWS --password-stdin "$account_id.dkr.ecr.$region.amazonaws.com"
 
-# Location of 'src' is out of the Docker context so we need to run this bash script from the directory that contains 'src'
-docker build . -t "$image_name" -f ./container/Dockerfile
+# Docker buildkit is required to use dockerfile specific ignore files
+DOCKER_BUILDKIT=1 docker build \
+    -f "$DOCKERFILE_PATH" \
+    -t "$image_name" \
+    "$BUILD_CONTEXT"
 
-docker tag "$image_name" "$image_name"
-
-# Push to ECR
 docker push "$image_name"

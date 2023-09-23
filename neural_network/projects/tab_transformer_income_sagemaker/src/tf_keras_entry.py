@@ -390,7 +390,7 @@ class TabTransformerTrainer(object):
         early_stopping = tf.keras.callbacks.EarlyStopping(
             monitor='val_auc_pr',
             mode='max',
-            patience=self.config['patience'],
+            patience=self.config['tf_keras']['patience'],
             restore_best_weights=True
         )
         back_and_restore = tf.keras.callbacks.BackupAndRestore(

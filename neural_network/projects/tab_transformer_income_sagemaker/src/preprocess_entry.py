@@ -1,5 +1,7 @@
 import sys
-import s3fs
+import os
+import logging
+import argparse
 
 import polars as pl
 from sklearn.model_selection import StratifiedShuffleSplit
@@ -7,16 +9,20 @@ from sklearn.model_selection import StratifiedShuffleSplit
 from hydra import compose, initialize, core
 from omegaconf import OmegaConf
 
-from custom_utils import get_logger
-
 def main():
 
     # ---------------------------------- Set up ---------------------------------- #
 
-    logger = get_logger('data_ingest')
+    logger = logging.getLogger(__name__)
+    logger.addHandler(logging.StreamHandler(sys.stdout))
+    logger.setLevel(logging.INFO)
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--test_mode', action='store_true', help='Do not save the data to disk for uploading if in test mode')
+    args, _ = parser.parse_known_args()
     
     core.global_hydra.GlobalHydra.instance().clear()
-    initialize(version_base='1.2', config_path='config', job_name='data_ingest')
+    initialize(version_base='1.2', config_path='config', job_name='preprocess')
     config = OmegaConf.to_container(compose(config_name='main'), resolve=True)
 
     # ---------------------------------- Load data ---------------------------------- #
@@ -29,15 +35,8 @@ def main():
 
     # --------------------------- Ad-hoc data cleaning --------------------------- #
 
-    logger.info('Remove training dots in the target column of test set...')
+    logger.info('Remove trailing dots in the target column of the test set...')
     test = test.with_columns(pl.col(config['target']).str.replace_all('\.', ''))
-
-    # logger.info('Remove all leading and trailing whitespaces in all columns...')
-    # # Get names of all categorical features
-    # strip_feat = list(config['tf_keras']['cat_feat_vocab'].keys())
-    # strip_feat.append(config['target'])
-    # train = train.with_columns(pl.col(strip_feat).str.strip())
-    # test = test.with_columns(pl.col(strip_feat).str.strip())
 
     # ----------------------------- Validation split ----------------------------- #
 
@@ -55,8 +54,6 @@ def main():
 
     names = ['train', 'val', 'test']
     datasets = [train_data, val_data, test]
-    s3_base_path = f's3://{config["s3_bucket"]}/{config["s3_key"]}/input-data'
-    s3_fs = s3fs.S3FileSystem(anon=False)
 
     for name, data in zip(names, datasets):
         # Princt class distribution
@@ -69,15 +66,11 @@ def main():
                                                 .iter_rows())
         logger.info(f'{name.capitalize()} target distribution: {class_dist}')
 
-        # Upload to s3
-        logger.info(f'Uploading {name} data to s3...')
-        with s3_fs.open(f'{s3_base_path}/{name}/{name}.csv', 'wb') as f:
-            data.write_csv(
-                f,
-                has_header=config['header']
-            )
-
-    logger.info('Successfully uploaded data to s3!')
+        # Only save if not in test mode
+        if not args.test_mode:
+            data.write_csv(os.path.join(config['processing_job_output'], f'{name}/{name}.csv'), has_header=config['header'])
+        
+    logger.info('Preprocessing completed successfully!')
 
     sys.exit(0)
 
