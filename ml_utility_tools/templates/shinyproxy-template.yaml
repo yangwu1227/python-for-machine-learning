@@ -1,0 +1,185 @@
+AWSTemplateFormatVersion: 2010-09-09
+
+Parameters:
+  EnvironmentName:
+    Description: An environment name that will be prefixed to resource names
+    Type: String
+    Default: shinyproxy
+  VpcCIDR:
+    Description: Please enter the IP range (CIDR notation) for this VPC
+    Type: String
+    Default: 10.0.0.0/16
+  PublicSubnet1CIDR:
+    Description: Please enter the IP range (CIDR notation) for the public subnet in the first Availability Zone
+    Type: String
+    Default: 10.0.0.0/24
+  InstanceType:
+    Description: The type of EC2 instance to be provisioned for ShinyProxy
+    Type: String
+    Default: t3.medium
+    AllowedValues:
+      - t3.micro
+      - t3.small
+      - t3.medium
+  ShinyProxyVolumeSize:
+    Description: Volume size for the ShinyProxy Instance in GiB
+    Type: Number
+    Default: 30
+    MinValue: 8
+    MaxValue: 100
+    ConstraintDescription: Must be between 8 and 100 GiB
+  MyIP:
+    Description: Your IP address in CIDR notation (e.g. Your-IPV4/32) to whitelist for SSH access to ShinyProxy instances
+    Type: String
+  KeyName:
+    Description: Name of an existing EC2 KeyPair to enable SSH access to the instances
+    Type: String
+  ImageId:
+    Description: AMI ID for the EC2 instance (Defaults to Amazon Linux 2 AMI (HVM))
+    Type: String
+    Default: ami-0bb4c991fa89d4b9b  # Amazon Linux 2 AMI (HVM)
+  DeviceName:
+    Description: Device name for the root volume on the EC2 instances
+    Type: String
+    Default: '/dev/xvda' 
+  DeleteOnTermination:
+    Description: Whether to delete the volume on instance termination
+    Type: String
+    Default: 'true'
+
+Resources:
+
+  VPC:
+    Type: 'AWS::EC2::VPC'
+    Properties:
+      CidrBlock: !Ref VpcCIDR
+      Tags:
+        - Key: Name
+          Value: !Ref EnvironmentName
+
+  InternetGateway:
+    Type: 'AWS::EC2::InternetGateway'
+    Properties:
+      Tags:
+        - Key: Name
+          Value: !Ref EnvironmentName
+
+  InternetGatewayAttachment:
+    Type: 'AWS::EC2::VPCGatewayAttachment'
+    Properties:
+      InternetGatewayId: !Ref InternetGateway
+      VpcId: !Ref VPC
+
+  PublicSubnet1:
+    Type: 'AWS::EC2::Subnet'
+    Properties:
+      VpcId: !Ref VPC
+      AvailabilityZone: !Select
+        - 0
+        - !GetAZs ''
+      CidrBlock: !Ref PublicSubnet1CIDR
+      MapPublicIpOnLaunch: true
+      Tags:
+        - Key: Name
+          Value: !Sub '${EnvironmentName} Public Subnet (AZ1)'
+
+  PublicRouteTable:
+    Type: 'AWS::EC2::RouteTable'
+    Properties:
+      VpcId: !Ref VPC
+      Tags:
+        - Key: Name
+          Value: !Sub '${EnvironmentName} Public Routes'
+
+  DefaultPublicRoute:
+    Type: 'AWS::EC2::Route'
+    DependsOn: InternetGatewayAttachment
+    Properties:
+      RouteTableId: !Ref PublicRouteTable 
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId: !Ref InternetGateway
+
+  PublicSubnet1RouteTableAssociation:
+    Type: 'AWS::EC2::SubnetRouteTableAssociation'
+    Properties:
+      RouteTableId: !Ref PublicRouteTable
+      SubnetId: !Ref PublicSubnet1
+
+  # Security Group for ShinyProxy instances
+  ShinyProxySecurityGroup:
+    Type: 'AWS::EC2::SecurityGroup'
+    Properties:
+      GroupDescription: Security group for ShinyProxy EC2 instances controlling inbound traffic
+      VpcId: !Ref VPC
+      SecurityGroupIngress:
+        - CidrIp: '0.0.0.0/0' # Shiny-server port
+          IpProtocol: tcp
+          FromPort: 3838
+          ToPort: 3838
+        - CidrIp: '0.0.0.0/0' # Shinyproxy port
+          IpProtocol: tcp
+          FromPort: 8080
+          ToPort: 8080
+        - CidrIp: '0.0.0.0/0' # HTTP port
+          IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+        - CidrIp: '0.0.0.0/0' # HTTPS port
+          IpProtocol: tcp
+          FromPort: 443
+          ToPort: 443
+        - CidrIp: !Ref MyIP  # Allow SSH into ShinyProxy instance from specified IP
+          IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+        - CidrIp: !Ref VpcCIDR # Docker Swarm cluster management communications
+          IpProtocol: tcp
+          FromPort: 2377
+          ToPort: 2377
+        - CidrIp: !Ref VpcCIDR # Docker Swarm node communication (TCP)
+          IpProtocol: tcp
+          FromPort: 7946
+          ToPort: 7946
+        - CidrIp: !Ref VpcCIDR # Docker Swarm node communication (UDP)
+          IpProtocol: udp
+          FromPort: 7946
+          ToPort: 7946
+        - CidrIp: !Ref VpcCIDR # Docker Swarm overlay network traffic
+          IpProtocol: udp
+          FromPort: 4789
+          ToPort: 4789
+        - CidrIp: !Ref VpcCIDR # IPsec ESP encrypted communication for Docker Swarm
+          IpProtocol: "50"
+
+  ShinyProxyInstance:
+    Type: 'AWS::EC2::Instance'
+    Properties:
+      ImageId: !Ref ImageId
+      InstanceType: !Ref InstanceType
+      KeyName: !Ref KeyName
+      SecurityGroupIds:
+        - !Ref ShinyProxySecurityGroup
+      SubnetId: !Ref PublicSubnet1
+      BlockDeviceMappings:
+      - DeviceName: !Ref DeviceName 
+        Ebs:
+          VolumeType: 'gp3' 
+          VolumeSize: !Ref ShinyProxyVolumeSize  
+          DeleteOnTermination: !Ref DeleteOnTermination
+
+Outputs:
+  VPC:
+    Description: A reference to the created VPC
+    Value: !Ref VPC
+
+  PublicSubnet1:
+    Description: A reference to the public subnet in the 1st Availability Zone
+    Value: !Ref PublicSubnet1
+
+  ShinyProxySecurityGroup:
+    Description: Security group for ShinyProxy EC2 instance
+    Value: !Ref ShinyProxySecurityGroup
+
+  ShinyProxyInstance:
+    Description: A reference to the ShinyProxy EC2 instance
+    Value: !Ref ShinyProxyInstance
