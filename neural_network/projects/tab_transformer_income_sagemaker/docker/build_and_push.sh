@@ -29,7 +29,7 @@ if [ "$mode" == "serve" ]; then
 elif [ "$mode" == "preprocess" ]; then
     DOCKERFILE_PATH="$SCRIPT_DIR/$mode.Dockerfile"
 else
-    echo "Invalid mode specified, which must either be 'serving' or 'preprocess'."
+    echo "Invalid mode specified, which must either be 'serve' or 'preprocess'."
     exit 1
 fi
 
