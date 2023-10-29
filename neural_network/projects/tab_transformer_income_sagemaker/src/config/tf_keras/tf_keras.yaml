@@ -4,7 +4,8 @@ py_version: py310
 entry_point: tf_keras_entry.py
 ecr_repository: ml-sagemaker
 
-instance_type: ml.p3.8xlarge
+preprocess_instance_type: ml.t3.medium
+train_instance_type: ml.p3.8xlarge
 inference_instance_type: ml.c5.xlarge
 instance_count: 1
 
