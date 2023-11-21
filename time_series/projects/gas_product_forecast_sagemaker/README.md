@@ -1,4 +1,4 @@
-## Forecasting Australian Visitors
+## Forecasting Gasoline Product
 
 This project demonstrates an end-to-end workflow for time series forecasting using AWS SageMaker. We will be forecasting the weekly US finished motor gasoline products supplied (in thousands of barrels per day) from February 1991 to May 2005. This data set is available from the [EIA website](https://www.eia.gov/dnav/pet/hist/LeafHandler.ashx?n=PET&s=wgfupus2&f=W). The entire project is built using various AWS services and Python, including AWS ECR, AWS SageMaker, AWS Lambda, and AWS API Gateway.
 
