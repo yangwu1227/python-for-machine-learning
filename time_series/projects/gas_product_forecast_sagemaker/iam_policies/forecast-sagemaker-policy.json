@@ -1,0 +1,100 @@
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Sid": "ECRPermissions",
+            "Effect": "Allow",
+            "Action": [
+                "ecr:BatchGetImage",
+                "ecr:BatchDeleteImage",
+                "ecr:ListImages"
+            ],
+            "Resource": "arn:aws:ecr:*:YOUR-AWS-ACOUNT-NUMBER:repository/YOUR-ECR-REPOSITORY"
+        },
+        {
+            "Sid": "ReadOnlyPermissions",
+            "Effect": "Allow",
+            "Action": [
+                "lambda:GetAccountSettings",
+                "lambda:GetEventSourceMapping",
+                "lambda:GetFunction",
+                "lambda:GetFunctionConfiguration",
+                "lambda:GetFunctionCodeSigningConfig",
+                "lambda:GetFunctionConcurrency",
+                "lambda:ListEventSourceMappings",
+                "lambda:ListFunctions",
+                "lambda:ListTags",
+                "iam:ListRoles"
+            ],
+            "Resource": "*"
+        },
+        {
+            "Sid": "DevelopFunctions",
+            "Effect": "Allow",
+            "NotAction": [
+                "lambda:PutFunctionConcurrency"
+            ],
+            "Resource": "arn:aws:lambda:*:YOUR-AWS-ACOUNT-NUMBER:function:forecast-*"
+        },
+        {
+            "Sid": "PassExecutionRole",
+            "Effect": "Allow",
+            "Action": [
+                "iam:ListRolePolicies",
+                "iam:ListAttachedRolePolicies",
+                "iam:GetRole",
+                "iam:GetRolePolicy",
+                "iam:PassRole",
+                "iam:SimulatePrincipalPolicy"
+            ],
+            "Resource": "arn:aws:iam::YOUR-AWS-ACOUNT-NUMBER:role/forecast-lambda-execution-role"
+        },
+        {
+            "Sid": "ViewLogs",
+            "Effect": "Allow",
+            "Action": [
+                "logs:*"
+            ],
+            "Resource": "arn:aws:logs:*:YOUR-AWS-ACOUNT-NUMBER:log-group:/aws/lambda/forecast-*"
+        },
+        {
+            "Sid": "ConfigureFunctions",
+            "Effect": "Allow",
+            "Action": [
+                "lambda:CreateFunction",
+                "lambda:DeleteFunction",
+                "lambda:UpdateFunctionCode",
+                "lambda:UpdateFunctionConfiguration",
+                "lambda:InvokeFunction"
+            ],
+            "Resource": "arn:aws:lambda:*:YOUR-AWS-ACOUNT-NUMBER:*:*"
+        },
+        {
+            "Sid": "ManageAPIGateway",
+            "Effect": "Allow",
+            "Action": [
+                "apigateway:POST",
+                "apigateway:GET",
+                "apigateway:PUT",
+                "apigateway:DELETE"
+            ],
+            "Resource": [
+                "arn:aws:apigateway:*::/restapis",
+                "arn:aws:apigateway:*::/restapis/*",
+                "arn:aws:apigateway:*::/apikeys",
+                "arn:aws:apigateway:*::/apikeys/*",
+                "arn:aws:apigateway:*::/usageplans",
+                "arn:aws:apigateway:*::/usageplans/*",
+                "arn:aws:apigateway:*::/usageplans/*/*"
+            ]
+        },
+        {
+            "Sid": "InvokeAPIGateway",
+            "Effect": "Allow",
+            "Action": [
+                "execute-api:Invoke"
+            ],
+            "Resource": "arn:aws:execute-api:*:YOUR-AWS-ACOUNT-NUMBER:*/*/POST/*"
+        }
+    ]
+}
