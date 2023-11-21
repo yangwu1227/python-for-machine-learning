@@ -1,0 +1,88 @@
+# AWS config
+s3_bucket: yang-ml-sagemaker
+s3_key: forecast-project
+ecr_repository: ml-sagemaker
+model_dir: /opt/ml/model
+output_path: s3://yang-ml-sagemaker/forecast-project/models
+code_location: s3://yang-ml-sagemaker/forecast-project/code
+volume_size: 30
+# File system
+project_dir_path: /home/ec2-user/SageMaker/forecast-project
+src_dir_path: /home/ec2-user/SageMaker/forecast-project/src
+notebook_dir_path: /home/ec2-user/SageMaker/forecast-project/notebooks
+docker_dir_path: /home/ec2-user/SageMaker/forecast-project/docker
+# Meta data for ingestion and uploading to s3
+raw_data_url: https://www.eia.gov/dnav/pet/hist_xls/WGFUPUS2w.xls
+
+# Meta data
+freq: W-FRI
+m: 52.18
+forecast_horizon: 26 # Forecast horizon 26 weeks or ~ 6 months
+max_k: 10 # Maximum number of fourier terms to consider
+cv_window_size: 417 # Selected to ensure 100 train-val splits
+test_window_size: 512 # Selected to test only 5 train-val splits
+step_length: 1 # Step size for rolling window
+conf: 0.95 # Confidence level for prediction intervals
+
+# Processing job configuration
+preprocess_base_job_name: processing-job
+preprocess_input: /opt/ml/processing/input
+preprocess_output: /opt/ml/processing/output
+preprocess_instance_count: 1
+preprocess_instance_type: ml.t3.medium
+preprocess_entry_point: preprocess_entry.py
+preprocess_counterfactual_start_date: '2013-01-01'
+
+# Training job configuration
+train_base_job_name: training-job
+train_instance_count: 1
+train_instance_type: ml.m5.xlarge
+train_entry_point: train_entry.py
+
+# Hyperparameter optimization
+base_tuning_job_name: tuning-job
+max_jobs: 20
+max_parallel_jobs: 10
+objective_type: Minimize
+objective_metric_name: 'MSE'
+strategy: Bayesian
+
+# Spot training
+use_spot_instances: true
+max_run: 86400
+max_wait: 86400 # This should be set to be equal to or greater than max_run
+max_retry_attempts: 2
+checkpoint_s3_uri: s3://yang-ml-sagemaker/forecast-project/checkpoints
+
+# Serving configuration
+serve_model_name: forecast-model
+serve_memory_size_in_mb: 1024  # 1GB increments: 1024 MB, 2048 MB, 3072 MB, 4096 MB, 5120 MB, or 6144 MB
+serve_max_concurrency: 5 # Maximum number of concurrent invocation the serverless endpoint can process
+serve_initial_instance_count: 1
+serve_instance_type: ml.t3.medium
+serve_endpoint_name: forecast-endpoint
+serve_volume_size: 10
+
+# Lambda
+lambda_source_file: lambda_function.py
+lambda_function_name: forecast-lambda
+lambda_handler_name: lambda_function.lambda_handler
+lambda_execution_role_name: forecast-lambda-execution-role
+lambda_python_runtime: python3.10
+lambda_function_description: Lambda function for forecasting gas product
+lambda_time_out: 30
+lambda_publish: true
+lambda_env_vars: 
+  - SAGEMAKER_SERVERLESS_ENDPOINT: forecast-endpoint
+
+# API Gateway
+api_gateway_api_name: forecast-api
+api_gateway_api_base_path: forecast
+api_gateway_api_stage: dev
+api_gateway_api_key_required: true
+api_gateway_api_key_name: forecast-api-key
+api_gateway_enabled: true # Caller can use this API key
+api_gateway_usage_plan_name: forecast-api-usage-plan
+
+defaults:
+  - _self_
