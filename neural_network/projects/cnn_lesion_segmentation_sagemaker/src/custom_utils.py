@@ -31,9 +31,12 @@ def get_logger(name: str) -> logging.Logger:
     logger = logging.getLogger(name)  # Return a logger with the specified name
     
     log_format = '%(asctime)s %(levelname)s %(name)s: %(message)s'
-    handler = logging.StreamHandler(sys.stdout)
-    handler.setFormatter(logging.Formatter(log_format))
-    logger.addHandler(handler)
+    formatter = logging.Formatter(log_format)
+    # No matter how many processes we spawn, we only want one StreamHandler attached to the logger
+    if not any(isinstance(handler, logging.StreamHandler) for handler in logger.handlers):
+        handler = logging.StreamHandler(sys.stdout)
+        handler.setFormatter(formatter)
+        logger.addHandler(handler)
 
     logger.setLevel(logging.INFO)
     
