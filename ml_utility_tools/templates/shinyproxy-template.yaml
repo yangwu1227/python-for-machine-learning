@@ -120,6 +120,10 @@ Resources:
           IpProtocol: tcp
           FromPort: 8080
           ToPort: 8080
+        - CidrIp: '0.0.0.0/0' # Dash port
+          IpProtocol: tcp
+          FromPort: 8050
+          ToPort: 8050
         - CidrIp: '0.0.0.0/0' # HTTP port
           IpProtocol: tcp
           FromPort: 80
@@ -132,24 +136,6 @@ Resources:
           IpProtocol: tcp
           FromPort: 22
           ToPort: 22
-        - CidrIp: !Ref VpcCIDR # Docker Swarm cluster management communications
-          IpProtocol: tcp
-          FromPort: 2377
-          ToPort: 2377
-        - CidrIp: !Ref VpcCIDR # Docker Swarm node communication (TCP)
-          IpProtocol: tcp
-          FromPort: 7946
-          ToPort: 7946
-        - CidrIp: !Ref VpcCIDR # Docker Swarm node communication (UDP)
-          IpProtocol: udp
-          FromPort: 7946
-          ToPort: 7946
-        - CidrIp: !Ref VpcCIDR # Docker Swarm overlay network traffic
-          IpProtocol: udp
-          FromPort: 4789
-          ToPort: 4789
-        - CidrIp: !Ref VpcCIDR # IPsec ESP encrypted communication for Docker Swarm
-          IpProtocol: "50"
 
   ShinyProxyInstance:
     Type: 'AWS::EC2::Instance'
@@ -166,6 +152,13 @@ Resources:
           VolumeType: 'gp3' 
           VolumeSize: !Ref ShinyProxyVolumeSize  
           DeleteOnTermination: !Ref DeleteOnTermination
+          
+  ShinyProxyEIP:
+    Type: 'AWS::EC2::EIP'
+    Properties:
+      Domain: vpc
+      InstanceId: !Ref ShinyProxyInstance
+    DependsOn: InternetGatewayAttachment
 
 Outputs:
   VPC:
@@ -183,3 +176,7 @@ Outputs:
   ShinyProxyInstance:
     Description: A reference to the ShinyProxy EC2 instance
     Value: !Ref ShinyProxyInstance
+    
+  ShinyProxyEIP:
+    Description: The Elastic IP address associated with the ShinyProxy EC2 instance
+    Value: !Ref ShinyProxyEIP
