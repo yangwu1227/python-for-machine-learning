@@ -1,0 +1,51 @@
+name: Fetch and Encrypt AWS Temporary Credentials
+
+on:
+  workflow_dispatch: # Manually triggered
+  schedule:
+    - cron: '0 */12 * * *' # Run every 12 hours
+
+jobs:
+  fetch-and-encrypt-credentials:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Check out code
+      id: checkout
+      uses: actions/checkout@v3  
+
+    - name: Setup AWS CLI
+      id: setup-aws-cli
+      uses: aws-actions/configure-aws-credentials@v3
+      with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+
+    - name: Assume AWS Role and Fetch Temporary Credentials
+      id: fetch-temp-credentials
+      run: |
+        TEMP_CREDS=$(aws sts assume-role --role-arn arn:aws:iam::722696965592:role/TimeSeriesProjectRole --role-session-name times-series-project --duration-seconds 43200)
+        
+        ACCESS_KEY=$(echo $TEMP_CREDS | jq -r '.Credentials.AccessKeyId')
+        SECRET_KEY=$(echo $TEMP_CREDS | jq -r '.Credentials.SecretAccessKey')
+        SESSION_TOKEN=$(echo $TEMP_CREDS | jq -r '.Credentials.SessionToken')
+
+        echo "::add-mask::$ACCESS_KEY"
+        echo "::add-mask::$SECRET_KEY"
+        echo "::add-mask::$SESSION_TOKEN"
+
+        echo $TEMP_CREDS > credentials.json
+
+    - name: Encrypt credentials # Options: add randomly generated salt to password-based key derivation function 2 (PBKDF2)
+      id: encrypt-credentials
+      run: |
+        echo "${{ secrets.ENCRYPTION_PASSPHRASE }}" | openssl aes-256-cbc -a -salt -pbkdf2 -in credentials.json -out credentials.json.enc -pass stdin
+
+    - name: Upload encrypted credentials as artifact
+      id: upload-encrypted-credentials
+      uses: actions/upload-artifact@v3
+      with:
+        name: encrypted-credentials
+        path: credentials.json.enc
+        retention-days: 1

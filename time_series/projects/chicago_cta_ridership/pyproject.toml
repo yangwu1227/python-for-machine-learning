@@ -1,0 +1,48 @@
+[tool.poetry]
+name = "src"
+version = "0.1.0"
+description = ""
+authors = ["YangWu1227 <yangwu2020@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = ">=3.10, <3.12"
+tensorflow = ">=2.13.0"
+tensorflow-io = ">=0.34.0"
+hydra-core = ">=1.3.2"
+boto3 = ">=1.26.131"
+optuna = ">=3.1.0"
+s3fs = ">=2023.6.0"
+scikit-learn = ">=1.3.1"
+sktime = ">=0.23.0"
+pmdarima = ">=2.0.3"
+statsmodels = ">=0.14.0"
+pandas = ">=2.1.1"
+pyarrow = ">=13.0.0"
+matplotlib = ">=3.8.0"
+seaborn = ">=0.13.0"
+ipywidgets = ">=8.1.1"
+statsforecast = ">=1.4.0"
+plotly = ">=5.18.0"
+joblib = ">=1.3.2"
+ipython = ">=8.15.0"
+kaleido = "0.2.1"
+pulp = ">=2.7.0"
+dash = "2.14.2"
+dash-bootstrap-components = "1.5.0"
+
+[tool.poetry.group.test.dependencies]
+pytest = ">=7.4.2"
+moto = ">=4.2.5"
+
+[tool.poetry.group.dev.dependencies]
+ipykernel = ">=6.25.2"
+python-dotenv = ">=1.0.0"
+poetry-dotenv-plugin = ">=0.2.0"
+notebook = ">=7.0.5"
+jupyterlab = ">=4.0.7"
+dvc = ">=3.25.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

@@ -1,0 +1,15 @@
+s3_bucket: yang-ml-sagemaker
+s3_key: chicago_cta_ridership
+input_key: data/raw/chicago_cta_ridership.parquet
+
+# Meta data
+targets: [bus, rail_boardings]
+predictor: day_type
+date_col: service_date
+day_type_map: {W: 0, A: 1, U: 2}
+covid_start: 2020-01-31 # This is the start of the COVID-19 pandemic in the US and specifically in Illinois
+
+defaults:
+  - _self_
+  - short: short
+  - long: long

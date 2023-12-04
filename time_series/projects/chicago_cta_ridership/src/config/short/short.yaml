@@ -1,0 +1,18 @@
+# Processing inputs
+output_key: data/processed/short
+start_date: 2023-01-01
+end_date: 2023-06-30
+forecast_horizon: 14 # Two weeks (14 days)
+
+# Training fixed hyperparameters
+freq: D
+m: 7 # Single seasonality for 2023 subset of daily data
+window_length: 130 # Selected to ensure 25 train-validation splits
+step_length: 1 # Selected to ensure 25 train-validation splits
+metric: rmse # Also possible: mae, mse, mape, smape
+date_features: ['quarter_of_year', 'month_of_year', 'week_of_year', 'day_of_week']
+pred_interval: 0.9 # 90% prediction intervals
+
+# Persistence
+model_key: 'models/short'
+forecasts_key: 'forecasts/short'
