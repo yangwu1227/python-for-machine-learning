@@ -55,7 +55,7 @@ cymem==2.0.7
 Cython==0.29.33
 daal==2023.2.1
 daal4py==2023.2.1
-dash==2.12.1
+dash==2.16.1
 dash-core-components==2.0.0
 dash-html-components==2.0.0
 dash-table==5.0.0
@@ -78,7 +78,7 @@ fastapi==0.100.0
 fastjsonschema==2.16.3
 fastparquet==2023.2.0
 fastprogress==1.0.3
-feature-engine==1.6.1
+feature-engine==1.6.2
 featuretools==1.26.0
 ffmpy==0.3.1
 filelock==3.10.6
@@ -166,7 +166,7 @@ libclang==16.0.0
 lightgbm==4.3.0
 lightning-utilities==0.9.0
 linkify-it-py==2.0.0
-llvmlite==0.39.1
+llvmlite==0.42.0
 locket==1.0.0
 logical-unification==0.4.5
 lxml==4.9.3
@@ -174,7 +174,7 @@ Mako==1.2.4
 Markdown==3.4.3
 markdown-it-py==2.2.0
 MarkupSafe==2.1.2
-matplotlib==3.7.2
+matplotlib==3.8.3
 matplotlib-inline==0.1.6
 mdit-py-plugins==0.3.3
 mdurl==0.1.2
@@ -197,13 +197,13 @@ networkx==3.1
 nltk==3.8.1
 notebook==6.5.4
 notebook_shim==0.2.2
-numba==0.56.4
+numba==0.59.0
 numexpr==2.8.4
 numpy==1.22.1
 oauthlib==3.2.2
 omegaconf==2.3.0
 opt-einsum==3.3.0
-optuna==3.4.0
+optuna==3.5.0
 orjson==3.9.2
 osqp==0.6.2.post9
 packaging==23.0
@@ -249,13 +249,13 @@ Pympler==1.0.1
 pynndescent==0.5.8
 pyparsing==3.0.9
 pyrsistent==0.19.3
-pyspark==3.5.0
+pyspark==3.5.1
 pytensor==2.11.1
 pytest==7.4.3
 python-dateutil==2.8.2
 python-json-logger==2.0.7
 python-multipart==0.0.9
-pytorch-lightning==2.0.7
+pytorch-lightning==2.2.1
 pytz==2023.2
 pytz-deprecation-shim==0.1.0.post0
 PyYAML==6.0
@@ -335,7 +335,7 @@ typing_extensions==4.5.0
 tzdata==2023.3
 tzlocal==4.3.1
 uc-micro-py==1.0.1
-umap-learn==0.5.3
+umap-learn==0.5.5
 uri-template==1.2.0
 urllib3==1.26.15
 uvicorn==0.21.1
@@ -347,7 +347,7 @@ webcolors==1.12
 webencodings==0.5.1
 websocket-client==1.5.1
 websockets==10.4
-Werkzeug==2.2.3
+Werkzeug==3.0.1
 widgetsnbextension==4.0.7
 woodwork==0.24.0
 wrapt==1.14.1
