@@ -11,3 +11,6 @@ tree_based_models/ensemble/models/bagging/*.pkl
 
 # Cache
 **__pycache__
+
+# PDM
+.pdm-python

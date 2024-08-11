@@ -1,0 +1,73 @@
+[project]
+name = "python-for-machine-learning"
+description = "Learning and applying machine learning using tools from the Python ecosystem"
+dependencies = [
+    "numpy>=2.0.1",
+    "pandas>=2.2.2",
+    "polars>=1.4.1",
+    "fastparquet>=2024.5.0",
+    "pyarrow>=17.0.0",
+    "numba>=0.60.0",
+    "pyspark>=3.5.1",
+]
+requires-python = ">=3.11"
+readme = "README.md"
+
+[project.optional-dependencies]
+gbm = [
+    "xgboost>=2.1.1",
+    "lightgbm>=4.5.0",
+    "catboost>=1.2.5",
+]
+visualization = [
+    "matplotlib>=3.9.1",
+    "plotly>=5.23.0",
+    "seaborn>=0.13.2",
+]
+web = [
+    "fastapi>=0.112.0",
+    "gunicorn>=23.0.0",
+    "requests>=2.32.3",
+    "uvicorn>=0.30.5",
+    "pydantic>=2.8.2",
+]
+hpo = [
+    "optuna>=3.6.1",
+]
+ml = [
+    "scikit-learn>=1.5.1",
+    "yellowbrick>=1.5",
+    "imbalanced-learn>=0.12.3",
+    "kmodes>=0.12.2",
+    "hdbscan>=0.8.37",
+    "umap-learn>=0.5.6",
+    "feature-engine>=1.8.0",
+]
+ts = [
+    "skforecast>=0.13.0",
+    "statsforecast>=1.7.6",
+]
+sl = [
+    "statsmodels>=0.14.2",
+    "scikit-survival>=0.23.0",
+]
+nlp = [
+    "gensim>=4.3.2",
+    "spacy>=3.7.5",
+    "nltk>=3.8.2",
+]
+pytorch = [
+    "torch>=2.4.0",
+    "pytorch-lightning>=2.4.0",
+    "torchmetrics>=1.4.1",
+    "transformers>=4.44.0",
+]
+
+[tool.pdm]
+distribution = false
+
+[tool.pdm.dev-dependencies]
+notebook = [
+    "ipykernel>=6.29.5",
+    "ipywidgets>=8.1.3",
+]
