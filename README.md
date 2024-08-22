@@ -11,7 +11,9 @@ The dependencies are managed by [pdm](https://github.com/pdm-project/pdm) and [c
 ```shell
 $ yes | conda create --name python_for_machine_learning python=3.11.9
 $ conda activate python_for_machine_learning
-$ pdm install
+# Use the conda-installed python interpreter
+$ pdm use $(which python3)
+$ pdm install --prod
 ```
 
 However, any other dependency management tool can be used instead. Not all dependencies are explicitly declared in the pyproject.toml file. 
