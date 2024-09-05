@@ -1,0 +1,491 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description:  This CloudFormation template provisions a VPC, public and private subnets, NAT gateways, security groups, RDS for parameter storage, SageMaker notebook instances for training machine learning models, and Optuna for hyperparameter tuning.
+
+Parameters:
+  S3BucketName:
+      Description: "The name of the S3 bucket for storing training data and model artifacts."
+      Type: String
+
+  DBClusterName:
+    Description: "The cluster name where the parameters will be stored."
+    Type: String
+    Default: optuna-parameter
+
+  DatabaseName:
+    Description: "The database name where the parameters will be stored."
+    Type: String
+    Default: optuna
+    AllowedPattern: "([a-z]|[0-9])+"
+
+  DBEngine:
+    Type: String
+    Default: aurora-mysql
+    AllowedValues:
+      - aurora-mysql
+      - aurora-postgresql
+
+  DBInstanceType:
+    Description: "The type of RDS/Aurora instance to be provisioned."
+    Type: String
+    Default: db.t4g.medium
+    AllowedValues:
+      - db.t4g.medium
+      - db.t4g.large
+      - db.t3.small
+      - db.t3.medium
+      - db.t3.large
+      - db.r6g.large
+      - db.r6g.xlarge
+      - db.r6g.2xlarge
+      - db.r5.large
+      - db.r5.xlarge
+      - db.r5.2xlarge
+
+  SageMakerInstanceName:
+    Description: "Name for the SageMaker notebook."
+    Default: optuna-hpo
+    Type: String
+
+  SageMakerInstanceType:
+    Description: "The instance type of SageMaker notebook to be provisioned."
+    Type: String
+    Default: ml.t3.xlarge
+    AllowedValues:
+      - ml.t2.medium
+      - ml.t3.medium
+      - ml.t3.large
+      - ml.t3.xlarge
+      - ml.t3.2xlarge
+      - ml.m5.xlarge
+      - ml.m5.2xlarge
+      - ml.m5.4xlarge
+      - ml.m5.12xlarge
+      - ml.m5.24xlarge
+      - ml.p3.2xlarge
+      - ml.p3.8xlarge
+      - ml.p3.16xlarge
+
+  VpcCIDR:
+    Description: Please enter the IP range (CIDR notation) for this VPC
+    Type: String
+    Default: 10.0.0.0/16
+
+  PublicSubnet1CIDR:
+    Description: >-
+      Please enter the IP range (CIDR notation) for the public subnet in the
+      first Availability Zone
+    Type: String
+    Default: 10.0.0.0/24
+
+  PublicSubnet2CIDR:
+    Description: >-
+      Please enter the IP range (CIDR notation) for the public subnet in the
+      second Availability Zone
+    Type: String
+    Default: 10.0.2.0/24
+
+  PrivateSubnet1CIDR:
+    Description: >-
+      Please enter the IP range (CIDR notation) for the private subnet in the
+      first Availability Zone
+    Type: String
+    Default: 10.0.1.0/24
+
+  PrivateSubnet2CIDR:
+    Description: >-
+      Please enter the IP range (CIDR notation) for the private subnet in the
+      second Availability Zone
+    Type: String
+    Default: 10.0.3.0/24
+
+# MySQL release note: https://docs.aws.amazon.com/AmazonRDS/latest/AuroraMySQLReleaseNotes/Welcome.html
+# PostgreSQL release note: https://docs.aws.amazon.com/AmazonRDS/latest/PostgreSQLReleaseNotes/Welcome.html
+Mappings:
+  DBEngineMap:
+    aurora-mysql:
+      EngineVersion: "5.7.mysql_aurora.2.11.2"
+      DefaultParameterGroup: "aurora-mysql5.7" # End of life: October 31, 2024
+      Port: 3306
+    aurora-postgresql:
+      EngineVersion: "13.4"
+      DefaultParameterGroup: "aurora-postgresql13" # End of life: January 31, 2026
+      Port: 5432
+
+Resources:
+  # VPC and Networking Resources
+  VPC:
+    Type: "AWS::EC2::VPC"
+    Properties:
+      CidrBlock: !Ref VpcCIDR
+      Tags:
+        - Key: Name
+          Value: !Sub "${AWS::StackName}-vpc"
+
+  InternetGateway:
+    Type: "AWS::EC2::InternetGateway"
+    Properties:
+      Tags:
+        - Key: Name
+          Value: !Sub "${AWS::StackName}-igw"
+
+  InternetGatewayAttachment:
+    Type: "AWS::EC2::VPCGatewayAttachment"
+    Properties:
+      InternetGatewayId: !Ref InternetGateway
+      VpcId: !Ref VPC
+
+  PublicSubnet1:
+    Type: "AWS::EC2::Subnet"
+    Properties:
+      VpcId: !Ref VPC
+      AvailabilityZone: !Select
+        - 0
+        - !GetAZs ""
+      CidrBlock: !Ref PublicSubnet1CIDR
+      MapPublicIpOnLaunch: true
+      Tags:
+        - Key: Name
+          Value: !Sub "${AWS::StackName}-public-subnet-az-1"
+
+  PublicSubnet2:
+    Type: "AWS::EC2::Subnet"
+    Properties:
+      VpcId: !Ref VPC
+      AvailabilityZone: !Select
+        - 1
+        - !GetAZs ""
+      CidrBlock: !Ref PublicSubnet2CIDR
+      MapPublicIpOnLaunch: true
+      Tags:
+        - Key: Name
+          Value: !Sub "${AWS::StackName}-public-subnet-az-2"
+
+  PrivateSubnet1:
+    Type: "AWS::EC2::Subnet"
+    Properties:
+      VpcId: !Ref VPC
+      AvailabilityZone: !Select
+        - 0
+        - !GetAZs ""
+      CidrBlock: !Ref PrivateSubnet1CIDR
+      MapPublicIpOnLaunch: false
+      Tags:
+        - Key: Name
+          Value: !Sub "${AWS::StackName}-private-subnet-az-1"
+
+  PrivateSubnet2:
+    Type: "AWS::EC2::Subnet"
+    Properties:
+      VpcId: !Ref VPC
+      AvailabilityZone: !Select
+        - 1
+        - !GetAZs ""
+      CidrBlock: !Ref PrivateSubnet2CIDR
+      MapPublicIpOnLaunch: false
+      Tags:
+        - Key: Name
+          Value: !Sub "${AWS::StackName}-private-subnet-az-2"
+
+  # NAT Gateways
+  NatGateway1EIP:
+    Type: "AWS::EC2::EIP"
+    DependsOn: InternetGatewayAttachment
+    Properties:
+      Domain: vpc
+
+  NatGateway2EIP:
+    Type: "AWS::EC2::EIP"
+    DependsOn: InternetGatewayAttachment
+    Properties:
+      Domain: vpc
+
+  NatGateway1:
+    Type: "AWS::EC2::NatGateway"
+    Properties:
+      AllocationId: !GetAtt NatGateway1EIP.AllocationId
+      SubnetId: !Ref PublicSubnet1
+
+  NatGateway2:
+    Type: "AWS::EC2::NatGateway"
+    Properties:
+      AllocationId: !GetAtt NatGateway2EIP.AllocationId
+      SubnetId: !Ref PublicSubnet2
+  
+  # Route Tables and Associations
+  PublicRouteTable:
+    Type: "AWS::EC2::RouteTable"
+    Properties:
+      VpcId: !Ref VPC
+      Tags:
+        - Key: Name
+          Value: !Sub "${AWS::StackName}-public-routes"
+          
+  DefaultPublicRoute:
+    Type: "AWS::EC2::Route"
+    DependsOn: InternetGatewayAttachment
+    Properties:
+      RouteTableId: !Ref PublicRouteTable
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId: !Ref InternetGateway
+
+  PublicSubnet1RouteTableAssociation:
+    Type: "AWS::EC2::SubnetRouteTableAssociation"
+    Properties:
+      RouteTableId: !Ref PublicRouteTable
+      SubnetId: !Ref PublicSubnet1
+
+  PublicSubnet2RouteTableAssociation:
+    Type: "AWS::EC2::SubnetRouteTableAssociation"
+    Properties:
+      RouteTableId: !Ref PublicRouteTable
+      SubnetId: !Ref PublicSubnet2
+      
+  PrivateRouteTable1:
+    Type: "AWS::EC2::RouteTable"
+    Properties:
+      VpcId: !Ref VPC
+      Tags:
+        - Key: Name
+          Value: !Sub "${AWS::StackName}-private-routes-az-1"
+
+  DefaultPrivateRoute1:
+    Type: "AWS::EC2::Route"
+    Properties:
+      RouteTableId: !Ref PrivateRouteTable1
+      DestinationCidrBlock: 0.0.0.0/0
+      NatGatewayId: !Ref NatGateway1
+
+  PrivateSubnet1RouteTableAssociation:
+    Type: "AWS::EC2::SubnetRouteTableAssociation"
+    Properties:
+      RouteTableId: !Ref PrivateRouteTable1
+      SubnetId: !Ref PrivateSubnet1
+
+  PrivateRouteTable2:
+    Type: "AWS::EC2::RouteTable"
+    Properties:
+      VpcId: !Ref VPC
+      Tags:
+        - Key: Name
+          Value: !Sub "${AWS::StackName}-private-routes-az-2"
+
+  DefaultPrivateRoute2:
+    Type: "AWS::EC2::Route"
+    Properties:
+      RouteTableId: !Ref PrivateRouteTable2
+      DestinationCidrBlock: 0.0.0.0/0
+      NatGatewayId: !Ref NatGateway2
+
+  PrivateSubnet2RouteTableAssociation:
+    Type: "AWS::EC2::SubnetRouteTableAssociation"
+    Properties:
+      RouteTableId: !Ref PrivateRouteTable2
+      SubnetId: !Ref PrivateSubnet2
+
+  # RDS Resources
+  DBCluster:
+    Type: "AWS::RDS::DBCluster"
+    Properties:
+      Engine: !Ref DBEngine
+      EngineVersion: !FindInMap
+        - DBEngineMap
+        - !Ref DBEngine
+        - EngineVersion
+      DBClusterParameterGroupName: !Ref DBClusterParameterGroup
+      MasterUsername:
+        !Join [
+          "",
+          [
+            "{{resolve:secretsmanager:",
+            !Ref DBSecret,
+            ":SecretString:username}}",
+          ],
+        ]
+      MasterUserPassword:
+        !Join [
+          "",
+          [
+            "{{resolve:secretsmanager:",
+            !Ref DBSecret,
+            ":SecretString:password}}",
+          ],
+        ]
+      DatabaseName: !Ref DatabaseName
+      DBClusterIdentifier: !Ref DBClusterName
+      DBSubnetGroupName: !Ref DBSubnetGroup
+      VpcSecurityGroupIds:
+        - !GetAtt RDSSecurityGroup.GroupId
+      Port: !FindInMap [DBEngineMap, !Ref DBEngine, Port]
+
+  DBInstance:
+    Type: AWS::RDS::DBInstance
+    Properties:
+      Engine: !Ref DBEngine
+      DBClusterIdentifier: !Ref DBCluster
+      DBInstanceClass: !Ref DBInstanceType
+      DBSubnetGroupName: !Ref DBSubnetGroup
+      DBParameterGroupName: !Ref DBParameterGroup
+
+  DBSubnetGroup:
+    Type: "AWS::RDS::DBSubnetGroup"
+    Properties:
+      DBSubnetGroupDescription: >-
+        Private subnets for an Optuna parameter db cluster.
+      DBSubnetGroupName: parameter-db-subnet
+      SubnetIds:
+        - !Ref PrivateSubnet1
+        - !Ref PrivateSubnet2
+
+  DBClusterParameterGroup:
+    Type: AWS::RDS::DBClusterParameterGroup
+    Properties:
+      Description: DB Cluster Parameter Group for Aurora Cluster
+      Family: !FindInMap
+        - DBEngineMap
+        - !Ref DBEngine
+        - DefaultParameterGroup
+      Parameters:
+        time_zone: US/Eastern
+
+  DBParameterGroup:
+    Type: AWS::RDS::DBParameterGroup
+    Properties:
+      Description: DB Parameter Group for Aurora
+      Family: !FindInMap
+        - DBEngineMap
+        - !Ref DBEngine
+        - DefaultParameterGroup
+
+  RDSSecurityGroup:
+    Type: "AWS::EC2::SecurityGroup"
+    Properties:
+      GroupDescription: RDS security group
+      SecurityGroupIngress:
+        - SourceSecurityGroupId: !Ref SageMakerSecurityGroup
+          FromPort: !FindInMap [DBEngineMap, !Ref DBEngine, Port]
+          ToPort: !FindInMap [DBEngineMap, !Ref DBEngine, Port]
+          IpProtocol: tcp
+      VpcId: !Ref VPC
+
+  # This is a Secret resource with a randomly generated password in its SecretString JSON.
+  DBSecret:
+    Type: AWS::SecretsManager::Secret
+    Properties:
+      Name: "optuna/db"
+      Description: "This is the secret for your RDS/Aurora instance."
+      GenerateSecretString:
+        SecretStringTemplate: '{"username": "admin"}'
+        GenerateStringKey: "password"
+        PasswordLength: 16
+        ExcludeCharacters: '"@/\{}'
+
+  # SageMaker Resources
+  NotebookInstance:
+    Type: "AWS::SageMaker::NotebookInstance"
+    Properties:
+      InstanceType: !Ref SageMakerInstanceType
+      NotebookInstanceName: !Ref SageMakerInstanceName
+      RoleArn: !GetAtt NotebookExecutionRole.Arn
+      DirectInternetAccess: Enabled
+      SubnetId: !Ref PublicSubnet1
+      SecurityGroupIds:
+        - !Ref SageMakerSecurityGroup
+      LifecycleConfigName: !GetAtt NotebookLifecycleConfig.NotebookInstanceLifecycleConfigName
+
+  SageMakerSecurityGroup:
+    Type: "AWS::EC2::SecurityGroup"
+    Properties:
+      GroupDescription: SageMaker Notebook instance / Training container security group
+      VpcId: !Ref VPC
+
+  NotebookExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - sagemaker.amazonaws.com
+            Action:
+              - sts:AssumeRole
+      Policies:
+        - PolicyName: S3BucketAccessPolicy
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action: s3:*
+                Resource:
+                  - !Sub arn:aws:s3:::${S3BucketName}
+                  - !Sub arn:aws:s3:::${S3BucketName}/*
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/AmazonSageMakerFullAccess
+
+  NotebookLifecycleConfig:
+    Type: AWS::SageMaker::NotebookInstanceLifecycleConfig
+    Properties:
+      NotebookInstanceLifecycleConfigName: !Sub ${AWS::StackName}-lifecycle-config
+      OnCreate:
+        - Content: IyEvYmluL2Jhc2gKc2V0IC1ldXgKCkNPREVfU0VSVkVSX1ZFUlNJT049IjQuMTYuMSIKQ09ERV9TRVJWRVJfSU5TVEFMTF9MT0M9Ii9ob21lL2VjMi11c2VyL1NhZ2VNYWtlci8uY3MiClhER19EQVRBX0hPTUU9Ii9ob21lL2VjMi11c2VyL1NhZ2VNYWtlci8ueGRnL2RhdGEiClhER19DT05GSUdfSE9NRT0iL2hvbWUvZWMyLXVzZXIvU2FnZU1ha2VyLy54ZGcvY29uZmlnIgpJTlNUQUxMX1BZVEhPTl9FWFRFTlNJT049MQpDUkVBVEVfTkVXX0NPTkRBX0VOVj0xCkNPTkRBX0VOVl9MT0NBVElPTj0nL2hvbWUvZWMyLXVzZXIvU2FnZU1ha2VyLy5jcy9jb25kYS9lbnZzL2NvZGVzZXJ2ZXJfcHkzOScKQ09OREFfRU5WX1BZVEhPTl9WRVJTSU9OPSIzLjkiCklOU1RBTExfRE9DS0VSX0VYVEVOU0lPTj0xClVTRV9DVVNUT01fRVhURU5TSU9OX0dBTExFUlk9MAoKc3VkbyAtdSBlYzItdXNlciAtaSA8PEVPRgoKdW5zZXQgU1VET19VSUQKCiMjIyMjIyMjIyMjIyMKIyAgSU5TVEFMTCAgIwojIyMjIyMjIyMjIyMjCgojIHNldCB0aGUgZGF0YSBhbmQgY29uZmlnIGhvbWUgZW52IHZhcmlhYmxlIGZvciBjb2RlLXNlcnZlcgpleHBvcnQgWERHX0RBVEFfSE9NRT0kWERHX0RBVEFfSE9NRQpleHBvcnQgWERHX0NPTkZJR19IT01FPSRYREdfQ09ORklHX0hPTUUKZXhwb3J0IFBBVEg9IiRDT0RFX1NFUlZFUl9JTlNUQUxMX0xPQy9iaW4vOiRQQVRIIgoKIyBpbnN0YWxsIGNvZGUtc2VydmVyIHN0YW5kYWxvbmUKbWtkaXIgLXAgJHtDT0RFX1NFUlZFUl9JTlNUQUxMX0xPQ30vbGliICR7Q09ERV9TRVJWRVJfSU5TVEFMTF9MT0N9L2JpbgpjdXJsIC1mTCBodHRwczovL2dpdGh1Yi5jb20vY29kZXIvY29kZS1zZXJ2ZXIvcmVsZWFzZXMvZG93bmxvYWQvdiRDT0RFX1NFUlZFUl9WRVJTSU9OL2NvZGUtc2VydmVyLSRDT0RFX1NFUlZFUl9WRVJTSU9OLWxpbnV4LWFtZDY0LnRhci5neiBcCnwgdGFyIC1DICR7Q09ERV9TRVJWRVJfSU5TVEFMTF9MT0N9L2xpYiAteHoKbXYgJHtDT0RFX1NFUlZFUl9JTlNUQUxMX0xPQ30vbGliL2NvZGUtc2VydmVyLSRDT0RFX1NFUlZFUl9WRVJTSU9OLWxpbnV4LWFtZDY0ICR7Q09ERV9TRVJWRVJfSU5TVEFMTF9MT0N9L2xpYi9jb2RlLXNlcnZlci0kQ09ERV9TRVJWRVJfVkVSU0lPTgpsbiAtcyAke0NPREVfU0VSVkVSX0lOU1RBTExfTE9DfS9saWIvY29kZS1zZXJ2ZXItJENPREVfU0VSVkVSX1ZFUlNJT04vYmluL2NvZGUtc2VydmVyICR7Q09ERV9TRVJWRVJfSU5TVEFMTF9MT0N9L2Jpbi9jb2RlLXNlcnZlcgoKIyBjcmVhdGUgc2VwYXJhdGUgY29uZGEgZW52aXJvbm1lbnQKaWYgWyAkQ1JFQVRFX05FV19DT05EQV9FTlYgLWVxIDEgXQp0aGVuCiAgICBjb25kYSBjcmVhdGUgLS1wcmVmaXggJENPTkRBX0VOVl9MT0NBVElPTiBweXRob249JENPTkRBX0VOVl9QWVRIT05fVkVSU0lPTiAteQpmaQoKIyBpbnN0YWxsIG1zLXB5dGhvbiBleHRlbnNpb24KaWYgWyAkVVNFX0NVU1RPTV9FWFRFTlNJT05fR0FMTEVSWSAtZXEgMCAtYSAkSU5TVEFMTF9QWVRIT05fRVhURU5TSU9OIC1lcSAxIF0KdGhlbgogICAgY29kZS1zZXJ2ZXIgLS1pbnN0YWxsLWV4dGVuc2lvbiBtcy1weXRob24ucHl0aG9uIC0tZm9yY2UKCiAgICAjIGlmIHRoZSBuZXcgY29uZGEgZW52IHdhcyBjcmVhdGVkLCBhZGQgY29uZmlndXJhdGlvbiB0byBzZXQgYXMgZGVmYXVsdAogICAgaWYgWyAkQ1JFQVRFX05FV19DT05EQV9FTlYgLWVxIDEgXQogICAgdGhlbgogICAgICAgIENPREVfU0VSVkVSX01BQ0hJTkVfU0VUVElOR1NfRklMRT0iJFhER19EQVRBX0hPTUUvY29kZS1zZXJ2ZXIvTWFjaGluZS9zZXR0aW5ncy5qc29uIgogICAgICAgIGlmIGdyZXAgLXEgInB5dGhvbi5kZWZhdWx0SW50ZXJwcmV0ZXJQYXRoIiAiXCRDT0RFX1NFUlZFUl9NQUNISU5FX1NFVFRJTkdTX0ZJTEUiCiAgICAgICAgdGhlbgogICAgICAgICAgICBlY2hvICJEZWZhdWx0IGludGVyZXByZXRlciBwYXRoIGlzIGFscmVhZHkgc2V0LiIKICAgICAgICBlbHNlCiAgICAgICAgICAgIGNhdCA+PlwkQ09ERV9TRVJWRVJfTUFDSElORV9TRVRUSU5HU19GSUxFIDw8LSBNQUNISU5FU0VUVElOR1MKewogICAgInB5dGhvbi5kZWZhdWx0SW50ZXJwcmV0ZXJQYXRoIjogIiRDT05EQV9FTlZfTE9DQVRJT04vYmluIgp9Ck1BQ0hJTkVTRVRUSU5HUwogICAgICAgIGZpCiAgICBmaQpmaQoKIyBpbnN0YWxsIGRvY2tlciBleHRlbnNpb24KaWYgWyAkVVNFX0NVU1RPTV9FWFRFTlNJT05fR0FMTEVSWSAtZXEgMCAtYSAkSU5TVEFMTF9ET0NLRVJfRVhURU5TSU9OIC1lcSAxIF0KdGhlbgogICAgY29kZS1zZXJ2ZXIgLS1pbnN0YWxsLWV4dGVuc2lvbiBtcy1henVyZXRvb2xzLnZzY29kZS1kb2NrZXIgLS1mb3JjZQpmaQoKRU9G
+      OnStart:
+        - Content: IyEvYmluL2Jhc2gKc2V0IC1ldXgKCkNPREVfU0VSVkVSX1ZFUlNJT049IjQuMTYuMSIKQ09ERV9TRVJWRVJfSU5TVEFMTF9MT0M9Ii9ob21lL2VjMi11c2VyL1NhZ2VNYWtlci8uY3MiClhER19EQVRBX0hPTUU9Ii9ob21lL2VjMi11c2VyL1NhZ2VNYWtlci8ueGRnL2RhdGEiClhER19DT05GSUdfSE9NRT0iL2hvbWUvZWMyLXVzZXIvU2FnZU1ha2VyLy54ZGcvY29uZmlnIgpDUkVBVEVfTkVXX0NPTkRBX0VOVj0xCkNPTkRBX0VOVl9MT0NBVElPTj0nL2hvbWUvZWMyLXVzZXIvU2FnZU1ha2VyLy5jcy9jb25kYS9lbnZzL2NvZGVzZXJ2ZXJfcHkzOScKVVNFX0NVU1RPTV9FWFRFTlNJT05fR0FMTEVSWT0wCkVYVEVOU0lPTl9HQUxMRVJZX0NPTkZJRz0ne3tcInNlcnZpY2VVcmxcIjpcIlwiLFwiY2FjaGVVcmxcIjpcIlwiLFwiaXRlbVVybFwiOlwiXCIsXCJjb250cm9sVXJsXCI6XCJcIixcInJlY29tbWVuZGF0aW9uc1VybFwiOlwiXCJ9fScKCkxBVU5DSEVSX0VOVFJZX1RJVExFPSdDb2RlIFNlcnZlcicKUFJPWFlfUEFUSD0nY29kZXNlcnZlcicKTEFCXzNfRVhURU5TSU9OX0RPV05MT0FEX1VSTD0naHR0cHM6Ly9naXRodWIuY29tL2F3cy1zYW1wbGVzL2FtYXpvbi1zYWdlbWFrZXItY29kZXNlcnZlci9yZWxlYXNlcy9kb3dubG9hZC92MC4yLjAvc2FnZW1ha2VyLWpwcm94eS1sYXVuY2hlci1leHQtMC4yLjAudGFyLmd6JwoKZXhwb3J0IFhER19EQVRBX0hPTUU9JFhER19EQVRBX0hPTUUKZXhwb3J0IFhER19DT05GSUdfSE9NRT0kWERHX0NPTkZJR19IT01FCmV4cG9ydCBQQVRIPSIke0NPREVfU0VSVkVSX0lOU1RBTExfTE9DfS9iaW4vOiRQQVRIIgoKRVhUX0dBTExFUllfSlNPTj0nJwppZiBbICRVU0VfQ1VTVE9NX0VYVEVOU0lPTl9HQUxMRVJZIC1lcSAxIF0KdGhlbgogICAgRVhUX0dBTExFUllfSlNPTj0iJ0VYVEVOU0lPTlNfR0FMTEVSWSc6ICckRVhURU5TSU9OX0dBTExFUllfQ09ORklHJyIKZmkKCkpVUFlURVJfQ09ORklHX0ZJTEU9Ii9ob21lL2VjMi11c2VyLy5qdXB5dGVyL2p1cHl0ZXJfbm90ZWJvb2tfY29uZmlnLnB5IgppZiBncmVwIC1xICIkQ09ERV9TRVJWRVJfSU5TVEFMTF9MT0MvYmluIiAiJEpVUFlURVJfQ09ORklHX0ZJTEUiCnRoZW4KICAgIGVjaG8gIlNlcnZlci1wcm94eSBjb25maWd1cmF0aW9uIGFscmVhZHkgc2V0IGluIEp1cHl0ZXIgbm90ZWJvb2sgY29uZmlnLiIKZWxzZQogICAgY2F0ID4+L2hvbWUvZWMyLXVzZXIvLmp1cHl0ZXIvanVweXRlcl9ub3RlYm9va19jb25maWcucHkgPDxFT0MKYy5TZXJ2ZXJQcm94eS5zZXJ2ZXJzID0gewogICckUFJPWFlfUEFUSCc6IHsKICAgICAgJ2xhdW5jaGVyX2VudHJ5JzogewogICAgICAgICAgICAnZW5hYmxlZCc6IFRydWUsCiAgICAgICAgICAgICd0aXRsZSc6ICckTEFVTkNIRVJfRU5UUllfVElUTEUnLAogICAgICAgICAgICAnaWNvbl9wYXRoJzogJ2NvZGVzZXJ2ZXIuc3ZnJwogICAgICB9LAogICAgICAnY29tbWFuZCc6IFsnJENPREVfU0VSVkVSX0lOU1RBTExfTE9DL2Jpbi9jb2RlLXNlcnZlcicsICctLWF1dGgnLCAnbm9uZScsICctLWRpc2FibGUtdGVsZW1ldHJ5JywgJy0tYmluZC1hZGRyJywgJzEyNy4wLjAuMTp7cG9ydH0nXSwKICAgICAgJ2Vudmlyb25tZW50JyA6IHsKICAgICAgICAgICAgICAgICAgICAgICAgJ1hER19EQVRBX0hPTUUnIDogJyRYREdfREFUQV9IT01FJywgCiAgICAgICAgICAgICAgICAgICAgICAgICdYREdfQ09ORklHX0hPTUUnOiAnJFhER19DT05GSUdfSE9NRScsCiAgICAgICAgICAgICAgICAgICAgICAgICdTSEVMTCc6ICcvYmluL2Jhc2gnLAogICAgICAgICAgICAgICAgICAgICAgICAkRVhUX0dBTExFUllfSlNPTgogICAgICAgICAgICAgICAgICAgICAgfSwKICAgICAgJ2Fic29sdXRlX3VybCc6IEZhbHNlLAogICAgICAndGltZW91dCc6IDMwCiAgfQp9CkVPQwpmaQoKSlVQWVRFUl9MQUJfVkVSU0lPTj0kKC9ob21lL2VjMi11c2VyL2FuYWNvbmRhMy9lbnZzL0p1cHl0ZXJTeXN0ZW1FbnYvYmluL2p1cHl0ZXItbGFiIC0tdmVyc2lvbikKCnN1ZG8gLXUgZWMyLXVzZXIgLWkgPDxFT0YKCmlmIFsgJENSRUFURV9ORVdfQ09OREFfRU5WIC1lcSAxIF0KdGhlbgogICAgY29uZGEgY29uZmlnIC0tYWRkIGVudnNfZGlycyAiJHtDT05EQV9FTlZfTE9DQVRJT04lLyp9IgpmaQoKaWYgW1sgJEpVUFlURVJfTEFCX1ZFUlNJT04gPT0gMSogXV0KdGhlbgogICAgc291cmNlIC9ob21lL2VjMi11c2VyL2FuYWNvbmRhMy9iaW4vYWN0aXZhdGUgSnVweXRlclN5c3RlbUVudgogICAgZWNobyAiSW5zdGFsbGluZyBqdXB5dGVyLXNlcnZlci1wcm94eS4iCiAgICBwaXAgaW5zdGFsbCBqdXB5dGVyLXNlcnZlci1wcm94eT09MS42LjAKICAgIGNvbmRhIGRlYWN0aXZhdGUKCiAgICBlY2hvICJKdXB5dGVyTGFiIGV4dGVuc2lvbiBmb3IgSnVweXRlckxhYiAxIGlzIG5vdCBzdXBwb3J0ZWQuIFlvdSBjYW4gc3RpbGwgYWNjZXNzIGNvZGUtc2VydmVyIGJ5IHR5cGluZyB0aGUgY29kZS1zZXJ2ZXIgVVJMIGluIHRoZSBicm93c2VyIGFkZHJlc3MgYmFyLiIKZWxzZQogICAgc291cmNlIC9ob21lL2VjMi11c2VyL2FuYWNvbmRhMy9iaW4vYWN0aXZhdGUgSnVweXRlclN5c3RlbUVudgoKICAgIG1rZGlyIC1wICRDT0RFX1NFUlZFUl9JTlNUQUxMX0xPQy9sYWJfZXh0CiAgICBjdXJsIC1MICRMQUJfM19FWFRFTlNJT05fRE9XTkxPQURfVVJMID4gJENPREVfU0VSVkVSX0lOU1RBTExfTE9DL2xhYl9leHQvc2FnZW1ha2VyLWpwcm94eS1sYXVuY2hlci1leHQudGFyLmd6CiAgICBwaXAgaW5zdGFsbCAkQ09ERV9TRVJWRVJfSU5TVEFMTF9MT0MvbGFiX2V4dC9zYWdlbWFrZXItanByb3h5LWxhdW5jaGVyLWV4dC50YXIuZ3oKCiAgICBqdXB5dGVyIGxhYmV4dGVuc2lvbiBkaXNhYmxlIGp1cHl0ZXJsYWItc2VydmVyLXByb3h5CgogICAgY29uZGEgZGVhY3RpdmF0ZQpmaQpFT0YKCmlmIFtbIC1mIC9ob21lL2VjMi11c2VyL2Jpbi9kb2NrZXJkLXJvb3RsZXNzLnNoIF1dOyB0aGVuCgllY2hvICJSdW5uaW5nIGluIHJvb3RsZXNzIG1vZGU7IHBsZWFzZSByZXN0YXJ0IEp1cHl0ZXIgU2VydmVyIGZyb20gdGhlICdGaWxlJyA+ICdTaHV0IERvd24nIG1lbnUgYW5kIHJlLW9wZW4gSnVweXRlci9KdXB5dGVyTGFiLiIKZWxzZQoJZWNobyAiUm9vdCBtb2RlLiBSZXN0YXJ0aW5nIEp1cHl0ZXIgU2VydmVyLi4uIgogICAgc3VkbyBzeXN0ZW1jdGwgcmVzdGFydCBqdXB5dGVyLXNlcnZlcgpmaQo=
+
+Outputs:
+  # VPC and Subnet Outputs
+  VPC:
+    Description: A reference to the created VPC
+    Value: !Ref VPC
+
+  PublicSubnets:
+    Description: A list of the public subnets
+    Value: !Join
+      - ","
+      - - !Ref PublicSubnet1
+        - !Ref PublicSubnet2
+
+  PrivateSubnets:
+    Description: A list of the private subnets
+    Value: !Join
+      - ","
+      - - !Ref PrivateSubnet1
+        - !Ref PrivateSubnet2
+
+  PublicSubnet1:
+    Description: A reference to the public subnet in the 1st Availability Zone
+    Value: !Ref PublicSubnet1
+
+  PublicSubnet2:
+    Description: A reference to the public subnet in the 2nd Availability Zone
+    Value: !Ref PublicSubnet2
+
+  PrivateSubnet1:
+    Description: A reference to the private subnet in the 1st Availability Zone
+    Value: !Ref PrivateSubnet1
+
+  PrivateSubnet2:
+    Description: A reference to the private subnet in the 2nd Availability Zone
+    Value: !Ref PrivateSubnet2
+
+  # Security Group Outputs
+  SageMakerSecurityGroup:
+    Description: Security group for SageMaker Notebook instance / Training container
+    Value: !Ref SageMakerSecurityGroup
+
+  # RDS and Database Outputs
+  ClusterEndpoint:
+    Description: Cluster endpoint
+    Value: !Sub "${DBCluster.Endpoint.Address}:${DBCluster.Endpoint.Port}"
+
+  ClusterName:
+    Description: Name of cluster
+    Value: !Ref DBCluster
+
+  DBSecretArn:
+    Description: AWS Secrets Manager secret name for RDS/Aurora
+    Value: !Ref DBSecret
+
+  DatabaseName:
+    Description: Database name in RDS/Aurora
+    Value: !Ref DatabaseName
