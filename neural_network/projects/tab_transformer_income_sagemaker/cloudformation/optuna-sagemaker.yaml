@@ -65,6 +65,19 @@ Parameters:
       - ml.p3.8xlarge
       - ml.p3.16xlarge
 
+  VolumeSizeInGB:
+    Description: The size of the EBS volume, in gigabytes, that is attached to the notebook instance.
+    Type: Number
+    Default: 30
+    MinValue: 5
+    MaxValue: 16384  
+
+  DefaultCodeRepository:
+    Description: The URL or name of the Git repository to associate with the
+      notebook instance as its default code repository.
+    Type: String
+    Default: ''
+
   VpcCIDR:
     Description: Please enter the IP range (CIDR notation) for this VPC
     Type: String
@@ -110,6 +123,12 @@ Mappings:
       EngineVersion: "13.4"
       DefaultParameterGroup: "aurora-postgresql13" # End of life: January 31, 2026
       Port: 5432
+
+Conditions:
+  SpecifiedGitHubRepo: !Not
+    - !Equals
+      - !Ref DefaultCodeRepository
+      - ''
 
 Resources:
   # VPC and Networking Resources
@@ -391,6 +410,11 @@ Resources:
       SecurityGroupIds:
         - !Ref SageMakerSecurityGroup
       LifecycleConfigName: !GetAtt NotebookLifecycleConfig.NotebookInstanceLifecycleConfigName
+      VolumeSizeInGB: !Ref VolumeSizeInGB
+      DefaultCodeRepository: !If
+        - SpecifiedGitHubRepo
+        - !Ref DefaultCodeRepository
+        - !Ref AWS::NoValue
 
   SageMakerSecurityGroup:
     Type: "AWS::EC2::SecurityGroup"
