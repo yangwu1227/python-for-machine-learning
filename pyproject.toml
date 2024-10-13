@@ -4,7 +4,7 @@ description = "Learning and applying machine learning using tools from the Pytho
 dependencies = [
     "numpy>=2.0.1",
     "pandas>=2.2.2",
-    "polars>=1.4.1",
+    "polars[style]>=1.4.1",
     "fastparquet>=2024.5.0",
     "pyarrow>=17.0.0",
     "numba>=0.60.0",
@@ -71,4 +71,11 @@ distribution = false
 notebook = [
     "ipykernel>=6.29.5",
     "ipywidgets>=8.1.3",
+    "nbformat>=5.10.4",
+]
+lint-fmt = [
+    "isort>=5.13.2",
+    "black>=24.10.0",
+    "ruff>=0.6.9",
+    "mypy>=1.11.2",
 ]
