@@ -5,7 +5,7 @@ from IPython.display import display, Markdown, Latex
 from matplotlib.widgets import Slider
 from utils.lab_utils_common import dlc
 
-plt.style.use('utils/deeplearning.mplstyle')
+plt.style.use("utils/deeplearning.mplstyle")
 
 
 def plt_softmax(my_softmax):
@@ -17,23 +17,27 @@ def plt_softmax(my_softmax):
     axz2 = fig.add_axes([0.15, 0.20, 0.30, 0.03])
     axz3 = fig.add_axes([0.15, 0.25, 0.30, 0.03])
 
-    z3 = Slider(axz3, 'z3', 0.1, 10.0, valinit=4, valstep=0.1)
-    z2 = Slider(axz2, 'z2', 0.1, 10.0, valinit=3, valstep=0.1)
-    z1 = Slider(axz1, 'z1', 0.1, 10.0, valinit=2, valstep=0.1)
-    z0 = Slider(axz0, 'z0', 0.1, 10.0, valinit=1, valstep=0.1)
+    z3 = Slider(axz3, "z3", 0.1, 10.0, valinit=4, valstep=0.1)
+    z2 = Slider(axz2, "z2", 0.1, 10.0, valinit=3, valstep=0.1)
+    z1 = Slider(axz1, "z1", 0.1, 10.0, valinit=2, valstep=0.1)
+    z0 = Slider(axz0, "z0", 0.1, 10.0, valinit=1, valstep=0.1)
 
-    z = np.array(['z0', 'z1', 'z2', 'z3'])
-    bar = ax[0].barh(z, height=0.6, width=[z0.val, z1.val, z2.val, z3.val], align='center')
+    z = np.array(["z0", "z1", "z2", "z3"])
+    bar = ax[0].barh(
+        z, height=0.6, width=[z0.val, z1.val, z2.val, z3.val], align="center"
+    )
     bars = bar.get_children()
     ax[0].set_xlim([0, 10])
-    ax[0].set_title('z input to softmax')
+    ax[0].set_title("z input to softmax")
 
     a = my_softmax(np.array([z0.val, z1.val, z2.val, z3.val]))
-    anames = np.array(['a0', 'a1', 'a2', 'a3'])
-    sbar = ax[1].barh(anames, height=0.6, width=a, align='center', color=dlc['dldarkred'])
+    anames = np.array(["a0", "a1", "a2", "a3"])
+    sbar = ax[1].barh(
+        anames, height=0.6, width=a, align="center", color=dlc["dldarkred"]
+    )
     sbars = sbar.get_children()
     ax[1].set_xlim([0, 1])
-    ax[1].set_title('softmax(z)')
+    ax[1].set_title("softmax(z)")
 
     def update(val):
         bars[0].set_width(z0.val)

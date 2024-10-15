@@ -6,6 +6,7 @@ By contrast, specific, large plotting routines will be in separate files
 And are generally imported into the week where they are used.
 Those files will import this file
 """
+
 import copy
 import math
 import numpy as np
@@ -17,23 +18,23 @@ from matplotlib.widgets import Button, CheckButtons
 np.set_printoptions(precision=2)
 
 dlc = {
-    'dlblue': '#0096ff',
-    'dlorange': '#FF9300',
-    'dldarkred': '#C00000',
-    'dlmagenta': '#FF40FF',
-    'dlpurple': '#7030A0',
-    'dldarkblue': '#0D5BDC'
+    "dlblue": "#0096ff",
+    "dlorange": "#FF9300",
+    "dldarkred": "#C00000",
+    "dlmagenta": "#FF40FF",
+    "dlpurple": "#7030A0",
+    "dldarkblue": "#0D5BDC",
 }
 
-dlblue = '#0096ff'
-dlorange = '#FF9300'
-dldarkred = '#C00000'
-dlmagenta = '#FF40FF'
-dlpurple = '#7030A0'
-dldarkblue = '#0D5BDC'
+dlblue = "#0096ff"
+dlorange = "#FF9300"
+dldarkred = "#C00000"
+dlmagenta = "#FF40FF"
+dlpurple = "#7030A0"
+dldarkblue = "#0D5BDC"
 dlcolors = [dlblue, dlorange, dldarkred, dlmagenta, dlpurple]
 
-plt.style.use('utils/deeplearning.mplstyle')
+plt.style.use("utils/deeplearning.mplstyle")
 
 
 def sigmoid(z):
@@ -57,6 +58,7 @@ def sigmoid(z):
 
 
 # Regression Routines
+
 
 def predict_logistic(X, w, b):
     """Performs prediction."""
@@ -97,7 +99,7 @@ def compute_cost_logistic(X, y, w, b, lambda_=0, safe=False):
     reg_cost = 0
     if lambda_ != 0:
         for j in range(n):
-            reg_cost += (w[j] ** 2)  # Scalar
+            reg_cost += w[j] ** 2  # Scalar
         reg_cost = (lambda_ / (2 * m)) * reg_cost
 
     return cost + reg_cost
@@ -142,17 +144,20 @@ def compute_cost_matrix(X, y, w, b, logistic=False, lambda_=0, safe=True):
             cost = np.sum(cost) / m  # (scalar)
         else:
             f = sigmoid(X @ w + b)  # (m,n)(n,1) = (m,1)
-            cost = (1 / m) * (np.dot(-y.T, np.log(f)) - np.dot((1 - y).T, np.log(1 - f)))  # (1,m)(m,1) = (1,1)
+            cost = (1 / m) * (
+                np.dot(-y.T, np.log(f)) - np.dot((1 - y).T, np.log(1 - f))
+            )  # (1,m)(m,1) = (1,1)
             cost = cost[0, 0]  # Scalar
     else:
         f = X @ w + b  # (m,n)(n,1) = (m,1)
         cost = (1 / (2 * m)) * np.sum((f - y) ** 2)  # Scalar
 
-    reg_cost = (lambda_ / (2 * m)) * np.sum(w ** 2)  # Scalar
+    reg_cost = (lambda_ / (2 * m)) * np.sum(w**2)  # Scalar
 
     total_cost = cost + reg_cost  # Scalar
 
     return total_cost  # Scalar
+
 
 def compute_gradient_matrix(X, y, w, b, logistic=False, lambda_=0):
     """
@@ -184,7 +189,18 @@ def compute_gradient_matrix(X, y, w, b, logistic=False, lambda_=0):
     return dj_db, dj_dw  # Scalar, (n,1).
 
 
-def gradient_descent(X, y, w_in, b_in, alpha, num_iters, logistic=False, lambda_=0, verbose=True, Trace=True):
+def gradient_descent(
+    X,
+    y,
+    w_in,
+    b_in,
+    alpha,
+    num_iters,
+    logistic=False,
+    lambda_=0,
+    verbose=True,
+    Trace=True,
+):
     """
     Performs batch gradient descent to learn theta. Updates theta by taking
     num_iters gradient steps with learning rate alpha.
@@ -226,17 +242,21 @@ def gradient_descent(X, y, w_in, b_in, alpha, num_iters, logistic=False, lambda_
 
         # Print cost every at intervals 10 times or as many iterations if < 10.
         if i % math.ceil(num_iters / 10) == 0:
-            if verbose: 
-                print(f'Iteration {i:4d}: Cost {ccost}   ')
-            if verbose == 2: 
-                print(f'dj_db, dj_dw = {dj_db: 0.3f}, {dj_dw.reshape(-1)}')
+            if verbose:
+                print(f"Iteration {i:4d}: Cost {ccost}   ")
+            if verbose == 2:
+                print(f"dj_db, dj_dw = {dj_db: 0.3f}, {dj_dw.reshape(-1)}")
 
             if ccost == last_cost:
                 alpha = alpha / 10
-                print(f' alpha now {alpha}')
+                print(f" alpha now {alpha}")
             last_cost = ccost
 
-    return w.reshape(w_in.shape), b, J_history  # Return final w,b and J history for graphing.
+    return (
+        w.reshape(w_in.shape),
+        b,
+        J_history,
+    )  # Return final w,b and J history for graphing.
 
 
 def zscore_normalize_features(X):
@@ -261,34 +281,57 @@ def zscore_normalize_features(X):
     return X_norm, mu, sigma
 
 
-def plot_data(X, y, ax, pos_label='y=1', neg_label='y=0', s=80, loc='best'):
+def plot_data(X, y, ax, pos_label="y=1", neg_label="y=0", s=80, loc="best"):
     """Plots logistic data with two axis."""
     # Find Indices of Positive and Negative Examples.
     pos = y == 1
     neg = y == 0
-    pos = pos.reshape(-1,)  # Work with 1D or 1D y vectors.
-    neg = neg.reshape(-1,)
+    pos = pos.reshape(
+        -1,
+    )  # Work with 1D or 1D y vectors.
+    neg = neg.reshape(
+        -1,
+    )
 
     # Plot examples.
-    ax.scatter(X[pos, 0], X[pos, 1], marker='x', s=s, c='red', label=pos_label)
-    ax.scatter(X[neg, 0], X[neg, 1], marker='o', s=s, label=neg_label, facecolors='none', edgecolors=dlblue, lw=3)
+    ax.scatter(X[pos, 0], X[pos, 1], marker="x", s=s, c="red", label=pos_label)
+    ax.scatter(
+        X[neg, 0],
+        X[neg, 1],
+        marker="o",
+        s=s,
+        label=neg_label,
+        facecolors="none",
+        edgecolors=dlblue,
+        lw=3,
+    )
     ax.legend(loc=loc)
 
     ax.figure.canvas.toolbar_visible = False
     ax.figure.canvas.header_visible = False
     ax.figure.canvas.footer_visible = False
-    
+
+
 def plt_tumor_data(x, y, ax):
     """Plots tumor data on one axis."""
     pos = y == 1
     neg = y == 0
 
-    ax.scatter(x[pos], y[pos], marker='x', s=80, c='red', label='Malignant')
-    ax.scatter(x[neg], y[neg], marker='o', s=100, label='Benign', facecolors='none', edgecolors=dlblue, lw=3)
+    ax.scatter(x[pos], y[pos], marker="x", s=80, c="red", label="Malignant")
+    ax.scatter(
+        x[neg],
+        y[neg],
+        marker="o",
+        s=100,
+        label="Benign",
+        facecolors="none",
+        edgecolors=dlblue,
+        lw=3,
+    )
     ax.set_ylim(-0.175, 1.1)
-    ax.set_ylabel('Y')
-    ax.set_xlabel('Tumor Size')
-    ax.set_title('Logistic Regression on Categorical Data')
+    ax.set_ylabel("Y")
+    ax.set_xlabel("Tumor Size")
+    ax.set_title("Logistic Regression on Categorical Data")
 
     ax.figure.canvas.toolbar_visible = False
     ax.figure.canvas.header_visible = False
@@ -301,31 +344,49 @@ def draw_vthresh(ax, x):
     xlim = ax.get_xlim()
     ax.fill_between([xlim[0], x], [ylim[1], ylim[1]], alpha=0.2, color=dlblue)
     ax.fill_between([x, xlim[1]], [ylim[1], ylim[1]], alpha=0.2, color=dldarkred)
-    ax.annotate('Z >= 0', xy=[x, 0.5], xycoords='data', xytext=[30, 5], textcoords='offset points')
+    ax.annotate(
+        "Z >= 0",
+        xy=[x, 0.5],
+        xycoords="data",
+        xytext=[30, 5],
+        textcoords="offset points",
+    )
     d = FancyArrowPatch(
-        posA=(x, 0.5), posB=(x+3, 0.5), color=dldarkred,
-        arrowstyle='simple, head_width=5, head_length=10, tail_width=0.0',
+        posA=(x, 0.5),
+        posB=(x + 3, 0.5),
+        color=dldarkred,
+        arrowstyle="simple, head_width=5, head_length=10, tail_width=0.0",
     )
     ax.add_artist(d)
-    ax.annotate('Z < 0', xy=[x, 0.5], xycoords='data', xytext=[-50, 5], textcoords='offset points', ha='left')
+    ax.annotate(
+        "Z < 0",
+        xy=[x, 0.5],
+        xycoords="data",
+        xytext=[-50, 5],
+        textcoords="offset points",
+        ha="left",
+    )
     f = FancyArrowPatch(
-        posA=(x, 0.5), posB=(x-3, 0.5), color=dlblue,
-        arrowstyle='simple, head_width=5, head_length=10, tail_width=0.0',
+        posA=(x, 0.5),
+        posB=(x - 3, 0.5),
+        color=dlblue,
+        arrowstyle="simple, head_width=5, head_length=10, tail_width=0.0",
     )
     ax.add_artist(f)
 
+
 class ButtonManager:
-    '''Handles some missing features of matplotlib check buttons.
-    
+    """Handles some missing features of matplotlib check buttons.
+
     On init:
         Creates button, links to button_click routine,
         calls call_on_click with active index and firsttime=True.
     On click:
         Maintains single button on state, calls call_on_click.
-    '''
+    """
 
     def __init__(self, fig, dim, labels, init, call_on_click):
-        '''
+        """
         Initializes the ButtonManager.
 
         Parameters
@@ -340,7 +401,7 @@ class ButtonManager:
             The initial state of the buttons, e.g., [True, False, False, False, False, False].
         call_on_click : callable
             The function to call when a button is clicked.
-        '''
+        """
         self.fig = fig
         self.ax = plt.axes(dim)  # lx, by, w, h
         self.init_state = init
@@ -351,14 +412,18 @@ class ButtonManager:
         self.call_on_click(self.status.index(True), firsttime=True)
 
     def reinit(self):
-        '''Reinitializes the button manager to its initial state.'''
+        """Reinitializes the button manager to its initial state."""
         self.status = self.init_state
-        self.button.set_active(self.status.index(True))  # turn off old, will trigger update and set to status
+        self.button.set_active(
+            self.status.index(True)
+        )  # turn off old, will trigger update and set to status
 
     def button_click(self, event):
-        '''Maintains one-on state. If on-button is clicked, will process correctly.'''
+        """Maintains one-on state. If on-button is clicked, will process correctly."""
         self.button.eventson = False
-        self.button.set_active(self.status.index(True))  # turn off old or reenable if same
+        self.button.set_active(
+            self.status.index(True)
+        )  # turn off old or reenable if same
         self.button.eventson = True
         self.status = self.button.get_status()
         self.call_on_click(self.status.index(True))

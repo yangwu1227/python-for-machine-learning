@@ -1,4 +1,4 @@
-import os 
+import os
 import sys
 import joblib
 from typing import List, Dict, Any, Union
@@ -22,10 +22,13 @@ from custom_utils import get_logger, parser, add_additional_args
 
 # ------------------- Function to train the stacking model ------------------- #
 
-def train_ensemble(base_estimators: List[Pipeline], 
-                   final_estimator_hyperparameters: Dict[str, Any],
-                   train_data: List[Union[pd.DataFrame, pd.Series]],
-                   logger: logging.Logger) -> StackingClassifier:
+
+def train_ensemble(
+    base_estimators: List[Pipeline],
+    final_estimator_hyperparameters: Dict[str, Any],
+    train_data: List[Union[pd.DataFrame, pd.Series]],
+    logger: logging.Logger,
+) -> StackingClassifier:
     """
     Train the stacking ensemble model.
 
@@ -41,7 +44,7 @@ def train_ensemble(base_estimators: List[Pipeline],
         The logger object.
 
     Returns
-    ------- 
+    -------
     StackingClassifier
         The trained stacking ensemble model.
     """
@@ -51,34 +54,37 @@ def train_ensemble(base_estimators: List[Pipeline],
     # Container for log loss scores
     log_loss_scores = []
 
-    for fold, (train_index, val_index) in enumerate(skf.split(train_data[0], train_data[1])):
-
+    for fold, (train_index, val_index) in enumerate(
+        skf.split(train_data[0], train_data[1])
+    ):
         # Get train and validation data (stay in cpu as lightgbm does not support gpu inputs yet)
         X_train, X_val = train_data[0].iloc[train_index], train_data[0].iloc[val_index]
         y_train, y_val = train_data[1].iloc[train_index], train_data[1].iloc[val_index]
 
         # Compute sample weights (using numpy)
-        fold_sample_weights = compute_sample_weight(class_weight='balanced', y=y_train.values)
+        fold_sample_weights = compute_sample_weight(
+            class_weight="balanced", y=y_train.values
+        )
 
         # Model training
-        logger.info(f'Training fold {fold+1}...')
+        logger.info(f"Training fold {fold+1}...")
         fold_stack_model = StackingClassifier(
             estimators=base_estimators,
             final_estimator=LogisticRegression(
-                penalty=final_estimator_hyperparameters['penalty'],
-                C=final_estimator_hyperparameters['inverse_reg_c'],
-                l1_ratio=final_estimator_hyperparameters['l1_ratio'],
-                class_weight=final_estimator_hyperparameters['class_weight']
+                penalty=final_estimator_hyperparameters["penalty"],
+                C=final_estimator_hyperparameters["inverse_reg_c"],
+                l1_ratio=final_estimator_hyperparameters["l1_ratio"],
+                class_weight=final_estimator_hyperparameters["class_weight"],
             ),
-            cv='prefit',
-            stack_method='predict_proba',
-            n_jobs=-1
+            cv="prefit",
+            stack_method="predict_proba",
+            n_jobs=-1,
         )
 
         fold_stack_model.fit(X_train, y_train, sample_weight=fold_sample_weights)
 
         # Evaluate on validation set
-        logger.info(f'Evaluating fold {fold+1}...')
+        logger.info(f"Evaluating fold {fold+1}...")
         y_pred_prob = fold_stack_model.predict_proba(X_val)
 
         # Calculate log loss
@@ -86,43 +92,45 @@ def train_ensemble(base_estimators: List[Pipeline],
 
     # Take the average score across all folds
     avg_log_loss = np.mean(log_loss_scores)
-    logger.info(f'Average log loss: {avg_log_loss}')
+    logger.info(f"Average log loss: {avg_log_loss}")
 
     # -------------------- Retrain on the entire training set -------------------- #
 
-    logger.info('Retraining on the entire training set...')
+    logger.info("Retraining on the entire training set...")
 
-    # Compute sample weights 
-    sample_weights = compute_sample_weight(class_weight='balanced', y=train_data[1].values)
+    # Compute sample weights
+    sample_weights = compute_sample_weight(
+        class_weight="balanced", y=train_data[1].values
+    )
 
     # Model training
     stack_model = StackingClassifier(
         estimators=base_estimators,
         final_estimator=LogisticRegression(
-            penalty=final_estimator_hyperparameters['penalty'],
-            C=final_estimator_hyperparameters['inverse_reg_c'],
-            l1_ratio=final_estimator_hyperparameters['l1_ratio'],
-            class_weight=final_estimator_hyperparameters['class_weight']
+            penalty=final_estimator_hyperparameters["penalty"],
+            C=final_estimator_hyperparameters["inverse_reg_c"],
+            l1_ratio=final_estimator_hyperparameters["l1_ratio"],
+            class_weight=final_estimator_hyperparameters["class_weight"],
         ),
-        cv='prefit',
-        stack_method='predict_proba',
-        n_jobs=-1
+        cv="prefit",
+        stack_method="predict_proba",
+        n_jobs=-1,
     )
 
     stack_model.fit(train_data[0], train_data[1], sample_weight=sample_weights)
 
     return stack_model
 
-if __name__ == '__main__':
 
+if __name__ == "__main__":
     # ---------------------------------- Set up ---------------------------------- #
 
     additional_args = {
-        'inverse_reg_c': float,
-        'penalty': str,
-        'l1_ratio': float,
-        'xgb_base_learner': str,
-        'lgb_base_learner': str
+        "inverse_reg_c": float,
+        "penalty": str,
+        "l1_ratio": float,
+        "xgb_base_learner": str,
+        "lgb_base_learner": str,
     }
 
     args = add_additional_args(parser, additional_args)()
@@ -134,32 +142,36 @@ if __name__ == '__main__':
 
     # --------------------------------- Load data -------------------------------- #
 
-    logger.info('Loading data...')
+    logger.info("Loading data...")
 
-    data = pd.read_parquet(os.path.join(args.train, 'train_stacking.parquet'))
-    X, y = data.drop('target', axis=1), data.target
+    data = pd.read_parquet(os.path.join(args.train, "train_stacking.parquet"))
+    X, y = data.drop("target", axis=1), data.target
 
     # ---------------------------- Load base learners ---------------------------- #
 
     base_learners = []
     for s3_uri in [args.xgb_base_learner, args.lgb_base_learner]:
-        with s3_fs.open(s3_uri, 'rb') as f:
+        with s3_fs.open(s3_uri, "rb") as f:
             base_learners.append(joblib.load(f))
 
     # --------------------------- Train stacking model --------------------------- #
 
     stack_model = train_ensemble(
-        base_estimators=[(name, estimator) for name, estimator in zip(['xgb', 'lgb'], base_learners)],
+        base_estimators=[
+            (name, estimator) for name, estimator in zip(["xgb", "lgb"], base_learners)
+        ],
         final_estimator_hyperparameters={
-            'penalty': args.penalty,
-            'inverse_reg_c': args.inverse_reg_c,
-            'class_weight': 'balanced',
-            'l1_ratio': args.l1_ratio
+            "penalty": args.penalty,
+            "inverse_reg_c": args.inverse_reg_c,
+            "class_weight": "balanced",
+            "l1_ratio": args.l1_ratio,
         },
         train_data=[X, y],
-        logger=logger
+        logger=logger,
     )
 
     # ------------------------------- Persist model ------------------------------ #
 
-    joblib.dump(stack_model, os.path.join(args.model_dir, 'stacking_ensemble_model.joblib'))
+    joblib.dump(
+        stack_model, os.path.join(args.model_dir, "stacking_ensemble_model.joblib")
+    )

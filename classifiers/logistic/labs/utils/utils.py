@@ -1,6 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
+
 def load_data(filename):
     """Load data from a file.
 
@@ -15,7 +16,7 @@ def load_data(filename):
         A tuple containing the features and labels.
 
     """
-    data = np.loadtxt(filename, delimiter=',')
+    data = np.loadtxt(filename, delimiter=",")
     X = data[:, :2]
     y = data[:, 2]
     return X, y
@@ -60,11 +61,11 @@ def map_feature(X1, X2):
     out = []
     for i in range(1, degree + 1):
         for j in range(i + 1):
-            out.append((X1**(i - j) * (X2**j)))
+            out.append((X1 ** (i - j) * (X2**j)))
     return np.stack(out, axis=1)
 
 
-def plot_data(X, y, pos_label='y=1', neg_label='y=0'):
+def plot_data(X, y, pos_label="y=1", neg_label="y=0"):
     """Plot the data.
 
     Parameters
@@ -83,8 +84,8 @@ def plot_data(X, y, pos_label='y=1', neg_label='y=0'):
     negative = y == 0
 
     # Plot examples
-    plt.plot(X[positive, 0], X[positive, 1], 'k+', label=pos_label)
-    plt.plot(X[negative, 0], X[negative, 1], 'yo', label=neg_label)
+    plt.plot(X[positive, 0], X[positive, 1], "k+", label=pos_label)
+    plt.plot(X[negative, 0], X[negative, 1], "yo", label=neg_label)
 
 
 def plot_decision_boundary(w, b, X, y):
@@ -108,9 +109,9 @@ def plot_decision_boundary(w, b, X, y):
 
     if X.shape[1] <= 2:
         plot_x = np.array([min(X[:, 0]), max(X[:, 0])])
-        plot_y = (-1. / w[1]) * (w[0] * plot_x + b)
+        plot_y = (-1.0 / w[1]) * (w[0] * plot_x + b)
 
-        plt.plot(plot_x, plot_y, c='b')
+        plt.plot(plot_x, plot_y, c="b")
 
     else:
         u = np.linspace(-1, 1.5, 50)
@@ -127,4 +128,4 @@ def plot_decision_boundary(w, b, X, y):
         z = z.T
 
         # Plot z = 0.5
-        plt.contour(u, v, z, levels=[0.5], colors='g') 
+        plt.contour(u, v, z, levels=[0.5], colors="g")

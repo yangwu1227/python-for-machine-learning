@@ -4,7 +4,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.gridspec import GridSpec
 
-plt.style.use('utils/deeplearning.mplstyle')
+plt.style.use("utils/deeplearning.mplstyle")
 
 
 def widgvis(fig):
@@ -22,7 +22,7 @@ def plt_base(ax):
     b01 = 0
     w02 = 0
     b02 = 0
-    ax[0].plot(X, y, color=dlc['dlblue'], label='target')
+    ax[0].plot(X, y, color=dlc["dlblue"], label="target")
     arts = []
     arts.extend(plt_yhat(ax[0], X, w00, b00, w01, b01, w02, b02))
     _ = plt_unit(ax[1], X, w00, b00)  # Fixed
@@ -32,18 +32,20 @@ def plt_base(ax):
 
 
 def plt_yhat(ax, X, w00, b00, w01, b01, w02, b02):
-    yhat = np.maximum(0, np.dot(w00, X) + b00) + \
-           np.maximum(0, np.dot(w01, X) + b01) + \
-           np.maximum(0, np.dot(w02, X) + b02)
-    lp = ax.plot(X, yhat, lw=2, color=dlc['dlorange'], label='a2')
+    yhat = (
+        np.maximum(0, np.dot(w00, X) + b00)
+        + np.maximum(0, np.dot(w01, X) + b01)
+        + np.maximum(0, np.dot(w02, X) + b02)
+    )
+    lp = ax.plot(X, yhat, lw=2, color=dlc["dlorange"], label="a2")
     return lp
 
 
 def plt_unit(ax, X, w, b):
     z = np.dot(w, X) + b
     yhat = np.maximum(0, z)
-    lpa = ax.plot(X, z, dlc['dlblue'], label='z')
-    lpb = ax.plot(X, yhat, dlc['dlmagenta'], lw=1, label='a')
+    lpa = ax.plot(X, z, dlc["dlblue"], label="z")
+    lpb = ax.plot(X, yhat, dlc["dlmagenta"], lw=1, label="a")
     return [lpa[0], lpb[0]]
 
 
@@ -51,7 +53,7 @@ def plt_relu_ex():
     artists = []
 
     fig = plt.figure()
-    fig.suptitle('Explore Non-Linear Activation')
+    fig.suptitle("Explore Non-Linear Activation")
 
     gs = GridSpec(3, 2, width_ratios=[2, 1], height_ratios=[1, 1, 1])
     ax1 = fig.add_subplot(gs[0:2, 0])
@@ -67,10 +69,10 @@ def plt_relu_ex():
     axb1 = fig.add_axes([0.15, 0.20, 0.30, 0.03])
     axw1 = fig.add_axes([0.15, 0.25, 0.30, 0.03])
 
-    sw1 = Slider(axw1, 'w1', -4.0, 4.0, valinit=0, valstep=0.1)
-    sb1 = Slider(axb1, 'b1', -4.0, 4.0, valinit=0, valstep=0.1)
-    sw2 = Slider(axw2, 'w2', -4.0, 4.0, valinit=0, valstep=0.1)
-    sb2 = Slider(axb2, 'b2', -4.0, 4.0, valinit=0, valstep=0.1)
+    sw1 = Slider(axw1, "w1", -4.0, 4.0, valinit=0, valstep=0.1)
+    sb1 = Slider(axb1, "b1", -4.0, 4.0, valinit=0, valstep=0.1)
+    sw2 = Slider(axw2, "w2", -4.0, 4.0, valinit=0, valstep=0.1)
+    sb2 = Slider(axb2, "b2", -4.0, 4.0, valinit=0, valstep=0.1)
 
     X, lp = plt_base(ax)
     artists.extend(lp)
@@ -95,14 +97,14 @@ def plt_relu_ex():
     sw2.on_changed(update)
     sb2.on_changed(update)
 
-    ax[0].set_title(' Match Target ')
+    ax[0].set_title(" Match Target ")
     ax[0].legend()
-    ax[0].set_xlabel('x')
-    ax[1].set_title('Unit 0 (fixed) ')
+    ax[0].set_xlabel("x")
+    ax[1].set_title("Unit 0 (fixed) ")
     ax[1].legend()
-    ax[2].set_title('Unit 1')
+    ax[2].set_title("Unit 1")
     ax[2].legend()
-    ax[3].set_title('Unit 2')
+    ax[3].set_title("Unit 2")
     ax[3].legend()
     plt.tight_layout()
 

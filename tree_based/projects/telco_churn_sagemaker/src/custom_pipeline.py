@@ -11,11 +11,13 @@ from category_encoders.cat_boost import CatBoostEncoder
 from sklearn.feature_selection import RFE
 from sklearn.tree import DecisionTreeClassifier
 
+
 class FeatureEngine(TransformerMixin, BaseEstimator):
     """
     A custom transformer that engineers new numerical features. It groups by categorical features in the
     data matrix and applies aggregation functions of the numerical features.
     """
+
     def __init__(self, num_feat: List[str], cat_feat: List[str]):
         """
         Constructor for the FeatureEngine class.
@@ -29,8 +31,8 @@ class FeatureEngine(TransformerMixin, BaseEstimator):
         """
         self.num_feat = num_feat
         self.cat_feat = cat_feat
-        
-    def fit(self, X: pd.DataFrame, y: np.ndarray=None):
+
+    def fit(self, X: pd.DataFrame, y: np.ndarray = None):
         """
         Fit the FeatureEngine transformer. This is a no-op.
 
@@ -47,7 +49,7 @@ class FeatureEngine(TransformerMixin, BaseEstimator):
             A fitted FeatureEngine transformer.
         """
         return self
-    
+
     def transform(self, X: pd.DataFrame) -> pd.DataFrame:
         """
         Transform the data matrix by engineering new features.
@@ -64,10 +66,12 @@ class FeatureEngine(TransformerMixin, BaseEstimator):
         """
         X = X.copy()
         for group in self.cat_feat:
-            for agg_func in ['std', 'mean', 'max', 'sum']:
-                X[[col + f'_{agg_func}_by_{group}' for col in self.num_feat]] = X.groupby(group)[self.num_feat].transform(agg_func)
+            for agg_func in ["std", "mean", "max", "sum"]:
+                X[[col + f"_{agg_func}_by_{group}" for col in self.num_feat]] = (
+                    X.groupby(group)[self.num_feat].transform(agg_func)
+                )
         return X
-    
+
 
 def create_pipeline(num_feat: int, step: float) -> Pipeline:
     """
@@ -86,27 +90,76 @@ def create_pipeline(num_feat: int, step: float) -> Pipeline:
         An instance of Pipeline class that encapsulates the preprocessing logic.
     """
     # Categorical features for grouping
-    cat_feat_list = ['gender', 'offer', 'phone_service', 'internet_type', 'online_security', 
-                     'multiple_lines', 'online_backup', 'device_protection_plan', 'premium_tech_support', 
-                     'contract', 'paperless_billing', 'payment_method']
+    cat_feat_list = [
+        "gender",
+        "offer",
+        "phone_service",
+        "internet_type",
+        "online_security",
+        "multiple_lines",
+        "online_backup",
+        "device_protection_plan",
+        "premium_tech_support",
+        "contract",
+        "paperless_billing",
+        "payment_method",
+    ]
     # Numerical features to aggregate
-    num_feat_list = ['age', 'number_of_referrals', 'tenure_in_months',
-                     'avg_monthly_long_distance_charges', 'avg_monthly_gb_download',
-                     'monthly_charge', 'total_charges', 'total_refunds', 
-                     'total_extra_data_charges', 'total_long_distance_charges',
-                     'satisfaction_score', 'cltv']
+    num_feat_list = [
+        "age",
+        "number_of_referrals",
+        "tenure_in_months",
+        "avg_monthly_long_distance_charges",
+        "avg_monthly_gb_download",
+        "monthly_charge",
+        "total_charges",
+        "total_refunds",
+        "total_extra_data_charges",
+        "total_long_distance_charges",
+        "satisfaction_score",
+        "cltv",
+    ]
     # Categorical features for encoding
-    encode_feat_list = ['gender', 'under_30', 'senior_citizen', 'married', 'dependents',
-                        'offer', 'phone_service', 'multiple_lines', 'internet_service',
-                        'internet_type', 'online_security', 'online_backup', 'device_protection_plan',
-                        'premium_tech_support', 'streaming_tv', 'streaming_movies', 'streaming_music',
-                        'unlimited_data', 'contract', 'paperless_billing', 'payment_method']
-    
-    preprocessor = Pipeline([
-        ('feat_engine', FeatureEngine(num_feat=num_feat_list, cat_feat=cat_feat_list)),
-        ('cat_boost_encode', CatBoostEncoder(cols=encode_feat_list)),
-        ('rfe', RFE(estimator=DecisionTreeClassifier(random_state=None), n_features_to_select=num_feat, step=step))
-    ])
-    
+    encode_feat_list = [
+        "gender",
+        "under_30",
+        "senior_citizen",
+        "married",
+        "dependents",
+        "offer",
+        "phone_service",
+        "multiple_lines",
+        "internet_service",
+        "internet_type",
+        "online_security",
+        "online_backup",
+        "device_protection_plan",
+        "premium_tech_support",
+        "streaming_tv",
+        "streaming_movies",
+        "streaming_music",
+        "unlimited_data",
+        "contract",
+        "paperless_billing",
+        "payment_method",
+    ]
+
+    preprocessor = Pipeline(
+        [
+            (
+                "feat_engine",
+                FeatureEngine(num_feat=num_feat_list, cat_feat=cat_feat_list),
+            ),
+            ("cat_boost_encode", CatBoostEncoder(cols=encode_feat_list)),
+            (
+                "rfe",
+                RFE(
+                    estimator=DecisionTreeClassifier(random_state=None),
+                    n_features_to_select=num_feat,
+                    step=step,
+                ),
+            ),
+        ]
+    )
+
     return preprocessor
-    

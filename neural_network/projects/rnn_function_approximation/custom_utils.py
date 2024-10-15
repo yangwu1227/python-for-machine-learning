@@ -6,11 +6,12 @@ import sys
 import numpy as np
 import torch
 import torch.nn as nn
-     
+
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 
 # ---------------------------------- Logger ---------------------------------- #
+
 
 def get_logger(name: str) -> logging.Logger:
     """
@@ -25,20 +26,24 @@ def get_logger(name: str) -> logging.Logger:
         A logger with the specified name.
     """
     logger = logging.getLogger(name)  # Return a logger with the specified name
-    
-    log_format = '%(asctime)s %(levelname)s %(name)s: %(message)s'
+
+    log_format = "%(asctime)s %(levelname)s %(name)s: %(message)s"
     formatter = logging.Formatter(log_format)
     # No matter how many processes we spawn, we only want one StreamHandler attached to the logger
-    if not any(isinstance(handler, logging.StreamHandler) for handler in logger.handlers):
+    if not any(
+        isinstance(handler, logging.StreamHandler) for handler in logger.handlers
+    ):
         handler = logging.StreamHandler(sys.stdout)
         handler.setFormatter(formatter)
         logger.addHandler(handler)
 
     logger.setLevel(logging.INFO)
-    
+
     return logger
-    
+
+
 # ---------------------------------- Classes --------------------------------- #
+
 
 class LSTM(nn.Module):
     """
@@ -47,23 +52,29 @@ class LSTM(nn.Module):
     states is passed to a fully connected layer to get the final regression (continuous)
     value.
     """
+
     def __init__(self, input_size: int = 1, hidden_size: int = 50, num_layers: int = 2):
         """
         Constructor for the LSTM class.
         """
         super(LSTM, self).__init__()
-        self.lstm = nn.LSTM(input_size=input_size, hidden_size=hidden_size, num_layers=num_layers, batch_first=False)
+        self.lstm = nn.LSTM(
+            input_size=input_size,
+            hidden_size=hidden_size,
+            num_layers=num_layers,
+            batch_first=False,
+        )
         self.linear = nn.Linear(in_features=hidden_size, out_features=1)
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         """
         Forward pass of the LSTM model.
-        
+
         Parameters
         ----------
         x : torch.Tensor
             A 3D tensor of shape (sequence_length, batch_size, num_features).
-            
+
         Returns
         -------
         torch.Tensor
@@ -74,28 +85,35 @@ class LSTM(nn.Module):
         out = self.linear(out)
         return out
 
+
 class GRU(nn.Module):
     """
-    This class implements the GRU model with stacked layers. The hyperparameters are, again, 
-    the number of layers, the input size, and the hidden size. 
+    This class implements the GRU model with stacked layers. The hyperparameters are, again,
+    the number of layers, the input size, and the hidden size.
     """
+
     def __init__(self, input_size: int = 1, hidden_size: int = 50, num_layers: int = 2):
         """
         Constructor for the GRU class.
         """
         super(GRU, self).__init__()
-        self.gru = nn.GRU(input_size=input_size, hidden_size=hidden_size, num_layers=num_layers, batch_first=False)
+        self.gru = nn.GRU(
+            input_size=input_size,
+            hidden_size=hidden_size,
+            num_layers=num_layers,
+            batch_first=False,
+        )
         self.linear = nn.Linear(in_features=hidden_size, out_features=1)
-        
+
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         """
         Forward pass of the GRU model.
-        
+
         Parameters
         ----------
         x : torch.Tensor
             A 3D tensor of shape (sequence_length, batch_size, num_features).
-            
+
         Returns
         -------
         torch.Tensor
@@ -104,8 +122,10 @@ class GRU(nn.Module):
         out, _ = self.gru(x)
         out = self.linear(out)
         return out
-    
+
+
 # ----------------------------- Count parameters ----------------------------- #
+
 
 def count_parameters(model: nn.Module) -> int:
     """
@@ -122,27 +142,29 @@ def count_parameters(model: nn.Module) -> int:
         The number of trainable parameters in the model.
     """
     return sum(p.numel() for p in model.parameters() if p.requires_grad)
-    
+
+
 # --------------- Function for reshaping a 2D grid to sequence --------------- #
-    
+
+
 def grid_to_seq(grid_2d: np.ndarray) -> torch.Tensor:
     """
-    Format a 2D grid of values for use with sequence models in PyTorch. 
-    
-    In Pytorch, LSTM and GRU expects all of its inputs to be 3D tensors. The first axis is the sequence itself, 
-    the second indexes instances in the mini-batch, and the third indexes number of features of in each input 
-    vector at each time step. 
-    
-    We use a mini-batch size of 1. Each time step in our sequence only contains one feature (a single value from the 2D grid) 
-    so the third axis is also 1. The length of the sequence is the number of samples squared. 
-    
-    We have effectively flattened the 2D grid into a sequence with batch and feature dimensions in order to feed the data 
+    Format a 2D grid of values for use with sequence models in PyTorch.
+
+    In Pytorch, LSTM and GRU expects all of its inputs to be 3D tensors. The first axis is the sequence itself,
+    the second indexes instances in the mini-batch, and the third indexes number of features of in each input
+    vector at each time step.
+
+    We use a mini-batch size of 1. Each time step in our sequence only contains one feature (a single value from the 2D grid)
+    so the third axis is also 1. The length of the sequence is the number of samples squared.
+
+    We have effectively flattened the 2D grid into a sequence with batch and feature dimensions in order to feed the data
     into the LSTM or GRU. This is in contrast to approximating functions with MLP, in which case we first convert the data
     into X (matrix) and y (vector) before feeding it into the models. Essentially, we represent the data in different ways
     in order to feed it into different types of models.
-    
+
     Finally, we can reshape the predictions back into a 2D grid for plotting after the LSTM or GRU has made its predictions.
-    
+
     Parameters
     ----------
     grid_2d : np.ndarray
@@ -155,18 +177,22 @@ def grid_to_seq(grid_2d: np.ndarray) -> torch.Tensor:
     """
     tensor_3d = torch.from_numpy(np.copy(grid_2d))
     # 3D tensor with seq_len = samples * samples, batch = 1, and input_size = 1
-    tensor_3d = tensor_3d.view(-1, 1, 1) 
-    
+    tensor_3d = tensor_3d.view(-1, 1, 1)
+
     return tensor_3d
+
 
 # ----------------------------- Trainer function ----------------------------- #
 
-def trainer(data: torch.Tensor,
-            model_type: str,
-            hyperparameters: Dict[str, Any],
-            epochs: int,
-            learning_rate: float,
-            logger: logging.Logger) -> np.ndarray:
+
+def trainer(
+    data: torch.Tensor,
+    model_type: str,
+    hyperparameters: Dict[str, Any],
+    epochs: int,
+    learning_rate: float,
+    logger: logging.Logger,
+) -> np.ndarray:
     """
     Train an LSTM or GRU model on the provided data.
 
@@ -185,15 +211,15 @@ def trainer(data: torch.Tensor,
     logger : logging.Logger
         A logger object for logging the training progress.
 
-    Returns 
+    Returns
     -------
     np.ndarray
         The predictions of the trained model, reshaped to match the original shape of the data.
     """
     # Initialize the model
-    if model_type.lower() == 'lstm':
+    if model_type.lower() == "lstm":
         model = LSTM(**hyperparameters)
-    elif model_type.lower() == 'gru':
+    elif model_type.lower() == "gru":
         model = GRU(**hyperparameters)
     else:
         raise ValueError("Invalid model_type; expected 'lstm' or 'gru'")
@@ -215,7 +241,9 @@ def trainer(data: torch.Tensor,
         optimizer.step()
 
         if (epoch + 1) % 10 == 0:
-            print(f'{model_type.upper()} | Epoch [{epoch  + 1}/{epochs}], Loss: {loss.item():.4f}')
+            print(
+                f"{model_type.upper()} | Epoch [{epoch  + 1}/{epochs}], Loss: {loss.item():.4f}"
+            )
 
     # Flatten the predictions to a 1D array
     predictions = outputs.view(-1).detach().numpy()
@@ -225,9 +253,16 @@ def trainer(data: torch.Tensor,
 
     return predictions
 
+
 # ----------------------------- Plot predictions ----------------------------- #
 
-def plot_predictions(original_data: np.ndarray, lstm_prediction: np.ndarray, gru_prediction: np.ndarray, figsize: Tuple[int, int] = (35, 25)) -> None:
+
+def plot_predictions(
+    original_data: np.ndarray,
+    lstm_prediction: np.ndarray,
+    gru_prediction: np.ndarray,
+    figsize: Tuple[int, int] = (35, 25),
+) -> None:
     """
     Plot the original data and the model's prediction in 3D.
 
@@ -251,19 +286,19 @@ def plot_predictions(original_data: np.ndarray, lstm_prediction: np.ndarray, gru
     fig = plt.figure(figsize=figsize)
 
     # Plot the original data
-    ax1 = fig.add_subplot(131, projection='3d')
-    ax1.plot_surface(xv, yv, original_data, cmap='viridis')
-    ax1.set_title('Original Data')
+    ax1 = fig.add_subplot(131, projection="3d")
+    ax1.plot_surface(xv, yv, original_data, cmap="viridis")
+    ax1.set_title("Original Data")
 
     # Plot the LSTM prediction
-    ax2 = fig.add_subplot(132, projection='3d')
-    ax2.plot_surface(xv, yv, lstm_prediction, cmap='viridis')
-    ax2.set_title('LSTM Prediction')
+    ax2 = fig.add_subplot(132, projection="3d")
+    ax2.plot_surface(xv, yv, lstm_prediction, cmap="viridis")
+    ax2.set_title("LSTM Prediction")
 
     # Plot the GRU prediction
-    ax3 = fig.add_subplot(133, projection='3d')
-    ax3.plot_surface(xv, yv, gru_prediction, cmap='viridis')
-    ax3.set_title('GRU Prediction')
+    ax3 = fig.add_subplot(133, projection="3d")
+    ax3.plot_surface(xv, yv, gru_prediction, cmap="viridis")
+    ax3.set_title("GRU Prediction")
 
     # Show the plots
     plt.show()

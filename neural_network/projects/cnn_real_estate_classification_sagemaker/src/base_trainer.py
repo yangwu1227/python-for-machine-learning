@@ -2,27 +2,31 @@ import os
 import logging
 from typing import List, Tuple, Dict, Any
 
-os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'  # Nopep8
+os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"  # Nopep8
 import tensorflow as tf
 
 # ---------------------------- Base trainer class ---------------------------- #
+
 
 class BaseTrainer(object):
     """
     This is the base trainer class, which contains initialization and model persistence methods. Both
     baseline model and transfer learning model classes in the entry point scripts inherit from this class.
     """
-    def __init__(self, 
-                 hyperparameters: Dict[str, Any],
-                 config: Dict[str, Any],
-                 job_name: str,
-                 train_dataset: tf.data.Dataset,
-                 val_dataset: tf.data.Dataset,
-                 train_class_weights: Dict[str, float],
-                 distributed: bool,
-                 strategy: tf.distribute.Strategy,
-                 model_dir: str,
-                 logger: logging.Logger) -> None:
+
+    def __init__(
+        self,
+        hyperparameters: Dict[str, Any],
+        config: Dict[str, Any],
+        job_name: str,
+        train_dataset: tf.data.Dataset,
+        val_dataset: tf.data.Dataset,
+        train_class_weights: Dict[str, float],
+        distributed: bool,
+        strategy: tf.distribute.Strategy,
+        model_dir: str,
+        logger: logging.Logger,
+    ) -> None:
         """
         Constructor for the BaselineTrainer class.
 
@@ -83,9 +87,9 @@ class BaseTrainer(object):
         """
         optimizer = tf.keras.optimizers.Adam(
             learning_rate=learning_rate,
-            beta_1=self.hyperparameters['adam_beta_1'],
-            beta_2=self.hyperparameters['adam_beta_2'],
-            clipnorm=self.hyperparameters['adam_clipnorm']
+            beta_1=self.hyperparameters["adam_beta_1"],
+            beta_2=self.hyperparameters["adam_beta_2"],
+            clipnorm=self.hyperparameters["adam_clipnorm"],
         )
 
         return optimizer
@@ -100,17 +104,16 @@ class BaseTrainer(object):
         tf.keras.losses.Loss
             A loss function.
         """
-        if self.hyperparameters['use_focal_loss']:
+        if self.hyperparameters["use_focal_loss"]:
             loss_fn = tf.keras.losses.CategoricalFocalCrossentropy(
-                alpha=self.hyperparameters['loss_alpha'],
-                gamma=self.hyperparameters['loss_gamma'],
+                alpha=self.hyperparameters["loss_alpha"],
+                gamma=self.hyperparameters["loss_gamma"],
                 from_logits=True,
-                name='loss'
+                name="loss",
             )
         else:
             loss_fn = tf.keras.losses.CategoricalCrossentropy(
-                from_logits=True,
-                name='loss'
+                from_logits=True, name="loss"
             )
 
         return loss_fn
@@ -125,10 +128,10 @@ class BaseTrainer(object):
             A list of metrics--- accuracy, precision, recall, and area under PR curve.
         """
         metrics = [
-            tf.keras.metrics.CategoricalAccuracy(name='accuracy'),
-            tf.keras.metrics.Recall(thresholds=0, name='recall'),
-            tf.keras.metrics.Precision(thresholds=0, name='precision'),
-            tf.keras.metrics.AUC(curve='PR', from_logits=True, name='auc_pr')
+            tf.keras.metrics.CategoricalAccuracy(name="accuracy"),
+            tf.keras.metrics.Recall(thresholds=0, name="recall"),
+            tf.keras.metrics.Precision(thresholds=0, name="precision"),
+            tf.keras.metrics.AUC(curve="PR", from_logits=True, name="auc_pr"),
         ]
 
         return metrics
@@ -149,11 +152,11 @@ class BaseTrainer(object):
         bool
             A boolean that specifies whether the current process is the chief worker.
         """
-        return (task_type == 'worker' and task_id == 0)
+        return task_type == "worker" and task_id == 0
 
     def _create_temp_dir(self, dir: str, task_id: int) -> str:
         """
-        This function creates a temporary directory for a given worker, specified by the task id. The temporary directories 
+        This function creates a temporary directory for a given worker, specified by the task id. The temporary directories
         on the worker need to be unique to prevent errors resulting from multiple workers trying to write to the same location.
 
         Parameters
@@ -169,7 +172,7 @@ class BaseTrainer(object):
             The path to the temporary directory.
         """
         # Unique temporary directory for worker with task id
-        base_temp_dir = 'worker_temp_' + str(task_id)
+        base_temp_dir = "worker_temp_" + str(task_id)
         full_temp_dir = os.path.join(dir, base_temp_dir)
         # This creates a directory and all parent/intermediate directories
         tf.io.gfile.makedirs(full_temp_dir)
@@ -177,7 +180,7 @@ class BaseTrainer(object):
 
     def _create_model_dir(self, model_dir: str, task_type: str, task_id: int) -> str:
         """
-        This function creates a model directory for the given worker. If the worker is the chief worker, 
+        This function creates a model directory for the given worker. If the worker is the chief worker,
         then the model directory will be returned as a string. Otherwise, a temporary directory will be
         created and returned as a string. This is so that the chief worker can save the model to the
         model directory, while the other workers can save the model to their respective temporary directories.
@@ -202,8 +205,8 @@ class BaseTrainer(object):
 
         # If not the chief worker, create a temporary directory
         if not self._is_chief(task_type, task_id):
-            base_model_dir = self._create_temp_dir('/tmp', task_id)
-        
+            base_model_dir = self._create_temp_dir("/tmp", task_id)
+
         # The variable 'base_model_dir' is now either the original model_dir ('opt/ml') or a temporary directory (f'worker_temp_{task_id}')
         return os.path.join(base_model_dir, base_name)
 
@@ -220,6 +223,6 @@ class BaseTrainer(object):
         None
         """
         # Delete the temporary directories
-        os.system(f'rm -rf /tmp/worker_temp_*')
-        
+        os.system(f"rm -rf /tmp/worker_temp_*")
+
         return None

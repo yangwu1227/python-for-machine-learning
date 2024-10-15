@@ -22,19 +22,21 @@ def get_data() -> Tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
 
     # Read in data
     features = pd.read_csv(data_prefix + "features_xgboost.csv", header=None)
-    labels = pd.read_csv(data_prefix + "tags.csv").set_index('TransactionID')
+    labels = pd.read_csv(data_prefix + "tags.csv").set_index("TransactionID")
 
     # Read in train and validation 'TransactionID's, see data processing script for more details
     valid_users = pd.read_csv(data_prefix + "validation.csv", header=None)
     test_users = pd.read_csv(data_prefix + "test.csv", header=None)
 
     # Obtain train, validation data using inner joins
-    valid_X = features.merge(valid_users, on=[0], how='inner')
-    test_X = features.merge(test_users, on=[0], how='inner')
+    valid_X = features.merge(valid_users, on=[0], how="inner")
+    test_X = features.merge(test_users, on=[0], how="inner")
 
     # Obtain train data by using the complement of the set of validation and test TransactionID's
-    train_index = ~((features[0].isin(test_users[0].values) | (
-        features[0].isin(valid_users[0].values))))
+    train_index = ~(
+        features[0].isin(test_users[0].values)
+        | (features[0].isin(valid_users[0].values))
+    )
 
     # Obtain train, validation, test data
     train_X = features[train_index]
@@ -77,12 +79,13 @@ def print_metrics(y_true: np.ndarray, y_predicted: np.ndarray) -> List[np.float]
     )
 
     acc = (true_pos + true_neg) / (true_pos + true_neg + false_pos + false_neg)
-    precision = true_pos / \
-        (true_pos + false_pos) if (true_pos + false_pos) > 0 else 0
-    recall = true_pos / \
-        (true_pos + false_neg) if (true_pos + false_neg) > 0 else 0
-    f1 = 2 * (precision * recall) / (precision +
-                                     recall) if (precision + recall) > 0 else 0
+    precision = true_pos / (true_pos + false_pos) if (true_pos + false_pos) > 0 else 0
+    recall = true_pos / (true_pos + false_neg) if (true_pos + false_neg) > 0 else 0
+    f1 = (
+        2 * (precision * recall) / (precision + recall)
+        if (precision + recall) > 0
+        else 0
+    )
     return [f1, precision, recall, acc]
 
 
@@ -99,20 +102,19 @@ def plot_cm(y_true: np.ndarray, y_predicted: np.ndarray, p: float = 0.5) -> None
     """
 
     # Normalize the rows of the confusion matrix
-    cm = confusion_matrix(y_true, y_predicted > p, normalize='true')
-    plt.rcParams['figure.figsize'] = (17, 15)
+    cm = confusion_matrix(y_true, y_predicted > p, normalize="true")
+    plt.rcParams["figure.figsize"] = (17, 15)
     plt.figure(figsize=(5, 5))
-    sns.heatmap(cm, annot=True, fmt='f')
-    plt.title('Confusion matrix @{:.2f}'.format(p))
-    plt.ylabel('Actual label')
-    plt.xlabel('Predicted label')
+    sns.heatmap(cm, annot=True, fmt="f")
+    plt.title("Confusion matrix @{:.2f}".format(p))
+    plt.ylabel("Actual label")
+    plt.xlabel("Predicted label")
 
-    print('Legitimate Transactions Detected (True Negatives): ', cm[0][0])
-    print(
-        'Legitimate Transactions Incorrectly Detected (False Positives): ', cm[0][1])
-    print('Fraudulent Transactions Missed (False Negatives): ', cm[1][0])
-    print('Fraudulent Transactions Detected (True Positives): ', cm[1][1])
-    print('Total Fraudulent Transactions: ', np.sum(cm[1]))
+    print("Legitimate Transactions Detected (True Negatives): ", cm[0][0])
+    print("Legitimate Transactions Incorrectly Detected (False Positives): ", cm[0][1])
+    print("Fraudulent Transactions Missed (False Negatives): ", cm[1][0])
+    print("Fraudulent Transactions Detected (True Positives): ", cm[1][1])
+    print("Total Fraudulent Transactions: ", np.sum(cm[1]))
 
 
 def plot_prc(y_true: np.ndarray, y_predicted: np.ndarray, **kwargs) -> None:
@@ -128,9 +130,9 @@ def plot_prc(y_true: np.ndarray, y_predicted: np.ndarray, **kwargs) -> None:
     precision, recall, _ = precision_recall_curve(y_true, y_predicted)
 
     plt.plot(precision, recall, linewidth=2, **kwargs)
-    plt.title('Precision-Recall Curve')
-    plt.xlabel('Precision')
-    plt.ylabel('Recall')
+    plt.title("Precision-Recall Curve")
+    plt.xlabel("Precision")
+    plt.ylabel("Recall")
     plt.grid(True)
     ax = plt.gca()
-    ax.set_aspect('equal')
+    ax.set_aspect("equal")

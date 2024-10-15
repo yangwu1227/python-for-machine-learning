@@ -7,25 +7,28 @@ import numpy as np
 import matplotlib.pyplot as plt
 from typing import List, Tuple
 
-plt.style.use('utils/deeplearning.mplstyle')
-dlblue = '#0096ff'
-dlorange = '#FF9300'
-dldarkred = '#C00000'
-dlmagenta = '#FF40FF'
-dlpurple = '#7030A0'
+plt.style.use("utils/deeplearning.mplstyle")
+dlblue = "#0096ff"
+dlorange = "#FF9300"
+dldarkred = "#C00000"
+dlmagenta = "#FF40FF"
+dlpurple = "#7030A0"
 dlcolors = [dlblue, dlorange, dldarkred, dlmagenta, dlpurple]
 dlc = {
-    'dlblue': '#0096ff',
-    'dlorange': '#FF9300',
-    'dldarkred': '#C00000',
-    'dlmagenta': '#FF40FF',
-    'dlpurple': '#7030A0'
+    "dlblue": "#0096ff",
+    "dlorange": "#FF9300",
+    "dldarkred": "#C00000",
+    "dlmagenta": "#FF40FF",
+    "dlpurple": "#7030A0",
 }
 
 
 # Regression Routines
 
-def compute_cost_matrix(X: np.ndarray, y: np.ndarray, w: np.ndarray, b: float, verbose: bool = False) -> float:
+
+def compute_cost_matrix(
+    X: np.ndarray, y: np.ndarray, w: np.ndarray, b: float, verbose: bool = False
+) -> float:
     """
     Compute the cost for linear regression.
 
@@ -53,16 +56,18 @@ def compute_cost_matrix(X: np.ndarray, y: np.ndarray, w: np.ndarray, b: float, v
     f_wb = X @ w + b
 
     # Calculate cost.
-    total_cost = (1/(2*m)) * np.sum((f_wb-y)**2)
+    total_cost = (1 / (2 * m)) * np.sum((f_wb - y) ** 2)
 
     if verbose:
-        print('f_wb:')
+        print("f_wb:")
         print(f_wb)
 
     return total_cost
 
 
-def compute_gradient_matrix(X: np.ndarray, y: np.ndarray, w: np.ndarray, b: float) -> Tuple[float, np.ndarray]:
+def compute_gradient_matrix(
+    X: np.ndarray, y: np.ndarray, w: np.ndarray, b: float
+) -> Tuple[float, np.ndarray]:
     """
     Compute the gradient for linear regression.
 
@@ -85,8 +90,8 @@ def compute_gradient_matrix(X: np.ndarray, y: np.ndarray, w: np.ndarray, b: floa
     m, n = X.shape
     f_wb = X @ w + b
     e = f_wb - y
-    dj_dw = (1/m) * (X.T @ e)
-    dj_db = (1/m) * np.sum(e)
+    dj_dw = (1 / m) * (X.T @ e)
+    dj_db = (1 / m) * np.sum(e)
 
     return dj_db, dj_dw
 
@@ -115,12 +120,14 @@ def compute_cost(X: np.ndarray, y: np.ndarray, w: np.ndarray, b: float) -> float
     cost = 0.0
     for i in range(m):
         f_wb_i = np.dot(X[i], w) + b
-        cost = cost + (f_wb_i - y[i])**2
-    cost = cost/(2*m)
-    return cost 
+        cost = cost + (f_wb_i - y[i]) ** 2
+    cost = cost / (2 * m)
+    return cost
 
 
-def compute_gradient(X: np.ndarray, y: np.ndarray, w: np.ndarray, b: float) -> Tuple[float, np.ndarray]:
+def compute_gradient(
+    X: np.ndarray, y: np.ndarray, w: np.ndarray, b: float
+) -> Tuple[float, np.ndarray]:
     """
     Compute the gradient for linear regression.
 
@@ -142,14 +149,14 @@ def compute_gradient(X: np.ndarray, y: np.ndarray, w: np.ndarray, b: float) -> T
     """
     m, n = X.shape
     dj_dw = np.zeros((n,))
-    dj_db = 0.
+    dj_db = 0.0
 
     for i in range(m):
         err = (np.dot(X[i], w) + b) - y[i]
         for j in range(n):
-            dj_dw[j] = dj_dw[j] + err * X[i,j]
+            dj_dw[j] = dj_dw[j] + err * X[i, j]
         dj_db = dj_db + err
-    dj_dw = dj_dw/m
-    dj_db = dj_db/m
+    dj_dw = dj_dw / m
+    dj_db = dj_db / m
 
     return dj_db, dj_dw

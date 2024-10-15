@@ -3,16 +3,19 @@ from typing import Dict
 import pandas as pd
 import pulp
 
-def optimize_vehicle_allocation(forecast: pd.DataFrame, 
-                                cost_bus_40: int, 
-                                cost_bus_60: int, 
-                                cost_rail: int, 
-                                capacity_bus_40: int, 
-                                capacity_bus_60: int, 
-                                capacity_rail: int, 
-                                trips_per_bus: int, 
-                                trips_per_rail: int,
-                                percentage_40_foot: float) -> pd.DataFrame:
+
+def optimize_vehicle_allocation(
+    forecast: pd.DataFrame,
+    cost_bus_40: int,
+    cost_bus_60: int,
+    cost_rail: int,
+    capacity_bus_40: int,
+    capacity_bus_60: int,
+    capacity_rail: int,
+    trips_per_bus: int,
+    trips_per_rail: int,
+    percentage_40_foot: float,
+) -> pd.DataFrame:
     """
     Optimize the allocation of buses and railcars based on forecasted demand.
 
@@ -47,22 +50,31 @@ def optimize_vehicle_allocation(forecast: pd.DataFrame,
     days = forecast.index
 
     # Problem formulation
-    problem = pulp.LpProblem('Vehicle_Allocation', pulp.LpMinimize)
+    problem = pulp.LpProblem("Vehicle_Allocation", pulp.LpMinimize)
 
     # Decision variables
-    buses_40 = pulp.LpVariable.dicts('Buses_40', days, lowBound=0, cat='Integer')
-    buses_60 = pulp.LpVariable.dicts('Buses_60', days, lowBound=0, cat='Integer')
-    rails = pulp.LpVariable.dicts('Rails', days, lowBound=0, cat='Integer')
+    buses_40 = pulp.LpVariable.dicts("Buses_40", days, lowBound=0, cat="Integer")
+    buses_60 = pulp.LpVariable.dicts("Buses_60", days, lowBound=0, cat="Integer")
+    rails = pulp.LpVariable.dicts("Rails", days, lowBound=0, cat="Integer")
 
     # Objective function
-    problem += pulp.lpSum([cost_bus_40 * buses_40[day] + cost_bus_60 * buses_60[day] + cost_rail * rails[day] for day in days])
+    problem += pulp.lpSum(
+        [
+            cost_bus_40 * buses_40[day]
+            + cost_bus_60 * buses_60[day]
+            + cost_rail * rails[day]
+            for day in days
+        ]
+    )
 
     # Constraints
     for day in days:
-        forecasted_bus = forecast.loc[day, 'bus']
-        problem += (buses_40[day] * capacity_bus_40 + buses_60[day] * capacity_bus_60) * trips_per_bus >= forecasted_bus
+        forecasted_bus = forecast.loc[day, "bus"]
+        problem += (
+            buses_40[day] * capacity_bus_40 + buses_60[day] * capacity_bus_60
+        ) * trips_per_bus >= forecasted_bus
 
-        forecasted_rail = forecast.loc[day, 'rail_boardings']
+        forecasted_rail = forecast.loc[day, "rail_boardings"]
         problem += rails[day] * capacity_rail * trips_per_rail >= forecasted_rail
 
         # Additional constraint for 40-foot buses (modify as needed)
@@ -73,10 +85,10 @@ def optimize_vehicle_allocation(forecast: pd.DataFrame,
 
     # Extracting the solution
     optimal_solution = {
-        'Date': days,
-        'Optimal Number of 40-foot Buses': [buses_40[day].varValue for day in days],
-        'Optimal Number of 60-foot Buses': [buses_60[day].varValue for day in days],
-        'Optimal Number of Railcars': [rails[day].varValue for day in days]
+        "Date": days,
+        "Optimal Number of 40-foot Buses": [buses_40[day].varValue for day in days],
+        "Optimal Number of 60-foot Buses": [buses_60[day].varValue for day in days],
+        "Optimal Number of Railcars": [rails[day].varValue for day in days],
     }
 
     return pd.DataFrame(optimal_solution)

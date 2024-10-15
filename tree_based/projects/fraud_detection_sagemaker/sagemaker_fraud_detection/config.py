@@ -14,7 +14,7 @@ region_name = boto3_session.region_name
 
 # Target s3 paths and prefixes
 s3_prefix = "fraud_detection_project"
-s3_bucket = 'yang-ml-sagemaker'
+s3_bucket = "yang-ml-sagemaker"
 s3_raw_data_prefix = "raw_data"
 s3_processing_output = "preprocessed_data"
 s3_train_output = "training_output"

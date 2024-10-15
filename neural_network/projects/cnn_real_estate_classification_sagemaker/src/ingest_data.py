@@ -1,4 +1,4 @@
-import os 
+import os
 import sys
 import re
 import subprocess
@@ -6,7 +6,7 @@ import shutil
 import s3fs
 import json
 
-os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2' # NoPep8
+os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"  # NoPep8
 import tensorflow as tf
 import sagemaker
 
@@ -14,19 +14,19 @@ from hydra import compose, initialize, core
 from omegaconf import OmegaConf
 from custom_utils import get_logger
 
-def main() -> int:
 
+def main() -> int:
     # ---------------------------------- Set up ---------------------------------- #
 
     core.global_hydra.GlobalHydra.instance().clear()
-    initialize(version_base='1.2', config_path='config', job_name='ingest_data')
-    config = OmegaConf.to_container(compose(config_name='main'), resolve=True)
+    initialize(version_base="1.2", config_path="config", job_name="ingest_data")
+    config = OmegaConf.to_container(compose(config_name="main"), resolve=True)
 
-    logger = get_logger('ingest_data')
+    logger = get_logger("ingest_data")
 
     # --------------------------- Download zip from s3 --------------------------- #
 
-    logger.info('Downloading zip from s3...')
+    logger.info("Downloading zip from s3...")
 
     # Create a folder in the parent directory of the directory of this python script to store the raw data
     raw_data_dir = os.path.join(
@@ -35,7 +35,7 @@ def main() -> int:
                 os.path.abspath(__file__)  # Get the absolute path of the current script
             )
         ),
-        'data' 
+        "data",
     )
     if not os.path.exists(raw_data_dir):
         os.makedirs(raw_data_dir)
@@ -43,34 +43,32 @@ def main() -> int:
     # Download the zip file from s3
     subprocess.run(
         f'aws s3 cp s3://{config["s3_bucket"]}/{config["s3_key"]}/raw-data/data.zip {raw_data_dir}/data.zip',
-        shell=True
+        shell=True,
     )
     # Unzip the file
-    subprocess.run(
-        f'unzip -q {raw_data_dir}/data.zip -d {raw_data_dir}',
-        shell=True
-    )
+    subprocess.run(f"unzip -q {raw_data_dir}/data.zip -d {raw_data_dir}", shell=True)
 
     # --------------------------- Upload data to s3 --------------------------- #
 
-    logger.info('Load, compute class_weights, and upload to s3...')
+    logger.info("Load, compute class_weights, and upload to s3...")
 
     fs = s3fs.S3FileSystem()
-    for dir_key in ['train', 'val', 'test']:
-
+    for dir_key in ["train", "val", "test"]:
         local_dir_key = os.path.join(raw_data_dir, dir_key)
-        s3_dir_key = f's3://{config["s3_bucket"]}/{config["s3_key"]}/input-data/{dir_key}'
+        s3_dir_key = (
+            f's3://{config["s3_bucket"]}/{config["s3_key"]}/input-data/{dir_key}'
+        )
 
         # Read in and save dataset to s3
         dataset = tf.keras.utils.image_dataset_from_directory(
             directory=local_dir_key,
-            labels='inferred',
-            label_mode='categorical',
+            labels="inferred",
+            label_mode="categorical",
             batch_size=None,
-            image_size=(config['image_size'], config['image_size']),
+            image_size=(config["image_size"], config["image_size"]),
             shuffle=True,
-            seed=config['random_seed'],
-            interpolation='bicubic'
+            seed=config["random_seed"],
+            interpolation="bicubic",
         )
         dataset.save(s3_dir_key)
 
@@ -83,27 +81,40 @@ def main() -> int:
             total_counts += class_counts[class_name]
 
         # Log class distributions
-        class_dist = {class_name: round((class_counts[class_name] / total_counts) * 100, 6) for class_name in class_counts}
-        formatted_class_dist = ' | '.join(f'{key}: {value:.2f} %' for key, value in class_dist.items())
-        logger.info(f'Class distribution for {dir_key} with total count of {total_counts}: {formatted_class_dist}')
+        class_dist = {
+            class_name: round((class_counts[class_name] / total_counts) * 100, 6)
+            for class_name in class_counts
+        }
+        formatted_class_dist = " | ".join(
+            f"{key}: {value:.2f} %" for key, value in class_dist.items()
+        )
+        logger.info(
+            f"Class distribution for {dir_key} with total count of {total_counts}: {formatted_class_dist}"
+        )
 
         # Generate class weights
-        class_weights = {class_name: total_counts / class_counts[class_name] for class_name in class_counts}
+        class_weights = {
+            class_name: total_counts / class_counts[class_name]
+            for class_name in class_counts
+        }
         # Sort by class name and convert class names to indices
-        class_weights = {i: class_weights[class_name] for i, class_name in enumerate(sorted(class_weights))}
-        with fs.open(f'{s3_dir_key}_weights.json', 'w') as f:
+        class_weights = {
+            i: class_weights[class_name]
+            for i, class_name in enumerate(sorted(class_weights))
+        }
+        with fs.open(f"{s3_dir_key}_weights.json", "w") as f:
             json.dump(class_weights, f)
 
-    logger.info('Finished uploading data and weights to s3...')
+    logger.info("Finished uploading data and weights to s3...")
 
     # --------------------------------- Clean-up --------------------------------- #
 
     shutil.rmtree(raw_data_dir)
 
-    logger.info('Finished cleaning up...')
+    logger.info("Finished cleaning up...")
 
     return 0
 
-if __name__ == '__main__':
 
+if __name__ == "__main__":
     main()

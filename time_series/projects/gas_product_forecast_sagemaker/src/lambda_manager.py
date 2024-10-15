@@ -9,6 +9,7 @@ from boto3.resources.base import ServiceResource
 
 from src.custom_utils import get_logger
 
+
 class LambdaManager(object):
     """
     This class wraps the AWS Lambda client and provides methods that simplify
@@ -24,7 +25,8 @@ class LambdaManager(object):
     logger : logging.Logger
         The logger used by this class.
     """
-    def __init__(self, lambda_client: 'Client', iam_resource: ServiceResource):
+
+    def __init__(self, lambda_client: "Client", iam_resource: ServiceResource):
         """
         Constructor for LambdaManager class.
 
@@ -37,7 +39,7 @@ class LambdaManager(object):
 
         Returns
         -------
-        None 
+        None
         """
         self.lambda_client = lambda_client
         self.iam_resource = iam_resource
@@ -61,7 +63,7 @@ class LambdaManager(object):
             The deployment package in bytes.
         """
         buffer = io.BytesIO()
-        with zipfile.ZipFile(buffer, 'w') as zipped:
+        with zipfile.ZipFile(buffer, "w") as zipped:
             zipped.write(source_file, destination_file)
         # Move to the start of the buffer, so we can read from the start of the lambda handler source code
         buffer.seek(0)
@@ -71,7 +73,7 @@ class LambdaManager(object):
         """
         Get an AWS Identity and Access Management (IAM) role, which should be
         the execution role we created for SageMaker. This role gives SageMaker
-        permission to create, invoke, and perform other actions related to 
+        permission to create, invoke, and perform other actions related to
         AWS Lambda.
 
         Parameters
@@ -89,10 +91,10 @@ class LambdaManager(object):
             temp_role = self.iam_resource.Role(iam_role_name)
             temp_role.load()
             role = temp_role
-            self.logger.info(f'Found IAM role {iam_role_name}')
+            self.logger.info(f"Found IAM role {iam_role_name}")
         except ClientError as error:
-            if error.response['Error']['Code'] == 'NoSuchEntity':
-                self.logger.info(f'IAM role {iam_role_name} does not exist')
+            if error.response["Error"]["Code"] == "NoSuchEntity":
+                self.logger.info(f"IAM role {iam_role_name} does not exist")
             else:
                 self.logger.error(
                     f'Cannot find IAM role {iam_role_name} due to {error.response["Error"]["Message"]}'
@@ -100,7 +102,9 @@ class LambdaManager(object):
                 raise
         return role
 
-    def create_iam_role_for_lambda(self, iam_role_name: str) -> Tuple[ServiceResource, bool]:
+    def create_iam_role_for_lambda(
+        self, iam_role_name: str
+    ) -> Tuple[ServiceResource, bool]:
         """
         Creates an IAM role for Lambda function. If the role already exists, it is
         returned. In this project, we created the `forecast-lambda-execution-role`
@@ -124,29 +128,31 @@ class LambdaManager(object):
 
         # Create the role and attach the basic execution policy to it
         lambda_assume_role_policy = {
-            'Version': '2012-10-17',
-            'Statement': [
+            "Version": "2012-10-17",
+            "Statement": [
                 {
-                    'Effect': 'Allow',
-                    'Principal': {'Service': 'lambda.amazonaws.com'},
-                    'Action': 'sts:AssumeRole'
+                    "Effect": "Allow",
+                    "Principal": {"Service": "lambda.amazonaws.com"},
+                    "Action": "sts:AssumeRole",
                 }
             ],
         }
-        policy_arn = 'arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole'
+        policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
 
         try:
             role = self.iam_resource.create_role(
                 RoleName=iam_role_name,
-                AssumeRolePolicyDocument=json.dumps(lambda_assume_role_policy)
+                AssumeRolePolicyDocument=json.dumps(lambda_assume_role_policy),
             )
-            self.logger.info(f'Created IAM role {iam_role_name} for Lambda')
+            self.logger.info(f"Created IAM role {iam_role_name} for Lambda")
             role.attach_policy(PolicyArn=policy_arn)
-            self.logger.info(f'Attached basic execution policy to role {role.name}')
+            self.logger.info(f"Attached basic execution policy to role {role.name}")
         except ClientError as error:
-            if error.response['Error']['Code'] == 'EntityAlreadyExists':
+            if error.response["Error"]["Code"] == "EntityAlreadyExists":
                 role = self.iam_resource.Role(iam_role_name)
-                self.logger.warning(f'The role {iam_role_name} already exists, using it')
+                self.logger.warning(
+                    f"The role {iam_role_name} already exists, using it"
+                )
             else:
                 self.logger.exception(
                     f'Cannot create IAM role {iam_role_name} due to {error.response["Error"]["Message"]}'
@@ -173,8 +179,8 @@ class LambdaManager(object):
         try:
             response = self.lambda_client.get_function(FunctionName=function_name)
         except ClientError as error:
-            if error.response['Error']['Code'] == 'ResourceNotFoundException':
-                self.logger.info(f'Function {function_name} does not exist')
+            if error.response["Error"]["Code"] == "ResourceNotFoundException":
+                self.logger.info(f"Function {function_name} does not exist")
             else:
                 self.logger.error(
                     f'Cannot get function {function_name} due to {error.response["Error"]["Message"]}'
@@ -182,16 +188,18 @@ class LambdaManager(object):
                 raise
         return response
 
-    def create_function(self, 
-                        function_name: str,
-                        function_description: str,
-                        time_out: int,
-                        python_runtime: str,
-                        iam_role: ServiceResource,
-                        handler_name: str,  
-                        deployment_package: bytes,
-                        publish: bool,
-                        env_vars: Dict[str, str]) -> str:
+    def create_function(
+        self,
+        function_name: str,
+        function_description: str,
+        time_out: int,
+        python_runtime: str,
+        iam_role: ServiceResource,
+        handler_name: str,
+        deployment_package: bytes,
+        publish: bool,
+        env_vars: Dict[str, str],
+    ) -> str:
         """
         Deploys a Lambda function.
 
@@ -229,21 +237,23 @@ class LambdaManager(object):
                 Description=function_description,
                 Timeout=time_out,
                 Handler=handler_name,
-                Code={'ZipFile': deployment_package},
+                Code={"ZipFile": deployment_package},
                 Publish=publish,
-                Environment={
-                    'Variables': env_vars
-                }
+                Environment={"Variables": env_vars},
             )
 
-            function_arn = response['FunctionArn']
+            function_arn = response["FunctionArn"]
             # This returns an object that can wait for some condition
-            waiter = self.lambda_client.get_waiter('function_active_v2') 
+            waiter = self.lambda_client.get_waiter("function_active_v2")
             # Wait for the function's state to be Active
             waiter.wait(FunctionName=function_name)
-            self.logger.info(f'Function {function_name} is active with ARN {function_arn}')
+            self.logger.info(
+                f"Function {function_name} is active with ARN {function_arn}"
+            )
         except ClientError as error:
-            self.logger.error(f'Cannot create function due to {error.response["Error"]["Message"]}')
+            self.logger.error(
+                f'Cannot create function due to {error.response["Error"]["Message"]}'
+            )
             raise
         else:
             return function_arn
@@ -259,15 +269,19 @@ class LambdaManager(object):
         """
         try:
             self.lambda_client.delete_function(FunctionName=function_name)
-            self.logger.info(f'Deleted function {function_name}')
+            self.logger.info(f"Deleted function {function_name}")
         except ClientError as error:
-            self.logger.exception(f'Cannot delete function {function_name} due to {error.response["Error"]["Message"]}')
+            self.logger.exception(
+                f'Cannot delete function {function_name} due to {error.response["Error"]["Message"]}'
+            )
             raise
 
-    def invoke_function(self, 
-                        function_name: str, 
-                        payload: Dict[str, Union[str, int]],
-                        include_log: bool = False) -> Dict[str, Union[str, bytes]]:
+    def invoke_function(
+        self,
+        function_name: str,
+        payload: Dict[str, Union[str, int]],
+        include_log: bool = False,
+    ) -> Dict[str, Union[str, bytes]]:
         """
         Invokes a Lambda function based on the function name and parameters. This
         method is useful for testing a Lambda function.
@@ -290,17 +304,21 @@ class LambdaManager(object):
             response = self.lambda_client.invoke(
                 FunctionName=function_name,
                 # This is the default, which invokes the function synchronously and keeps the connection open until return or timeout
-                InvocationType='RequestResponse',
+                InvocationType="RequestResponse",
                 Payload=json.dumps(payload),
-                LogType='Tail' if include_log else 'None'
+                LogType="Tail" if include_log else "None",
             )
-            self.logger.info(f'Invoked function {function_name}')
+            self.logger.info(f"Invoked function {function_name}")
         except ClientError as error:
-            self.logger.exception(f'Cannot invoke function {function_name} due to {error.response["Error"]["Message"]}')
+            self.logger.exception(
+                f'Cannot invoke function {function_name} due to {error.response["Error"]["Message"]}'
+            )
             raise
         return response
 
-    def update_function_code(self, function_name: str, deployment_package: bytes) -> Dict[str, Union[str, int]]:
+    def update_function_code(
+        self, function_name: str, deployment_package: bytes
+    ) -> Dict[str, Union[str, int]]:
         """
         Updates the code for a Lambda function by submitting a .zip archive that contains
         the refactored or updated code for the function. This is useful for interactive
@@ -323,12 +341,16 @@ class LambdaManager(object):
                 FunctionName=function_name, ZipFile=deployment_package
             )
         except ClientError as error:
-            self.logger.error(f'Cannot update function {function_name} due to {error.response["Error"]["Message"]}')
+            self.logger.error(
+                f'Cannot update function {function_name} due to {error.response["Error"]["Message"]}'
+            )
             raise
         else:
             return response
 
-    def update_function_configuration(self, function_name: str, env_vars: Dict[str, str]) -> Dict[str, Union[str, int]]:
+    def update_function_configuration(
+        self, function_name: str, env_vars: Dict[str, str]
+    ) -> Dict[str, Union[str, int]]:
         """
         Updates the environment variables for a Lambda function.
 
@@ -346,10 +368,12 @@ class LambdaManager(object):
         """
         try:
             response = self.lambda_client.update_function_configuration(
-                FunctionName=function_name, Environment={'Variables': env_vars}
+                FunctionName=function_name, Environment={"Variables": env_vars}
             )
         except ClientError as error:
-            self.logger.error(f'Cannot update function {function_name} configurations due to {error.response["Error"]["Message"]}')
+            self.logger.error(
+                f'Cannot update function {function_name} configurations due to {error.response["Error"]["Message"]}'
+            )
             raise
         else:
             return response
@@ -359,13 +383,15 @@ class LambdaManager(object):
         Lists the Lambda functions for the current account.
         """
         try:
-            func_paginator = self.lambda_client.get_paginator('list_functions')
+            func_paginator = self.lambda_client.get_paginator("list_functions")
             for func_page in func_paginator.paginate():
-                for func in func_page['Functions']:
-                    print(func['FunctionName'])
-                    desc = func.get('Description')
+                for func in func_page["Functions"]:
+                    print(func["FunctionName"])
+                    desc = func.get("Description")
                     if desc:
-                        print(f'\t{desc}')
+                        print(f"\t{desc}")
                     print(f'\t{func["Runtime"]}: {func["Handler"]}')
         except ClientError as error:
-            self.logger.error(f'Cannot list functions due to {error.response["Error"]["Message"]}')
+            self.logger.error(
+                f'Cannot list functions due to {error.response["Error"]["Message"]}'
+            )

@@ -14,6 +14,7 @@ import numpy as np
 
 # ------------------------------ Logger function ----------------------------- #
 
+
 def get_logger(name: str) -> logging.Logger:
     """
     Parameters
@@ -27,43 +28,49 @@ def get_logger(name: str) -> logging.Logger:
         A logger with the specified name.
     """
     logger = logging.getLogger(name)  # Return a logger with the specified name
-    
-    log_format = '%(asctime)s %(levelname)s %(name)s: %(message)s'
+
+    log_format = "%(asctime)s %(levelname)s %(name)s: %(message)s"
     formatter = logging.Formatter(log_format)
     # No matter how many processes we spawn, we only want one StreamHandler attached to the logger
-    if not any(isinstance(handler, logging.StreamHandler) for handler in logger.handlers):
+    if not any(
+        isinstance(handler, logging.StreamHandler) for handler in logger.handlers
+    ):
         handler = logging.StreamHandler(sys.stdout)
         handler.setFormatter(formatter)
         logger.addHandler(handler)
 
     logger.setLevel(logging.INFO)
-    
+
     return logger
 
+
 # ------------------- Parse arguments from the command line ------------------ #
+
 
 def parser() -> argparse.ArgumentParser:
     """
     Parse arguments from the command line.
 
     Returns
-    ------- 
+    -------
     argparse.ArgumentParser
         The parser object.
     """
     parser = argparse.ArgumentParser()
 
     # Data, model, and output directories
-    parser.add_argument('--model_dir', type=str, default=os.environ['SM_MODEL_DIR'])
-    parser.add_argument('--train', type=str, default=os.environ['SM_CHANNEL_TRAIN'])
-    parser.add_argument('--val', type=str, default=os.environ['SM_CHANNEL_VAL'])
+    parser.add_argument("--model_dir", type=str, default=os.environ["SM_MODEL_DIR"])
+    parser.add_argument("--train", type=str, default=os.environ["SM_CHANNEL_TRAIN"])
+    parser.add_argument("--val", type=str, default=os.environ["SM_CHANNEL_VAL"])
 
     # Other
-    parser.add_argument('--local_test_mode', type=int, default=0)
+    parser.add_argument("--local_test_mode", type=int, default=0)
 
     return parser
 
+
 # --------- Decorator for adding additional arguments to base parser --------- #
+
 
 def add_additional_args(parser_func: Callable, additional_args: Dict[str, type]):
     """
@@ -83,12 +90,13 @@ def add_additional_args(parser_func: Callable, additional_args: Dict[str, type])
     Callable
         The parser function with additional arguments.
     """
+
     def wrapper():
         # Call the original parser function to get the parser object
         parser = parser_func()
 
         for arg_name, arg_type in additional_args.items():
-            parser.add_argument(f'--{arg_name}', type=arg_type)
+            parser.add_argument(f"--{arg_name}", type=arg_type)
 
         args, _ = parser.parse_known_args()
 
@@ -96,14 +104,24 @@ def add_additional_args(parser_func: Callable, additional_args: Dict[str, type])
 
     return wrapper
 
+
 # ------------------------------ Inference tools ----------------------------- #
+
 
 class InferenceHandler(object):
     """
     A class for performing inference on an object detection model.
     """
+
     @classmethod
-    def plot_predictions(cls, image_file_path: str, normalized_boxes: List[List[float]], class_names: List[Union[str, int]], confidences: List[float], **kwargs) -> None:
+    def plot_predictions(
+        cls,
+        image_file_path: str,
+        normalized_boxes: List[List[float]],
+        class_names: List[Union[str, int]],
+        confidences: List[float],
+        **kwargs,
+    ) -> None:
         """
         Plot the predictions on the image.
 
@@ -119,7 +137,7 @@ class InferenceHandler(object):
             A list of confidences for each bounding box.
         kwargs : Dict[str, type]
             Additional arguments to pass to plt.figure().
-            
+
         Returns
         -------
         None
@@ -132,16 +150,22 @@ class InferenceHandler(object):
         ax.imshow(image_np)
 
         for idx in range(len(normalized_boxes)):
-
             left, bot, right, top = normalized_boxes[idx]
             x, w = [val * image_np.shape[1] for val in [left, right - left]]
             y, h = [val * image_np.shape[0] for val in [bot, top - bot]]
             color = colors[hash(class_names[idx]) % len(colors)]
-            rect = patches.Rectangle((x, y), w, h, linewidth=3, edgecolor=color, facecolor='none')
+            rect = patches.Rectangle(
+                (x, y), w, h, linewidth=3, edgecolor=color, facecolor="none"
+            )
             ax.add_patch(rect)
 
             text_label = class_names[idx], confidences[idx] * 100
-            ax.text(x, y, f"{class_names[idx]} {confidences[idx] * 100:.0f}%", bbox=dict(facecolor='white', alpha=0.5))
+            ax.text(
+                x,
+                y,
+                f"{class_names[idx]} {confidences[idx] * 100:.0f}%",
+                bbox=dict(facecolor="white", alpha=0.5),
+            )
 
         return None
 
@@ -181,7 +205,7 @@ class InferenceHandler(object):
         bytes
             The response of the endpoint.
         """
-        with open(image_file_path, 'rb') as f:
+        with open(image_file_path, "rb") as f:
             image_bytes = f.read()
 
         response = self.model_predictor.predict(
@@ -189,17 +213,19 @@ class InferenceHandler(object):
             # These are arguments for the boto3 invoke_endpoint() method
             initial_args={
                 # MIME type of the input data
-                'ContentType': 'application/x-image',
+                "ContentType": "application/x-image",
                 # Desired MIME type of the inference in the response
-                'Accept': f'application/json;verbose;n_predictions={num_boxes}',
-            }
+                "Accept": f"application/json;verbose;n_predictions={num_boxes}",
+            },
         )
 
         return response
 
-    def predict(self, image_file_path: str, num_boxes: int = 5) -> Tuple[List[str], List[float], List[List[float]]]:
+    def predict(
+        self, image_file_path: str, num_boxes: int = 5
+    ) -> Tuple[List[str], List[float], List[List[float]]]:
         """
-        Parse the response of the endpoint. This function parses the response of the endpoint, which is a set of bounding boxes, class names, 
+        Parse the response of the endpoint. This function parses the response of the endpoint, which is a set of bounding boxes, class names,
         and scores for the bounding boxes.
 
         Parameters
@@ -219,10 +245,10 @@ class InferenceHandler(object):
         model_predictions = json.loads(response)
 
         normalized_boxes, classes, scores, labels = (
-            model_predictions['normalized_boxes'],
-            model_predictions['classes'],
-            model_predictions['scores'],
-            model_predictions['labels']
+            model_predictions["normalized_boxes"],
+            model_predictions["classes"],
+            model_predictions["scores"],
+            model_predictions["labels"],
         )
 
         # Substitute the class indices with the classes labels
