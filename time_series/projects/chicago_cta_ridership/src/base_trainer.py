@@ -1,27 +1,24 @@
-import os
 import logging
-from IPython.display import Image
-from typing import Dict, List, Tuple, Union, Optional, Any
+import os
+from typing import Any, Dict, List, Optional, Tuple, Union
 
-import pandas as pd
 import numpy as np
-from sktime.performance_metrics.forecasting import (
-    MeanSquaredError,
-    MeanAbsoluteError,
-    MeanAbsolutePercentageError,
-)
-from sktime.split import SlidingWindowSplitter
-from sktime.forecasting.base import ForecastingHorizon
-from sktime.forecasting.compose import ColumnEnsembleForecaster
-
-from scipy.stats import shapiro, anderson
-from statsmodels.stats.diagnostic import acorr_ljungbox
-
-from src.custom_utils import SetUp, S3Helper
-
+import pandas as pd
 import plotly.graph_objects as go
+from IPython.display import Image
 from plotly.graph_objs import Figure
 from plotly.subplots import make_subplots
+from scipy.stats import anderson, shapiro
+from sktime.forecasting.base import ForecastingHorizon
+from sktime.forecasting.compose import ColumnEnsembleForecaster
+from sktime.performance_metrics.forecasting import (
+    MeanAbsoluteError,
+    MeanAbsolutePercentageError,
+    MeanSquaredError,
+)
+from sktime.split import SlidingWindowSplitter
+from src.custom_utils import S3Helper, SetUp
+from statsmodels.stats.diagnostic import acorr_ljungbox
 
 
 class BaseTrainer(object):

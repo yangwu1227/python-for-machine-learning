@@ -1,10 +1,10 @@
-import os
-import joblib
 import io
+import os
 
-from sklearn.pipeline import Pipeline
-import pandas as pd
+import joblib
 import numpy as np
+import pandas as pd
+from sklearn.pipeline import Pipeline
 
 # -------------------------------- Load model -------------------------------- #
 

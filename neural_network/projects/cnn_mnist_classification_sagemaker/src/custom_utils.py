@@ -1,20 +1,19 @@
-from typing import Tuple, List
 import argparse
-import logging
-import sys
-import os
 import io
-import boto3
+import logging
+import os
+import sys
+from typing import List, Tuple
 
+import boto3
 import numpy as np
 
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"  # Nopep8
-import tensorflow as tf
-
 import bokeh
 import bokeh.io
-from bokeh.plotting import figure, show
+import tensorflow as tf
 from bokeh.models import HoverTool
+from bokeh.plotting import figure, show
 from sagemaker.analytics import HyperparameterTuningJobAnalytics
 
 # ------------------------- Class for data ingestion ------------------------- #

@@ -1,18 +1,18 @@
-import os
-import logging
 import argparse
+import logging
+import os
 import sys
-from typing import Union, List, Dict, Tuple
 from functools import partial
+from typing import Dict, List, Tuple, Union
 
-from PIL import Image
-import sagemaker
 import numpy as np
+import sagemaker
+from PIL import Image
 
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"  # Nopep8
+import keras.backend as K
 import tensorflow as tf
 from tensorflow.keras import layers
-import keras.backend as K
 
 # ---------------------------------- Logger ---------------------------------- #
 

@@ -1,11 +1,11 @@
 import os
-from typing import Tuple, List
+from typing import List, Tuple
 
-import pandas as pd
 import numpy as np
-from sklearn.metrics import confusion_matrix, roc_curve, auc, precision_recall_curve
-from matplotlib import pyplot as plt
+import pandas as pd
 import seaborn as sns
+from matplotlib import pyplot as plt
+from sklearn.metrics import auc, confusion_matrix, precision_recall_curve, roc_curve
 
 
 def get_data() -> Tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
@@ -16,8 +16,10 @@ def get_data() -> Tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
 
     # Check if directory containing preprocessed data exists
     if not os.path.exists(data_prefix):
-        print(f"""Expected the following folder {data_prefix} to contain the preprocessed data. 
-                 Run data processing first in main notebook before running baselines comparisons""")
+        print(
+            f"""Expected the following folder {data_prefix} to contain the preprocessed data. 
+                 Run data processing first in main notebook before running baselines comparisons"""
+        )
         return None
 
     # Read in data

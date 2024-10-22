@@ -1,16 +1,15 @@
 import os
-import joblib
 from io import StringIO
 
 import dash
-from dash import dcc, html, dash_table
 import dash_bootstrap_components as dbc
-from dash.dependencies import Input, Output, State
-import plotly.graph_objs as go
+import joblib
 import pandas as pd
-
-from src.opt import optimize_vehicle_allocation
+import plotly.graph_objs as go
+from dash import dash_table, dcc, html
+from dash.dependencies import Input, Output, State
 from src.base_trainer import BaseTrainer
+from src.opt import optimize_vehicle_allocation
 
 # Load forecast results
 all_forecast_results = joblib.load(os.path.join("app/data", "forecast_results.joblib"))

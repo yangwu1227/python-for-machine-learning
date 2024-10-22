@@ -1,18 +1,16 @@
-import sys
 import os
+import sys
 from typing import List, Tuple, Union
-import ipywidgets as widgets
-from IPython.display import display, clear_output
 
+import ipywidgets as widgets
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+from IPython.display import clear_output, display
 from scipy.stats import norm
-from statsmodels.tsa.stattools import grangercausalitytests
-
+from seaborn import boxplot, kdeplot
 from sktime.utils.plotting import plot_correlations
-import matplotlib.pyplot as plt
-from seaborn import kdeplot
-from seaborn import boxplot
+from statsmodels.tsa.stattools import grangercausalitytests
 
 
 class ExploratoryDataAnalyzer(object):

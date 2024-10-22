@@ -1,14 +1,13 @@
+import argparse
+import glob
+import logging
 import os
 import sys
-import argparse
-import logging
-import glob
-from typing import List, Tuple, Dict, Union, Optional
+from typing import Dict, List, Optional, Tuple, Union
 
-import polars as pl
 import numpy as np
-
-from hydra import compose, initialize, core
+import polars as pl
+from hydra import compose, core, initialize
 from omegaconf import OmegaConf
 
 # ------------------------------- Preprocessing ------------------------------ #
@@ -30,10 +29,14 @@ def preprocess(train_data: pl.DataFrame) -> pl.DataFrame:
     """
     train_data = train_data.with_columns(
         # Convert 'first_day_of_month' column to datetime
-        pl.col("first_day_of_month").str.to_date().alias("first_day_of_month")
+        pl.col("first_day_of_month")
+        .str.to_date()
+        .alias("first_day_of_month")
     ).with_columns(
         # Extract year from 'first_day_of_month' column
-        pl.col("first_day_of_month").dt.year().alias("year")
+        pl.col("first_day_of_month")
+        .dt.year()
+        .alias("year")
     )
 
     return train_data
@@ -112,7 +115,9 @@ def density_adjustment(train_data: pl.DataFrame, census_data_dir: str) -> pl.Dat
     # Second loop to adjust microbusiness density for each year (2019 - 2022)
     train_data = train_data.with_columns(
         # Create a new column for 2021 population estimates
-        pl.col("cfips").map_dict(cfips_pop_map_2021).alias("est_pop_2021")
+        pl.col("cfips")
+        .map_dict(cfips_pop_map_2021)
+        .alias("est_pop_2021")
     )
     # Census years go from 2017 - 2021, so add 2 to get the correct training data year
     for census_data, census_year in zip(census_data_frames, census_years):
@@ -293,7 +298,8 @@ def convert_to_numpy(
             # The target should be the next 5 months after the window of length `series_len - num_predictions` above
             y_train[i,] = large_counties[
                 j,
-                k + (training_window - series_len - (num_predictions - 1)) : k
+                k
+                + (training_window - series_len - (num_predictions - 1)) : k
                 + (training_window - series_len + 1),
             ]
 

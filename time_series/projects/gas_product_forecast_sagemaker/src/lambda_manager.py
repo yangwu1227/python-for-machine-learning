@@ -4,9 +4,8 @@ import zipfile
 from logging import Logger
 from typing import Dict, Optional, Tuple, Union
 
-from botocore.exceptions import ClientError
 from boto3.resources.base import ServiceResource
-
+from botocore.exceptions import ClientError
 from src.custom_utils import get_logger
 
 

@@ -4,12 +4,12 @@ Logistic loss plotting routines and support
 
 from matplotlib import cm
 from utils.lab_utils_common import (
-    sigmoid,
+    compute_cost_matrix,
     dlblue,
     dlorange,
     np,
     plt,
-    compute_cost_matrix,
+    sigmoid,
 )
 
 

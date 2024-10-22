@@ -1,23 +1,23 @@
-import os
 import argparse
-from typing import Tuple, Union, List, Dict, Any, Optional, Callable
-from collections import OrderedDict
-import logging
-import sys
-import json
-import base64
 import ast
+import base64
+import json
+import logging
+import os
+import sys
+from collections import OrderedDict
+from typing import Any, Callable, Dict, List, Optional, Tuple, Union
+
 import s3fs
 from IPython.display import Image
 
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"  # Nopep8
-import tensorflow as tf
-
-import polars as pl
-import optuna
-from optuna.trial import TrialState
 import boto3
+import optuna
+import polars as pl
+import tensorflow as tf
 from botocore.exceptions import ClientError
+from optuna.trial import TrialState
 
 # ---------------------------------- Logger ---------------------------------- #
 
@@ -436,9 +436,12 @@ def dataset_from_csv(
 
     # List of default values based on feature dtype
     column_defaults = [
-        config["tf_keras"]["default_num"]
-        if name in config["tf_keras"]["num_feat"] + [config["tf_keras"]["weight_feat"]]
-        else config["tf_keras"]["default_cat"]
+        (
+            config["tf_keras"]["default_num"]
+            if name
+            in config["tf_keras"]["num_feat"] + [config["tf_keras"]["weight_feat"]]
+            else config["tf_keras"]["default_cat"]
+        )
         for name in config["csv_header"]
     ]
 

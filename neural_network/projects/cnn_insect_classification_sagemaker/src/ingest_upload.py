@@ -1,24 +1,22 @@
-import os
-import sys
-import logging
 import argparse
+import json
+import logging
+import os
 import random
 import subprocess
-from typing import Tuple, Dict
+import sys
 from multiprocessing import Pool
-import s3fs
-import json
-
-from hydra import compose, initialize, core
-from omegaconf import OmegaConf
+from typing import Dict, Tuple
 
 import numpy as np
+import s3fs
+from hydra import compose, core, initialize
+from omegaconf import OmegaConf
 
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"  # Nopep8
+import matplotlib.pyplot as plt
 import tensorflow as tf
 from tensorflow.keras.utils import image_dataset_from_directory
-
-import matplotlib.pyplot as plt
 
 # ------------------------- Downsample a single class ------------------------ #
 

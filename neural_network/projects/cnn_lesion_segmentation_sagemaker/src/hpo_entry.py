@@ -1,12 +1,11 @@
 import os
-from typing import Union, List, Dict, Tuple
+from typing import Dict, List, Tuple, Union
 
 import numpy as np
 
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"  # Nopep8
 import tensorflow as tf
-
-from custom_utils import get_logger, parser, load_data, unet_model, dice_loss
+from custom_utils import dice_loss, get_logger, load_data, parser, unet_model
 
 if __name__ == "__main__":
     logger = get_logger(name=__name__)

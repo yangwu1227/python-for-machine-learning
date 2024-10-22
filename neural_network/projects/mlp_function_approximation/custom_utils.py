@@ -1,34 +1,31 @@
 import logging
-import sys
 import os
-from typing import Tuple, Union, List, Dict, Any
+import sys
+from typing import Any, Dict, List, Tuple, Union
 
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"  # Nopep8
-import keras_tuner as kt
-import numpy as np
-
-import matplotlib.pyplot as plt
-import plotly.graph_objects as go
-from plotly.subplots import make_subplots
 import IPython
-from IPython.display import Image
-
+import keras_tuner as kt
+import matplotlib.pyplot as plt
+import numpy as np
 import optuna
+import plotly.graph_objects as go
+from IPython.display import Image
 from optuna.trial import TrialState
-
+from plotly.subplots import make_subplots
 from pygments import highlight
-from pygments.lexers import PythonLexer
 from pygments.formatters import HtmlFormatter
+from pygments.lexers import PythonLexer
 from pygments.style import Style
 from pygments.token import (
+    Comment,
+    Error,
+    Generic,
     Keyword,
     Name,
-    Comment,
-    String,
-    Error,
     Number,
     Operator,
-    Generic,
+    String,
 )
 
 # ------------------------------ Logger function ----------------------------- #

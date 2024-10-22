@@ -1,8 +1,8 @@
-from utils.lab_utils_common import dlc
-from matplotlib.widgets import Slider
-import numpy as np
 import matplotlib.pyplot as plt
+import numpy as np
 from matplotlib.gridspec import GridSpec
+from matplotlib.widgets import Slider
+from utils.lab_utils_common import dlc
 
 plt.style.use("utils/deeplearning.mplstyle")
 

@@ -1,18 +1,18 @@
-import os
-import sys
-import re
-import subprocess
-import shutil
-import s3fs
 import json
+import os
+import re
+import shutil
+import subprocess
+import sys
+
+import s3fs
 
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"  # NoPep8
-import tensorflow as tf
 import sagemaker
-
-from hydra import compose, initialize, core
-from omegaconf import OmegaConf
+import tensorflow as tf
 from custom_utils import get_logger
+from hydra import compose, core, initialize
+from omegaconf import OmegaConf
 
 
 def main() -> int:

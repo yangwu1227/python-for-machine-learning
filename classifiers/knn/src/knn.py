@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, Union
+from typing import Any, Dict, MutableSequence, Self, Union
 
 import numpy as np
 import pandas as pd
@@ -7,7 +7,7 @@ from sklearn.base import BaseEstimator, ClassifierMixin
 from sklearn.metrics.pairwise import cosine_similarity, euclidean_distances
 from sklearn.preprocessing import LabelEncoder
 from sklearn.utils.multiclass import check_classification_targets
-from sklearn.utils.validation import check_X_y, check_array, check_is_fitted
+from sklearn.utils.validation import check_array, check_is_fitted, check_X_y
 from tqdm import tqdm
 
 
@@ -25,7 +25,7 @@ def custom_cosine_similarity(sample: np.ndarray, X: np.ndarray) -> np.ndarray:
     Returns
     -------
     np.ndarray
-        The cosine similarity between the sample and all samples in the training data matrix.
+        The cosine similarities between the query sample and all samples in the training data matrix.
     """
     # Compute the dot products between the sample and all samples in the dataset
     # The result is a row vector with n_samples elements
@@ -59,7 +59,7 @@ def custom_euclidean_distances(sample: np.ndarray, X: np.ndarray) -> np.ndarray:
     Returns
     -------
     np.ndarray
-        The Euclidean distance between the sample and all samples in the training data matrix.
+        The Euclidean distances between the query sample and all samples in the training data matrix.
     """
     # X is (n_samples, n_features) and sample is (1, n_features), and so the subtraction is broadcasted along the first dimension (i.e., each row of X is subtracted by sample)
     # The result is a matrix with dimensions (n_samples, n_features)
@@ -115,8 +115,8 @@ class KNNClassifier(BaseEstimator, ClassifierMixin):
     def fit(
         self,
         X: Union[csr_matrix, np.ndarray, pd.DataFrame],
-        y: Union[np.ndarray, pd.Series, List[Union[str, float]]],
-    ) -> "KNNClassifier":
+        y: Union[np.ndarray, pd.Series, MutableSequence[Union[str, float]]],
+    ) -> Self:
         """
         The KNN classifier does not learn a model. Instead, it simply stores the training data. It is a 'lazy' learner.
 
@@ -124,12 +124,13 @@ class KNNClassifier(BaseEstimator, ClassifierMixin):
         ----------
         X : Union[csr_matrix, np.ndarray, pd.DataFrame]
             The input data.
-        y : Union[np.ndarray, pd.Series, List[Union[str, float]]]
+        y : Union[np.ndarray, pd.Series, MutableSequence[Union[str, float]]]
             The target labels.
 
         Returns
         -------
-        None
+        Self
+            The instance itself.
         """
         X, y = check_X_y(
             X=X,
@@ -192,7 +193,7 @@ class KNNClassifier(BaseEstimator, ClassifierMixin):
         self, test_sample: Union[np.ndarray, csr_matrix]
     ) -> np.ndarray:
         """
-        Compute the distance of the test sample to all training samples.
+        Compute the distances of the test sample to all training samples.
 
         Parameters
         ----------

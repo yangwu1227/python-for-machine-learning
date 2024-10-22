@@ -1,33 +1,31 @@
+import logging
 import os
 import sys
-from typing import Tuple, Dict, Any, Optional, List, Union, Callable
-import logging
+from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 
-from sklearn.compose import ColumnTransformer
-from sklearn.pipeline import Pipeline
-from sklearn.model_selection import StratifiedKFold
-from sklearn.utils.class_weight import compute_sample_weight
-from sklearn.metrics import log_loss
-
-from hydra import compose, initialize, core
-from omegaconf import OmegaConf
-import pandas as pd
+import joblib
 import numpy as np
 import optuna
-import joblib
+import pandas as pd
 import xgboost as xgb
-
 from custom_utils import (
-    get_logger,
-    get_db_url,
-    parser,
     add_additional_args,
-    custom_log_loss,
-    create_study,
-    study_report,
     create_preprocessor,
+    create_study,
+    custom_log_loss,
+    get_db_url,
+    get_logger,
+    parser,
+    study_report,
 )
-from inference import model_fn, input_fn, predict_fn
+from hydra import compose, core, initialize
+from inference import input_fn, model_fn, predict_fn
+from omegaconf import OmegaConf
+from sklearn.compose import ColumnTransformer
+from sklearn.metrics import log_loss
+from sklearn.model_selection import StratifiedKFold
+from sklearn.pipeline import Pipeline
+from sklearn.utils.class_weight import compute_sample_weight
 
 # ------------------ Function for creating xgboost estimator ----------------- #
 
@@ -55,9 +53,9 @@ def create_xgb_estimator(
     xgb_early_stopping = xgb.callback.EarlyStopping(
         rounds=50,
         metric_name="logloss",
-        data_name="validation_1"
-        if validation
-        else "validation_0",  # When training on the entire training set, use the training set as the single validation set with index 0
+        data_name=(
+            "validation_1" if validation else "validation_0"
+        ),  # When training on the entire training set, use the training set as the single validation set with index 0
         maximize=False,
         save_best=True,  # Save the best model
     )

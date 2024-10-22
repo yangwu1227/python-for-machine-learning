@@ -2,10 +2,10 @@ import argparse
 import logging
 import os
 from itertools import combinations
-from typing import Tuple, Dict
+from typing import Dict, Tuple
 
-import pandas as pd
 import numpy as np
+import pandas as pd
 from sklearn.model_selection import StratifiedShuffleSplit
 
 # ---------------------------------------------------------------------------- #

@@ -1,16 +1,15 @@
-import os
+import argparse
 import json
 import logging
+import os
 import sys
-import argparse
-from typing import Dict, Callable, Tuple, List, Union
+from typing import Callable, Dict, List, Tuple, Union
 
-from sagemaker.predictor import Predictor
 import matplotlib.patches as patches
-from matplotlib import pyplot as plt
-from PIL import Image
-from PIL import ImageColor
 import numpy as np
+from matplotlib import pyplot as plt
+from PIL import Image, ImageColor
+from sagemaker.predictor import Predictor
 
 # ------------------------------ Logger function ----------------------------- #
 

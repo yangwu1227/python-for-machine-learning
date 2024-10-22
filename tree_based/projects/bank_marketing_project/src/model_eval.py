@@ -1,15 +1,15 @@
 # ---------------------------------- Imports --------------------------------- #
 
-import pandas as pd
-import numpy as np
-from sklearn.metrics import (
-    confusion_matrix,
-    roc_curve,
-    precision_recall_curve,
-    balanced_accuracy_score,
-)
 import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
 import seaborn as sns
+from sklearn.metrics import (
+    balanced_accuracy_score,
+    confusion_matrix,
+    precision_recall_curve,
+    roc_curve,
+)
 
 # ------------------------------- Plot function ------------------------------ #
 

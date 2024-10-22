@@ -1,14 +1,13 @@
-import os
-import logging
-import sys
 import argparse
 import json
-from typing import Dict, Callable, Tuple, List
+import logging
+import os
+import sys
+from typing import Callable, Dict, List, Tuple
 
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"  # Nopep8
-import tensorflow as tf
-
 import numpy as np
+import tensorflow as tf
 
 # ------------------------------ Logger function ----------------------------- #
 

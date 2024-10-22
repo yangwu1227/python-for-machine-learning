@@ -1,9 +1,10 @@
 import csv
-import sys
-import numpy as np
-import multiprocessing.pool as mpp
-from typing import List, Tuple, TextIO
 import logging
+import multiprocessing.pool as mpp
+import sys
+from typing import List, TextIO, Tuple
+
+import numpy as np
 
 
 def generate_random_pairs(num_pairs: int) -> List[Tuple[float, float]]:

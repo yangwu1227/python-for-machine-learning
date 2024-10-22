@@ -1,17 +1,17 @@
-import sys
 import os
+import sys
 
+import optuna
+import pytest
 from hydra import compose, initialize
 from omegaconf import OmegaConf
-import pytest
-import optuna
 
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"  # Nopep8
 import tensorflow as tf
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from src.custom_utils import dataset_from_csv, get_logger
 from src.tf_keras_entry import tf_objective
-from src.custom_utils import get_logger, dataset_from_csv
 
 # --------------------------- Module level fixtures -------------------------- #
 

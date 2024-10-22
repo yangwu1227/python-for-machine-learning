@@ -1,25 +1,23 @@
-import os
 import argparse
-from typing import Tuple, Union, List, Dict, Any, Optional
+import ast
+import base64
+import json
 import logging
+import os
 import sys
 from functools import partial
-import base64
-import ast
-import json
+from typing import Any, Dict, List, Optional, Tuple, Union
 
 import boto3
+import numpy as np
 from botocore.exceptions import ClientError
 
-import numpy as np
-
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"  # Nopep8
-import tensorflow as tf
-
 import bokeh
 import bokeh.io
-from bokeh.plotting import figure, show
+import tensorflow as tf
 from bokeh.models import HoverTool
+from bokeh.plotting import figure, show
 from sagemaker.analytics import HyperparameterTuningJobAnalytics
 
 # ---------------------------------- Logger ---------------------------------- #

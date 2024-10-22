@@ -1,6 +1,7 @@
-import os
-import boto3
 import json
+import os
+
+import boto3
 
 runtime = boto3.client("runtime.sagemaker")
 

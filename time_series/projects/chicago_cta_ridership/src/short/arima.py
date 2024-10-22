@@ -1,24 +1,21 @@
 import warnings
-from typing import Dict, List, Tuple, Union, Optional, Any
+from typing import Any, Dict, List, Optional, Tuple, Union
 
-import pandas as pd
 import numpy as np
-
+import pandas as pd
+from sktime.forecasting.compose import (
+    ColumnEnsembleForecaster,
+    ForecastingPipeline,
+    TransformedTargetForecaster,
+)
+from sktime.forecasting.model_selection import ForecastingGridSearchCV
+from sktime.forecasting.statsforecast import StatsForecastAutoARIMA
+from sktime.transformations.compose import OptionalPassthrough
 from sktime.transformations.series.boxcox import LogTransformer
 from sktime.transformations.series.date import DateTimeFeatures
-from sktime.transformations.series.detrend import Detrender
-from sktime.transformations.series.detrend import Deseasonalizer
-from sktime.transformations.compose import OptionalPassthrough
-
-from sktime.forecasting.compose import TransformedTargetForecaster
-from sktime.forecasting.compose import ForecastingPipeline
-
-from sktime.forecasting.statsforecast import StatsForecastAutoARIMA
-from sktime.forecasting.compose import ColumnEnsembleForecaster
-from sktime.forecasting.model_selection import ForecastingGridSearchCV
-
-from src.custom_utils import S3Helper
+from sktime.transformations.series.detrend import Deseasonalizer, Detrender
 from src.base_trainer import BaseTrainer
+from src.custom_utils import S3Helper
 
 
 class ArimaTrainer(BaseTrainer):

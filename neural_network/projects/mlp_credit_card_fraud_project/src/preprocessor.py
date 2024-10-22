@@ -1,10 +1,11 @@
 # ---------------------------------- Imports --------------------------------- #
 
-import tensorflow as tf
-from tensorflow import keras
+from typing import List, Union
+
 import numpy as np
 import pandas as pd
-from typing import Union, List
+import tensorflow as tf
+from tensorflow import keras
 
 # ------------------------------ Column dropper ------------------------------ #
 

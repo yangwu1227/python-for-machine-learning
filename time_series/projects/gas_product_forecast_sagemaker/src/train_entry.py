@@ -1,30 +1,26 @@
-import os
-import logging
-import warnings
 import argparse
-from typing import Dict, Union, Tuple, List, Any
+import logging
+import os
+import warnings
+from typing import Any, Dict, List, Tuple, Union
 
-import pandas as pd
-import numpy as np
 import joblib
-
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
+from hydra import compose, core, initialize
+from matplotlib.ticker import MaxNLocator
+from omegaconf import OmegaConf
+from scipy.stats import shapiro
 from sktime.forecasting.base import ForecastingHorizon
-from sktime.split import SlidingWindowSplitter
 from sktime.forecasting.compose import TransformedTargetForecaster
-from sktime.transformations.series.fourier import FourierFeatures
-from sktime.transformations.series.boxcox import LogTransformer
-from sktime.transformations.series.detrend import Detrender, Deseasonalizer
 from sktime.forecasting.statsforecast import StatsForecastAutoARIMA
 from sktime.performance_metrics.forecasting import MeanSquaredError
-
-from scipy.stats import shapiro
+from sktime.split import SlidingWindowSplitter
+from sktime.transformations.series.boxcox import LogTransformer
+from sktime.transformations.series.detrend import Deseasonalizer, Detrender
+from sktime.transformations.series.fourier import FourierFeatures
 from statsmodels.stats.diagnostic import acorr_ljungbox
-
-import matplotlib.pyplot as plt
-from matplotlib.ticker import MaxNLocator
-
-from hydra import compose, initialize, core
-from omegaconf import OmegaConf
 
 # ---------------------------------- Trainer --------------------------------- #
 

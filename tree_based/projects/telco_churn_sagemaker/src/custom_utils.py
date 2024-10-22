@@ -1,16 +1,14 @@
-import boto3
-import pickle
-from typing import Any, Tuple
 import logging
+import pickle
 from re import sub
+from typing import Any, Tuple
 
-import pandas as pd
+import boto3
 import numpy as np
-
+import pandas as pd
+import xgboost as xgb
 from sklearn.metrics import average_precision_score
 from sklearn.model_selection import StratifiedShuffleSplit
-
-import xgboost as xgb
 
 # ----- Class for uploading and downloading Python objects to and from S3 ---- #
 

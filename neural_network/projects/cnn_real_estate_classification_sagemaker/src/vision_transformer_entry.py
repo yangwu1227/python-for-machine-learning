@@ -1,23 +1,22 @@
 from __future__ import annotations
-import os
-from typing import Tuple, Union, List, Dict, Any
-import pickle
-import boto3
+
 import json
 import logging
+import os
+import pickle
 from functools import partial
-import s3fs
 from math import sqrt
+from typing import Any, Dict, List, Tuple, Union
 
+import boto3
 import numpy as np
+import s3fs
 
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"  # Nopep8
 import tensorflow as tf
-
-from hydra import compose, initialize, core
-from omegaconf import OmegaConf
-
 from base_trainer import BaseTrainer
+from hydra import compose, core, initialize
+from omegaconf import OmegaConf
 
 # -------------------------- Shifted patch tokenizer ------------------------- #
 
@@ -752,11 +751,11 @@ class VisionTransformerTrainer(BaseTrainer):
 
 if __name__ == "__main__":
     from custom_utils import (
-        get_logger,
-        parser,
-        add_additional_args,
-        load_dataset,
         AugmentationModel,
+        add_additional_args,
+        get_logger,
+        load_dataset,
+        parser,
     )
 
     # ---------------------------------- Set up ---------------------------------- #

@@ -1,29 +1,28 @@
-import os
 import argparse
-from typing import Tuple, Union, List, Dict, Any, Optional, Callable
-import logging
-import sys
 import json
+import logging
+import os
+import sys
+from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"  # Nopep8
-import tensorflow as tf
-from tensorflow.keras.utils import image_dataset_from_directory
-
-from pygments import highlight
-from pygments.lexers import PythonLexer
-from pygments.formatters import HtmlFormatter
 import IPython
+import tensorflow as tf
+from pygments import highlight
+from pygments.formatters import HtmlFormatter
+from pygments.lexers import PythonLexer
 from pygments.style import Style
 from pygments.token import (
+    Comment,
+    Error,
+    Generic,
     Keyword,
     Name,
-    Comment,
-    String,
-    Error,
     Number,
     Operator,
-    Generic,
+    String,
 )
+from tensorflow.keras.utils import image_dataset_from_directory
 
 # ---------------------------------- Logger ---------------------------------- #
 

@@ -1,16 +1,15 @@
-import os
-from typing import Tuple, Union, List, Dict, Any
-import pickle
-import boto3
 import logging
+import os
+import pickle
 from functools import partial
+from typing import Any, Dict, List, Tuple, Union
 
+import boto3
 import numpy as np
 
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"  # Nopep8
 import tensorflow as tf
-
-from custom_utils import get_logger, parser, load_data
+from custom_utils import get_logger, load_data, parser
 
 # ------------------------- Function for fine tuning ------------------------- #
 

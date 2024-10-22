@@ -4,16 +4,17 @@ PlotOverfit
 """
 
 import math
+
 from ipywidgets import Output
 from matplotlib.gridspec import GridSpec
 from matplotlib.widgets import Button, CheckButtons
 from sklearn.linear_model import LogisticRegression, Ridge
 from utils.lab_utils_common import (
-    np,
-    plt,
     dlc,
-    predict_logistic,
+    np,
     plot_data,
+    plt,
+    predict_logistic,
     zscore_normalize_features,
 )
 

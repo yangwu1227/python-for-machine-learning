@@ -1,9 +1,9 @@
 import argparse
+import logging
 import os
 import sys
-import logging
-from typing import List, Tuple, Union
 from multiprocessing import Pool
+from typing import List, Tuple, Union
 
 import numpy as np
 
@@ -248,12 +248,12 @@ def main() -> int:
 
 if __name__ == "__main__":
     from custom_utils import (
-        grid_to_seq,
-        LSTM,
         GRU,
-        trainer,
-        plot_predictions,
+        LSTM,
         get_logger,
+        grid_to_seq,
+        plot_predictions,
+        trainer,
     )
 
     sys.exit(main())

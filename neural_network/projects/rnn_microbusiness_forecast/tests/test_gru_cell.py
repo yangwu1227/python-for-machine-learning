@@ -2,10 +2,11 @@ import os
 from shutil import rmtree
 
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"  # Nopep8
-from typing import Dict, Union, Callable, Tuple
+from typing import Callable, Dict, Tuple, Union
+
+import pytest
 import tensorflow as tf
 from src.gru_entry import CustomGRUCell, SymmetricMeanAbsolutePercentageError
-import pytest
 
 
 @pytest.fixture(scope="class")

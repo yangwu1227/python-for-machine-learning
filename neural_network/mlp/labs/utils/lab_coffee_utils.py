@@ -1,9 +1,9 @@
-import numpy as np
-import matplotlib.pyplot as plt
-import tensorflow as tf
-from tensorflow.keras.activations import sigmoid
-from matplotlib import cm
 import matplotlib.colors as colors
+import matplotlib.pyplot as plt
+import numpy as np
+import tensorflow as tf
+from matplotlib import cm
+from tensorflow.keras.activations import sigmoid
 from utils.lab_utils_common import dlc
 
 plt.style.use("utils/deeplearning.mplstyle")

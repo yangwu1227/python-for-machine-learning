@@ -1,9 +1,9 @@
-import numpy as np
 import matplotlib.pyplot as plt
+import numpy as np
 import tensorflow as tf
-from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import Dense
 from tensorflow.keras.activations import linear, relu, sigmoid
+from tensorflow.keras.layers import Dense
+from tensorflow.keras.models import Sequential
 
 dlc = {
     "dlblue": "#0096ff",

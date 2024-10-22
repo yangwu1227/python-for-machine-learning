@@ -1,18 +1,18 @@
 # ---------------------------------- Imports --------------------------------- #
 
 import matplotlib.pyplot as plt
-import seaborn as sns
-from sklearn.metrics import (
-    confusion_matrix,
-    roc_curve,
-    precision_recall_curve,
-    log_loss,
-    average_precision_score,
-    recall_score,
-    precision_score,
-)
 import numpy as np
+import seaborn as sns
 import tensorflow as tf
+from sklearn.metrics import (
+    average_precision_score,
+    confusion_matrix,
+    log_loss,
+    precision_recall_curve,
+    precision_score,
+    recall_score,
+    roc_curve,
+)
 
 # ------------------------------- Plot metrics ------------------------------- #
 

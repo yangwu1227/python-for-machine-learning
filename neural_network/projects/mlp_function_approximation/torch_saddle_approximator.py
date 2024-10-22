@@ -1,16 +1,15 @@
-from typing import List, Dict, Tuple, Union, Callable
-import logging
-from copy import deepcopy
-import os
 import argparse
-from IPython.display import display
+import logging
+import os
+from copy import deepcopy
+from typing import Callable, Dict, List, Tuple, Union
 
 import numpy as np
-import torch
-from torch.utils.data import TensorDataset, DataLoader
-
 import optuna
+import torch
+from IPython.display import display
 from optuna.trial import TrialState
+from torch.utils.data import DataLoader, TensorDataset
 
 # --------------------------- Monkey saddle surface -------------------------- #
 
@@ -389,9 +388,7 @@ def trainer(
     device = (
         "cuda"
         if torch.cuda.is_available()
-        else "mps"
-        if torch.backends.mps.is_available()
-        else "cpu"
+        else "mps" if torch.backends.mps.is_available() else "cpu"
     )
     model.to(device)
 
@@ -628,7 +625,7 @@ def objective(
 
 
 if __name__ == "__main__":
-    from custom_utils import get_logger, plot_2d_surfaces, create_study, study_report
+    from custom_utils import create_study, get_logger, plot_2d_surfaces, study_report
 
     logger = get_logger(name="tf_monkey_saddle_approximator")
 

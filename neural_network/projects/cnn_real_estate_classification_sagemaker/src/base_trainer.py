@@ -1,6 +1,6 @@
-import os
 import logging
-from typing import List, Tuple, Dict, Any
+import os
+from typing import Any, Dict, List, Tuple
 
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"  # Nopep8
 import tensorflow as tf

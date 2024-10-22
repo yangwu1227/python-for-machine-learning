@@ -1,24 +1,22 @@
-import os
 import argparse
-import json
-import subprocess
-import shutil
-import random
 import functools
-from typing import Tuple, Dict, List
+import json
+import os
+import random
+import shutil
+import subprocess
 import xml.etree.ElementTree as ET
 from concurrent.futures import ProcessPoolExecutor
+from typing import Dict, List, Tuple
 
-import sagemaker
 import boto3
-from sagemaker.session import Session
-
-import matplotlib.pyplot as plt
 import matplotlib.patches as patches
-from PIL import Image
-
-from hydra import core, initialize, compose
+import matplotlib.pyplot as plt
+import sagemaker
+from hydra import compose, core, initialize
 from omegaconf import OmegaConf
+from PIL import Image
+from sagemaker.session import Session
 
 # -------------------------------- XML parser -------------------------------- #
 

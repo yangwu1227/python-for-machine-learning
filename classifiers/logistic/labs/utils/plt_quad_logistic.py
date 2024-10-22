@@ -4,20 +4,21 @@ Interactive plot and supporting routines showing logistic regression
 """
 
 import time
-from matplotlib import cm
+
 import matplotlib.colors as colors
-from matplotlib.gridspec import GridSpec
-from matplotlib.widgets import Button
-from matplotlib.patches import FancyArrowPatch
 from ipywidgets import Output
+from matplotlib import cm
+from matplotlib.gridspec import GridSpec
+from matplotlib.patches import FancyArrowPatch
+from matplotlib.widgets import Button
 from utils.lab_utils_common import (
-    np,
-    plt,
+    compute_cost_matrix,
     dlc,
     dlcolors,
-    sigmoid,
-    compute_cost_matrix,
     gradient_descent,
+    np,
+    plt,
+    sigmoid,
 )
 
 

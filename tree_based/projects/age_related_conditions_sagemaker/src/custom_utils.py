@@ -1,30 +1,29 @@
-import os
 import argparse
-from typing import Tuple, Union, List, Dict, Any, Optional, Callable
-import logging
-import sys
-import json
-import pickle
-import base64
 import ast
-from IPython.display import Image
-from itertools import combinations
+import base64
+import json
+import logging
 import operator
+import os
+import pickle
+import sys
+from itertools import combinations
+from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 
-from sklearn.compose import ColumnTransformer
-from sklearn.preprocessing import OrdinalEncoder
-from sklearn.impute import SimpleImputer
-from sklearn.base import BaseEstimator, TransformerMixin
-from sklearn.pipeline import Pipeline
-from sklearn.metrics import make_scorer
-from sklearn.inspection import permutation_importance
-
-import numpy as np
-import pandas as pd
-import optuna
-from optuna.trial import TrialState
 import boto3
+import numpy as np
+import optuna
+import pandas as pd
 from botocore.exceptions import ClientError
+from IPython.display import Image
+from optuna.trial import TrialState
+from sklearn.base import BaseEstimator, TransformerMixin
+from sklearn.compose import ColumnTransformer
+from sklearn.impute import SimpleImputer
+from sklearn.inspection import permutation_importance
+from sklearn.metrics import make_scorer
+from sklearn.pipeline import Pipeline
+from sklearn.preprocessing import OrdinalEncoder
 
 # ---------------------------------- Logger ---------------------------------- #
 

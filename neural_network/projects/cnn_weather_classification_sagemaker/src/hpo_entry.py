@@ -1,19 +1,17 @@
-import os
 import argparse
-from typing import Tuple, Union, List, Dict
+import os
 import pickle
-import boto3
+from typing import Dict, List, Tuple, Union
 
+import boto3
 import numpy as np
 
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"  # Nopep8
-import tensorflow as tf
-from tensorflow.errors import InvalidArgumentError
-
 import optuna
+import tensorflow as tf
+from custom_utils import baseline_cnn, get_logger, get_secret, load_data, parser
 from optuna.trial import TrialState
-
-from custom_utils import get_logger, parser, get_secret, load_data, baseline_cnn
+from tensorflow.errors import InvalidArgumentError
 
 # -------------------------- Optimization objective -------------------------- #
 

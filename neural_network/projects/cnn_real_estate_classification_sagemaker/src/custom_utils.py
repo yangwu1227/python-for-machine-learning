@@ -1,24 +1,22 @@
-import os
-import logging
-import sys
 import argparse
 import json
-from typing import Dict, Callable, Tuple, List
+import logging
+import os
+import sys
+from typing import Callable, Dict, List, Tuple
+
 from IPython.display import Image
 
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"  # Nopep8
-import tensorflow as tf
-from tensorflow.keras import layers
-from tensorflow.keras import backend as K
-
+import matplotlib.pyplot as plt
+import numpy as np
 import pandas as pd
-from imblearn.metrics import classification_report_imbalanced
-
 import plotly.express as px
 import plotly.graph_objects as go
-import matplotlib.pyplot as plt
-
-import numpy as np
+import tensorflow as tf
+from imblearn.metrics import classification_report_imbalanced
+from tensorflow.keras import backend as K
+from tensorflow.keras import layers
 
 # ------------------------------ Logger function ----------------------------- #
 
@@ -511,9 +509,11 @@ class TuningVisualizer(object):
             go.Parcoords(
                 line=dict(
                     color=tune_data[target],
-                    colorscale=kwargs["colorscale"]
-                    if "colorscale" in kwargs.keys()
-                    else "viridis",
+                    colorscale=(
+                        kwargs["colorscale"]
+                        if "colorscale" in kwargs.keys()
+                        else "viridis"
+                    ),
                     showscale=True,
                 ),
                 dimensions=cat_dicts + num_dicts,

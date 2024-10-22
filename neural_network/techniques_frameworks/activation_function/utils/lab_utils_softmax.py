@@ -1,7 +1,7 @@
-import numpy as np
 import matplotlib.pyplot as plt
+import numpy as np
 import tensorflow as tf
-from IPython.display import display, Markdown, Latex
+from IPython.display import Latex, Markdown, display
 from matplotlib.widgets import Slider
 from utils.lab_utils_common import dlc
 

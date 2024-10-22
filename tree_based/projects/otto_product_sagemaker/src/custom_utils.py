@@ -1,21 +1,20 @@
-import os
 import argparse
-from typing import Tuple, Union, List, Dict, Any, Optional, Callable
+import json
 import logging
+import operator
+import os
 import sys
 from itertools import combinations
-import operator
-import json
+from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 
 import cudf
-import pandas as pd
 import cupy as cp
 import numpy as np
-
+import pandas as pd
+from cuml import TruncatedSVD
+from cuml.preprocessing import MaxAbsScaler
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.pipeline import Pipeline
-from cuml.preprocessing import MaxAbsScaler
-from cuml import TruncatedSVD
 
 # ---------------------------------- Logger ---------------------------------- #
 

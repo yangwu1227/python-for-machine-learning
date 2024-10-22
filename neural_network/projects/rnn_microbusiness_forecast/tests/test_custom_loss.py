@@ -1,13 +1,14 @@
 import os
 
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"  # Nopep8
-from typing import Dict, Union, Callable, Tuple
-import torch
-from torchmetrics.regression import SymmetricMeanAbsolutePercentageError as smape_torch
+from typing import Callable, Dict, Tuple, Union
+
+import pytest
 import tensorflow as tf
+import torch
 from numpy import isclose
 from src.gru_entry import SymmetricMeanAbsolutePercentageError
-import pytest
+from torchmetrics.regression import SymmetricMeanAbsolutePercentageError as smape_torch
 
 
 @pytest.fixture(scope="class")

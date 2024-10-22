@@ -1,24 +1,22 @@
-import os
-import joblib
 import io
 import logging
+import os
 import sys
-from typing import Dict, Optional, Any, Tuple, List, Union
+from typing import Any, Dict, List, Optional, Tuple, Union
 
-import pandas as pd
-import numpy as np
 import boto3
-
-from hydra import compose, initialize, core
-from omegaconf import OmegaConf
-
+import joblib
 import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
+import seaborn as sns
+from hydra import compose, core, initialize
 from matplotlib.axes import Axes
 from matplotlib.figure import Figure
-import seaborn as sns
 from matplotlib.ticker import MaxNLocator
-from sktime.split import SlidingWindowSplitter
+from omegaconf import OmegaConf
 from sktime.forecasting.compose import ColumnEnsembleForecaster
+from sktime.split import SlidingWindowSplitter
 
 # ---------------------------------- Set up ---------------------------------- #
 

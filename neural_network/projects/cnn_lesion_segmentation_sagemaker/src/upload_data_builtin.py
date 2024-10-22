@@ -1,13 +1,12 @@
-import os
-from random import shuffle, Random
-from shutil import copyfile, move, rmtree
-import logging
-import sys
-import subprocess
 import json
+import logging
+import os
+import subprocess
+import sys
+from random import Random, shuffle
+from shutil import copyfile, move, rmtree
 
 import sagemaker
-
 from custom_utils import get_logger
 
 if __name__ == "__main__":

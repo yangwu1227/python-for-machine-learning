@@ -1,19 +1,18 @@
+import argparse
+import logging
 import os
 import random
-import argparse
+import subprocess
+import sys
 from concurrent import futures
 from queue import Queue
 from typing import Tuple
-import logging
-import sys
-import subprocess
 
-import sagemaker
 import numpy as np
-from tensorflow.keras.utils import load_img, img_to_array
-from sklearn.model_selection import train_test_split
-
+import sagemaker
 from custom_utils import get_logger
+from sklearn.model_selection import train_test_split
+from tensorflow.keras.utils import img_to_array, load_img
 
 
 def ingest_image(path: str, image_size: Tuple[int, int]) -> np.ndarray:

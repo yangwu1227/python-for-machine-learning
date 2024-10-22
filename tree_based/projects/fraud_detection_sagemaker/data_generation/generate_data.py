@@ -1,9 +1,10 @@
-from faker import Faker
-from typing import List, Tuple, Dict, Union, Optional
 import datetime
 import itertools
+from typing import Dict, List, Optional, Tuple, Union
+
 import numpy as np
 import pandas as pd
+from faker import Faker
 
 Faker.seed(0)
 np.random.seed(0)

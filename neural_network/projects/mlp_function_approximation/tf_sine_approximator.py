@@ -1,14 +1,13 @@
-import os
-from typing import Tuple, List, Union, Callable, Any, Dict, Type
-import logging
 import argparse
+import logging
+import os
 from datetime import datetime
+from typing import Any, Callable, Dict, List, Tuple, Type, Union
 
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"  # Nopep8
-import tensorflow as tf
 import keras_tuner as kt
-
 import numpy as np
+import tensorflow as tf
 
 # ------------------------------ Data generator ------------------------------ #
 
@@ -139,7 +138,7 @@ class SineHyperModel(kt.HyperModel):
 
 
 if __name__ == "__main__":
-    from custom_utils import get_logger, report_keras_hpo, plot_1d_curve
+    from custom_utils import get_logger, plot_1d_curve, report_keras_hpo
 
     logger = get_logger("tf_sine_apprixmator")
 

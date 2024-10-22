@@ -1,28 +1,24 @@
 import argparse
 import logging
 import os
-import sys
 import pickle
-from typing import Tuple, List
-from re import sub
+import sys
 import warnings
+from re import sub
+from typing import List, Tuple
 
-import sagemaker
 import boto3
-
-import pandas as pd
 import numpy as np
-
-from sklearn.model_selection import StratifiedKFold
-from sklearn.metrics import average_precision_score
-from sklearn.utils.class_weight import compute_sample_weight
-
 import optuna
-from optuna.trial import TrialState
+import pandas as pd
+import sagemaker
 import xgboost as xgb
-
 from custom_pipeline import create_pipeline
 from custom_utils import load_data
+from optuna.trial import TrialState
+from sklearn.metrics import average_precision_score
+from sklearn.model_selection import StratifiedKFold
+from sklearn.utils.class_weight import compute_sample_weight
 
 # ---------------------------------- Logger ---------------------------------- #
 

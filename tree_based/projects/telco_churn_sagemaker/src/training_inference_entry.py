@@ -1,21 +1,17 @@
 import argparse
+import io
 import logging
 import os
-import io
-
-import pandas as pd
-import numpy as np
 
 import boto3
 import joblib
-
-from sklearn.utils.class_weight import compute_sample_weight
-from sklearn.pipeline import Pipeline
-
-from custom_pipeline import create_pipeline
-from custom_utils import S3Pickle, load_data, weighted_ap_score, stratified_split
-
+import numpy as np
+import pandas as pd
 import xgboost as xgb
+from custom_pipeline import create_pipeline
+from custom_utils import S3Pickle, load_data, stratified_split, weighted_ap_score
+from sklearn.pipeline import Pipeline
+from sklearn.utils.class_weight import compute_sample_weight
 
 # --------------------- Parse argument from command line --------------------- #
 

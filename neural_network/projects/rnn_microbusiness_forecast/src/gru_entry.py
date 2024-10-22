@@ -1,18 +1,18 @@
 from __future__ import annotations
+
+import logging
 import os
 import sys
-import logging
 from functools import partial
-from typing import Tuple, List, Dict, Any, Union, Optional
+from typing import Any, Dict, List, Optional, Tuple, Union
 
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"  # Nopep8
-import tensorflow as tf
-import polars as pl
 import numpy as np
-from sklearn.model_selection import GroupKFold
-
-from hydra import compose, initialize, core
+import polars as pl
+import tensorflow as tf
+from hydra import compose, core, initialize
 from omegaconf import OmegaConf
+from sklearn.model_selection import GroupKFold
 
 # --------------------------- Custom loss function --------------------------- #
 
@@ -372,9 +372,9 @@ class GRUTrainer(object):
                 units=self.hyperparameters["gru_units_0"],
                 name="gru_cell_0",
             ),
-            return_sequences=False
-            if self.hyperparameters["gru_num_layers"] == 1
-            else True,  # If using a single GRU layer, them this layer should only return the last output `h_t`
+            return_sequences=(
+                False if self.hyperparameters["gru_num_layers"] == 1 else True
+            ),  # If using a single GRU layer, them this layer should only return the last output `h_t`
             name="gru_layer_0",
         )(normalized_inputs)
         # Set return_sequences = True to output a sequence of vectors each with 'gru_units_i' elements
@@ -388,9 +388,9 @@ class GRUTrainer(object):
                     name=f"gru_cell_{i}",
                 ),
                 # If this is the last GRU layer, set return_sequences = False
-                return_sequences=False
-                if i == (self.hyperparameters["gru_num_layers"] - 1)
-                else True,
+                return_sequences=(
+                    False if i == (self.hyperparameters["gru_num_layers"] - 1) else True
+                ),
                 name=f"gru_layer_{i}",
             )(x)
 
@@ -610,7 +610,7 @@ class GRUTrainer(object):
 
 
 if __name__ == "__main__":
-    from custom_utils import get_logger, parser, add_additional_args
+    from custom_utils import add_additional_args, get_logger, parser
 
     # ---------------------------------- Set up ---------------------------------- #
 

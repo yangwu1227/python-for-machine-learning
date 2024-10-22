@@ -1,13 +1,12 @@
-import os
-from typing import Dict, Any, Tuple
 import logging
+import os
 import sys
+from typing import Any, Dict, Tuple
 
+import matplotlib.pyplot as plt
 import numpy as np
 import torch
 import torch.nn as nn
-
-import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 
 # ---------------------------------- Logger ---------------------------------- #

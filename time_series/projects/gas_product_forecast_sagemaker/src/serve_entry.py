@@ -1,18 +1,16 @@
-import sys
 import os
-import joblib
+import sys
 from contextlib import asynccontextmanager
-from typing import Dict, Any
+from typing import Any, Dict
 
-import uvicorn
-from fastapi import FastAPI, status, Request, Response, HTTPException
-
+import joblib
 import pandas as pd
+import uvicorn
+from fastapi import FastAPI, HTTPException, Request, Response, status
+from hydra import compose, core, initialize
+from omegaconf import OmegaConf
 from sktime.forecasting.compose import TransformedTargetForecaster
 from sktime.transformations.series.fourier import FourierFeatures
-
-from hydra import compose, initialize, core
-from omegaconf import OmegaConf
 
 
 def main():

@@ -1,16 +1,14 @@
-import os
-from typing import Tuple, Union, List, Dict, Any
 import logging
+import os
+from typing import Any, Dict, List, Tuple, Union
 
 import numpy as np
 
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"  # Nopep8
 import tensorflow as tf
-
+from custom_utils import get_logger, load_data, parser
 from segmentation_models import Unet
 from segmentation_models.losses import DiceLoss
-
-from custom_utils import load_data, parser, get_logger
 
 # ------------------------- Function for fine tuning ------------------------- #
 
@@ -83,7 +81,9 @@ def fine_tune_unet(
     # Map 1 channel to 3 channels for ResNet
     x = tf.keras.layers.Conv2D(
         filters=3, kernel_size=(1, 1), kernel_initializer="he_normal"
-    )(x)  # Map 1 channel to 3 channels
+    )(
+        x
+    )  # Map 1 channel to 3 channels
     outputs = conv_base(x, training=False)
 
     model = tf.keras.Model(inputs=inputs, outputs=outputs)

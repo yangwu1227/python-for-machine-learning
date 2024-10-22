@@ -1,22 +1,21 @@
-import os
-from typing import Dict, Any, List, Union, Callable
-import pickle
 import argparse
-import logging
 import json
+import logging
+import os
+import pickle
+from typing import Any, Callable, Dict, List, Union
+
 import boto3
-import joblib
-
-import pandas as pd
-import numpy as np
-import cupy as cp
 import cudf
-from sklearn.pipeline import Pipeline
-from sklearn.model_selection import StratifiedKFold
-from sklearn.utils.class_weight import compute_sample_weight
+import cupy as cp
+import joblib
+import numpy as np
+import pandas as pd
 import xgboost as xgb
-
-from custom_utils import get_logger, create_pipeline, parser, add_additional_args
+from custom_utils import add_additional_args, create_pipeline, get_logger, parser
+from sklearn.model_selection import StratifiedKFold
+from sklearn.pipeline import Pipeline
+from sklearn.utils.class_weight import compute_sample_weight
 
 # ------------------ Function for creating xgboost estimator ----------------- #
 
@@ -42,9 +41,9 @@ def create_xgb_estimator(
     xgb_early_stopping = xgb.callback.EarlyStopping(
         rounds=50,
         metric_name="mlogloss",
-        data_name="validation_1"
-        if validation
-        else "validation_0",  # When training on the entire training set, use the training set as the single validation set with index 0
+        data_name=(
+            "validation_1" if validation else "validation_0"
+        ),  # When training on the entire training set, use the training set as the single validation set with index 0
         maximize=True,
         save_best=True,  # Save the best model
     )

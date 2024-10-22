@@ -1,20 +1,18 @@
-import logging
-import os
 import argparse
 import json
-from itertools import chain
-from typing import Dict, List, Tuple, Any
+import logging
+import os
 from functools import partial
-import s3fs
-
-from hydra import compose, initialize, core
-from omegaconf import OmegaConf
+from itertools import chain
+from typing import Any, Dict, List, Tuple
 
 import numpy as np
+import s3fs
+from hydra import compose, core, initialize
+from omegaconf import OmegaConf
 
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"  # Nopep8
 import tensorflow as tf
-
 from base_trainer import BaseTrainer
 
 # ------------------------------- Trainer class ------------------------------ #
@@ -235,11 +233,11 @@ class BaselineTrainer(BaseTrainer):
 
 if __name__ == "__main__":
     from custom_utils import (
-        get_logger,
-        parser,
-        add_additional_args,
         AugmentationModel,
+        add_additional_args,
+        get_logger,
         load_datasets,
+        parser,
     )
 
     # ---------------------------------- Set up ---------------------------------- #
@@ -347,9 +345,9 @@ if __name__ == "__main__":
             "loss_alpha": args.loss_alpha,
             "loss_gamma": args.loss_gamma,
             "fit_epochs": args.fit_epochs,
-            "fit_validation_steps": 1
-            if args.test_mode
-            else int(config["val_size"] / config["batch_size"]),
+            "fit_validation_steps": (
+                1 if args.test_mode else int(config["val_size"] / config["batch_size"])
+            ),
             "use_focal_loss": args.use_focal_loss,
         },
         config=config,

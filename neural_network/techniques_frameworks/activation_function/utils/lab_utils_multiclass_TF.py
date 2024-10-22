@@ -1,14 +1,14 @@
 import warnings
-from typing import List, Callable, Optional, Any
+from typing import Any, Callable, List, Optional
 
+import matplotlib as mpl
+import matplotlib.colors as colors
 import matplotlib.pyplot as plt
 import numpy as np
-import matplotlib as mpl
 from matplotlib import cm
+from matplotlib.colors import LinearSegmentedColormap, ListedColormap
 from matplotlib.patches import FancyArrowPatch
-from matplotlib.colors import ListedColormap, LinearSegmentedColormap
 from utils.lab_utils_common import dlc
-import matplotlib.colors as colors
 
 # Define color dictionary
 dlc = dict(

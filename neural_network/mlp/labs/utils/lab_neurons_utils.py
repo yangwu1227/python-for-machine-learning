@@ -1,6 +1,6 @@
-import numpy as np
-import matplotlib.pyplot as plt
 import matplotlib.colors as colors
+import matplotlib.pyplot as plt
+import numpy as np
 from matplotlib import cm
 from utils.lab_utils_common import dlc
 

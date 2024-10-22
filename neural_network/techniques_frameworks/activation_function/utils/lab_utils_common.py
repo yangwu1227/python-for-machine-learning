@@ -9,10 +9,11 @@ Those files will import this file.
 
 import copy
 import math
-import numpy as np
+
 import matplotlib.pyplot as plt
-from matplotlib.patches import FancyArrowPatch
+import numpy as np
 from ipywidgets import Output
+from matplotlib.patches import FancyArrowPatch
 from matplotlib.widgets import Button, CheckButtons
 
 np.set_printoptions(precision=2)

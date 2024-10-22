@@ -1,33 +1,31 @@
+import logging
 import os
 import sys
-from typing import Tuple, Dict, Any, Optional, List, Union, Callable
-import logging
+from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 
-from sklearn.compose import ColumnTransformer
-from sklearn.pipeline import Pipeline
-from sklearn.preprocessing import OneHotEncoder, RobustScaler
-from sklearn.impute import SimpleImputer
-from sklearn.ensemble import RandomForestClassifier
-from sklearn.model_selection import StratifiedKFold
-from sklearn.utils.class_weight import compute_sample_weight
-from sklearn.metrics import log_loss
-
-from hydra import compose, initialize, core
-from omegaconf import OmegaConf
-import pandas as pd
 import numpy as np
 import optuna
-
+import pandas as pd
 from custom_utils import (
-    get_logger,
-    get_db_url,
-    parser,
-    add_additional_args,
-    custom_log_loss,
-    create_study,
     FeatureImportanceHandler,
+    add_additional_args,
+    create_study,
+    custom_log_loss,
+    get_db_url,
+    get_logger,
+    parser,
     study_report,
 )
+from hydra import compose, core, initialize
+from omegaconf import OmegaConf
+from sklearn.compose import ColumnTransformer
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.impute import SimpleImputer
+from sklearn.metrics import log_loss
+from sklearn.model_selection import StratifiedKFold
+from sklearn.pipeline import Pipeline
+from sklearn.preprocessing import OneHotEncoder, RobustScaler
+from sklearn.utils.class_weight import compute_sample_weight
 
 # ------------------- Function to create baseline pipeline ------------------- #
 

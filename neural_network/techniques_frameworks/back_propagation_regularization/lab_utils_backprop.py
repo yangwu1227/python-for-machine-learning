@@ -1,11 +1,10 @@
-from sympy import *
-import numpy as np
 import re
 
-import matplotlib.pyplot as plt
-from matplotlib.widgets import TextBox
-from matplotlib.widgets import Button
 import ipywidgets as widgets
+import matplotlib.pyplot as plt
+import numpy as np
+from matplotlib.widgets import Button, TextBox
+from sympy import *
 
 
 def widgvis(fig):

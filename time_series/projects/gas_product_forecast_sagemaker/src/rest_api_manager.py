@@ -4,12 +4,11 @@ import json
 import logging
 import sys
 import time
-import requests
 from typing import Dict
 
 import boto3
+import requests
 from botocore.exceptions import ClientError
-
 from src.custom_utils import get_logger
 
 

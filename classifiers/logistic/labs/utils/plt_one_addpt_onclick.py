@@ -1,16 +1,17 @@
-import time
 import copy
+import time
+
 from ipywidgets import Output
-from matplotlib.widgets import Button, CheckButtons
 from matplotlib.patches import FancyArrowPatch
+from matplotlib.widgets import Button, CheckButtons
 from utils.lab_utils_common import (
+    dlblue,
+    dldarkred,
+    dlorange,
+    gradient_descent,
     np,
     plt,
-    dlblue,
-    dlorange,
     sigmoid,
-    dldarkred,
-    gradient_descent,
 )
 
 

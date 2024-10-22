@@ -1,16 +1,15 @@
+import argparse
+import logging
 import os
 import subprocess
-import argparse
-from typing import Tuple, Union, List, Dict, Any, Optional, Callable
-import logging
 import sys
+from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"  # Nopep8
-import tensorflow as tf
-
-from hydra import compose, initialize, core
-from omegaconf import OmegaConf
 import optuna
+import tensorflow as tf
+from hydra import compose, core, initialize
+from omegaconf import OmegaConf
 
 # ------------------------------- Trainer class ------------------------------ #
 
@@ -445,9 +444,11 @@ class TabTransformerTrainer(object):
             validation_data=self.val_dataset,
             callbacks=callbacks,
             # When training on full dataset, set validation_steps to None to evaluate on all batches
-            validation_steps=self.hyperparameters["fit_validation_steps"]
-            if not retrain_on_full
-            else None,
+            validation_steps=(
+                self.hyperparameters["fit_validation_steps"]
+                if not retrain_on_full
+                else None
+            ),
         )
 
         if not retrain_on_full:
@@ -618,13 +619,13 @@ def tf_objective(
 if __name__ == "__main__":
     # These imports are only needed when running this file on SageMaker
     from custom_utils import (
+        add_additional_args,
+        create_study,
+        dataset_from_csv,
+        get_db_url,
         get_logger,
         parser,
-        add_additional_args,
-        get_db_url,
-        create_study,
         study_report,
-        dataset_from_csv,
         test_sample,
     )
 

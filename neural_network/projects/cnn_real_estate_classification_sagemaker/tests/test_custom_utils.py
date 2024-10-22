@@ -1,22 +1,21 @@
-import sys
-import os
 import logging
-import pytest
+import os
+import sys
 
-import pandas as pd
-import tensorflow as tf
-import numpy as np
-
-import plotly.graph_objects as go
-from IPython.display import Image
 import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
+import plotly.graph_objects as go
+import pytest
+import tensorflow as tf
+from IPython.display import Image
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from src.custom_utils import (
-    get_logger,
     AugmentationModel,
-    TuningVisualizer,
     ErrorAnalyzer,
+    TuningVisualizer,
+    get_logger,
 )
 
 # ------------------------- Tests for logger function ------------------------ #

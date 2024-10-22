@@ -3,9 +3,10 @@ lab_utils_common.py
 Functions common to all optional labs, Course 1, Week 2.
 """
 
-import numpy as np
-import matplotlib.pyplot as plt
 from typing import List, Tuple
+
+import matplotlib.pyplot as plt
+import numpy as np
 
 plt.style.use("utils/deeplearning.mplstyle")
 dlblue = "#0096ff"

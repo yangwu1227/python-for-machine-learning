@@ -1,5 +1,6 @@
-import numpy as np
 from copy import deepcopy
+
+import numpy as np
 
 
 def datatype_check(expected_output, target_output, error):
