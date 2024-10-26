@@ -618,16 +618,9 @@ def tf_objective(
 
 if __name__ == "__main__":
     # These imports are only needed when running this file on SageMaker
-    from custom_utils import (
-        add_additional_args,
-        create_study,
-        dataset_from_csv,
-        get_db_url,
-        get_logger,
-        parser,
-        study_report,
-        test_sample,
-    )
+    from custom_utils import (add_additional_args, create_study,
+                              dataset_from_csv, get_db_url, get_logger, parser,
+                              study_report, test_sample)
 
     # ---------------------------------- Set up ---------------------------------- #
 

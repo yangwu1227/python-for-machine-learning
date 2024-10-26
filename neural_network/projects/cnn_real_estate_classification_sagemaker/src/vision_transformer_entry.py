@@ -750,13 +750,8 @@ class VisionTransformerTrainer(BaseTrainer):
 
 
 if __name__ == "__main__":
-    from custom_utils import (
-        AugmentationModel,
-        add_additional_args,
-        get_logger,
-        load_dataset,
-        parser,
-    )
+    from custom_utils import (AugmentationModel, add_additional_args,
+                              get_logger, load_dataset, parser)
 
     # ---------------------------------- Set up ---------------------------------- #
 

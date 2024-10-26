@@ -12,10 +12,7 @@ from scipy.stats import anderson, shapiro
 from sktime.forecasting.base import ForecastingHorizon
 from sktime.forecasting.compose import ColumnEnsembleForecaster
 from sktime.performance_metrics.forecasting import (
-    MeanAbsoluteError,
-    MeanAbsolutePercentageError,
-    MeanSquaredError,
-)
+    MeanAbsoluteError, MeanAbsolutePercentageError, MeanSquaredError)
 from sktime.split import SlidingWindowSplitter
 from src.custom_utils import S3Helper, SetUp
 from statsmodels.stats.diagnostic import acorr_ljungbox

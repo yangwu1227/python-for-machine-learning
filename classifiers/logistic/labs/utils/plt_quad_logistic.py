@@ -11,15 +11,8 @@ from matplotlib import cm
 from matplotlib.gridspec import GridSpec
 from matplotlib.patches import FancyArrowPatch
 from matplotlib.widgets import Button
-from utils.lab_utils_common import (
-    compute_cost_matrix,
-    dlc,
-    dlcolors,
-    gradient_descent,
-    np,
-    plt,
-    sigmoid,
-)
+from utils.lab_utils_common import (compute_cost_matrix, dlc, dlcolors,
+                                    gradient_descent, np, plt, sigmoid)
 
 
 class plt_quad_logistic:

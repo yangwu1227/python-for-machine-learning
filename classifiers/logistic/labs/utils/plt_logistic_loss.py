@@ -3,14 +3,8 @@ Logistic loss plotting routines and support
 """
 
 from matplotlib import cm
-from utils.lab_utils_common import (
-    compute_cost_matrix,
-    dlblue,
-    dlorange,
-    np,
-    plt,
-    sigmoid,
-)
+from utils.lab_utils_common import (compute_cost_matrix, dlblue, dlorange, np,
+                                    plt, sigmoid)
 
 
 def compute_cost_logistic_sq_err(X, y, w, b):

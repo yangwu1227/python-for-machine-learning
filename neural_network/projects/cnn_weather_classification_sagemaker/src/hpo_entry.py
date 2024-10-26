@@ -9,7 +9,8 @@ import numpy as np
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"  # Nopep8
 import optuna
 import tensorflow as tf
-from custom_utils import baseline_cnn, get_logger, get_secret, load_data, parser
+from custom_utils import (baseline_cnn, get_logger, get_secret, load_data,
+                          parser)
 from optuna.trial import TrialState
 from tensorflow.errors import InvalidArgumentError
 

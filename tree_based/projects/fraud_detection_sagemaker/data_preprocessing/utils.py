@@ -5,7 +5,8 @@ import numpy as np
 import pandas as pd
 import seaborn as sns
 from matplotlib import pyplot as plt
-from sklearn.metrics import auc, confusion_matrix, precision_recall_curve, roc_curve
+from sklearn.metrics import (auc, confusion_matrix, precision_recall_curve,
+                             roc_curve)
 
 
 def get_data() -> Tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:

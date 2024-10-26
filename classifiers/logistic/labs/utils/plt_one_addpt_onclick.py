@@ -4,15 +4,8 @@ import time
 from ipywidgets import Output
 from matplotlib.patches import FancyArrowPatch
 from matplotlib.widgets import Button, CheckButtons
-from utils.lab_utils_common import (
-    dlblue,
-    dldarkred,
-    dlorange,
-    gradient_descent,
-    np,
-    plt,
-    sigmoid,
-)
+from utils.lab_utils_common import (dlblue, dldarkred, dlorange,
+                                    gradient_descent, np, plt, sigmoid)
 
 
 class plt_one_addpt_onclick:

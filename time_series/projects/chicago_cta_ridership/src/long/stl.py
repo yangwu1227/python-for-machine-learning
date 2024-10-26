@@ -4,10 +4,8 @@ from typing import Any, Dict, List, Optional, Tuple, Union
 import numpy as np
 import pandas as pd
 from IPython.display import Image
-from sktime.forecasting.compose import (
-    ColumnEnsembleForecaster,
-    TransformedTargetForecaster,
-)
+from sktime.forecasting.compose import (ColumnEnsembleForecaster,
+                                        TransformedTargetForecaster)
 from sktime.forecasting.model_selection import ForecastingGridSearchCV
 from sktime.forecasting.statsforecast import StatsForecastAutoETS
 from sktime.forecasting.trend import STLForecaster

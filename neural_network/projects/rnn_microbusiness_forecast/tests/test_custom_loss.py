@@ -8,7 +8,8 @@ import tensorflow as tf
 import torch
 from numpy import isclose
 from src.gru_entry import SymmetricMeanAbsolutePercentageError
-from torchmetrics.regression import SymmetricMeanAbsolutePercentageError as smape_torch
+from torchmetrics.regression import \
+    SymmetricMeanAbsolutePercentageError as smape_torch
 
 
 @pytest.fixture(scope="class")

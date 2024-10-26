@@ -8,11 +8,9 @@ import numpy as np
 import pandas as pd
 from custom_utils import S3Helper, SetUp
 from sktime.forecasting.base import ForecastingHorizon
-from sktime.forecasting.compose import (
-    BaggingForecaster,
-    ColumnEnsembleForecaster,
-    TransformedTargetForecaster,
-)
+from sktime.forecasting.compose import (BaggingForecaster,
+                                        ColumnEnsembleForecaster,
+                                        TransformedTargetForecaster)
 from sktime.forecasting.statsforecast import StatsForecastAutoETS
 from sktime.transformations.bootstrap import STLBootstrapTransformer
 from sktime.transformations.series.boxcox import LogTransformer

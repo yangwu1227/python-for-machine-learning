@@ -17,16 +17,8 @@ from pygments import highlight
 from pygments.formatters import HtmlFormatter
 from pygments.lexers import PythonLexer
 from pygments.style import Style
-from pygments.token import (
-    Comment,
-    Error,
-    Generic,
-    Keyword,
-    Name,
-    Number,
-    Operator,
-    String,
-)
+from pygments.token import (Comment, Error, Generic, Keyword, Name, Number,
+                            Operator, String)
 
 # ------------------------------ Logger function ----------------------------- #
 
