@@ -81,9 +81,7 @@ def fine_tune_unet(
     # Map 1 channel to 3 channels for ResNet
     x = tf.keras.layers.Conv2D(
         filters=3, kernel_size=(1, 1), kernel_initializer="he_normal"
-    )(
-        x
-    )  # Map 1 channel to 3 channels
+    )(x)  # Map 1 channel to 3 channels
     outputs = conv_base(x, training=False)
 
     model = tf.keras.Model(inputs=inputs, outputs=outputs)
