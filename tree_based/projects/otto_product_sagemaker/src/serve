@@ -1,6 +1,5 @@
 #!/opt/conda/envs/rapids/bin/python
 
-import glob
 import json
 import logging
 import os
@@ -8,11 +7,10 @@ import sys
 import time
 import traceback
 from functools import lru_cache
-from typing import Any, Dict, List, Tuple, Union
+from typing import Tuple
 
 import flask
 import joblib
-import numpy as np
 import pandas as pd
 from flask import Flask, Response
 from sklearn.ensemble import StackingClassifier
@@ -25,9 +23,9 @@ def serve() -> None:
     app = Flask(__name__)
     logging.basicConfig(level=logging.DEBUG)
 
-    app.logger.info(f'{os.cpu_count()} CPUs detected')
+    app.logger.info(f"{os.cpu_count()} CPUs detected")
 
-    @app.route('/ping', methods=['GET'])
+    @app.route("/ping", methods=["GET"])
     def ping() -> Response:
         """
         SageMaker required method, ping heartbeat.
@@ -37,7 +35,7 @@ def serve() -> None:
         Response
             HTTP response with status 200.
         """
-        return Response(response='\n', status=200)
+        return Response(response="\n", status=200)
 
     @lru_cache()
     def load_trained_model() -> Tuple[StackingClassifier, str]:
@@ -49,19 +47,19 @@ def serve() -> None:
         Tuple[StackingClassifier, str]
             Tuple containing the reloaded model and its filename.
         """
-        model_filename = '/opt/ml/model/stacking_ensemble_model.joblib'
-        app.logger.info(f'Loading model : {model_filename}')
+        model_filename = "/opt/ml/model/stacking_ensemble_model.joblib"
+        app.logger.info(f"Loading model : {model_filename}")
 
         start_time = time.perf_counter()
 
         reloaded_model = joblib.load(model_filename)
 
         exec_time = time.perf_counter() - start_time
-        app.logger.info(f'Model {model_filename} loaded in {exec_time:.5f}s')
+        app.logger.info(f"Model {model_filename} loaded in {exec_time:.5f}s")
 
         return reloaded_model, model_filename
 
-    @app.route('/invocations', methods=['POST'])
+    @app.route("/invocations", methods=["POST"])
     def predict() -> Response:
         """
         Run CPU inference on input data, called every time an incoming request arrives.
@@ -72,21 +70,21 @@ def serve() -> None:
             HTTP response with status 200 and prediction results.
         """
         try:
-            data_list = json.loads(flask.request.get_data().decode('utf-8'))
+            data_list = json.loads(flask.request.get_data().decode("utf-8"))
 
             # If the data_list is not a list of lists (i.e., it's a single row), make it a list of lists
             if not isinstance(data_list[0], list):
                 data_list = [data_list]
 
-            col_names = [f'feat_{i}' for i in range(1, 94)]
+            col_names = [f"feat_{i}" for i in range(1, 94)]
 
             input_data = pd.DataFrame(data_list, columns=col_names)
 
         except Exception:
             return Response(
-                response='Unable to parse the input data',
+                response="Unable to parse the input data",
                 status=415,
-                mimetype='text/csv',
+                mimetype="text/csv",
             )
 
         # Cached [reloading] of trained model to process incoming requests
@@ -94,7 +92,9 @@ def serve() -> None:
 
         try:
             start_time = time.perf_counter()
-            app.logger.info(f'Running inference using the StackingClassifier model: {model_filename}')
+            app.logger.info(
+                f"Running inference using the StackingClassifier model: {model_filename}"
+            )
 
             # Predictions are a numpy array of probabilities with shape (n_samples, n_classes)
             predictions = reloaded_model.predict_proba(input_data)
@@ -103,34 +103,36 @@ def serve() -> None:
             predictions_str = json.dumps(predictions.tolist())
 
             exec_time = time.perf_counter() - start_time
-            app.logger.info(f'Inference finished in {exec_time:.5f}s')
+            app.logger.info(f"Inference finished in {exec_time:.5f}s")
 
             # Return predictions as a string
-            return Response(
-                response=predictions_str, status=200, mimetype='text/csv'
-            )
+            return Response(response=predictions_str, status=200, mimetype="text/csv")
 
         # Error during inference
         except Exception as inference_error:
             app.logger.error(inference_error)
             return Response(
-                response=f'Inference failure: {inference_error}', status=400, mimetype='text/csv'
+                response=f"Inference failure: {inference_error}",
+                status=400,
+                mimetype="text/csv",
             )
 
     # Initial [non-cached] reload of trained model
     reloaded_model, model_filename = load_trained_model()
 
     # Trigger start of Flask app
-    app.run(host='0.0.0.0', port=8080)
+    app.run(host="0.0.0.0", port=8080)
 
 
-if __name__ == '__main__':
-
+def main() -> int:
     try:
         serve()
-        sys.exit(0)  # Success exit code
-
     except Exception:
-        
         traceback.print_exc()
-        sys.exit(-1) # Failure exit code
+        sys.exit(-1)  # Failure exit code
+
+    return 0
+
+
+if __name__ == "__main__":
+    main()

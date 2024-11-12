@@ -264,7 +264,13 @@ def gen_fraud_data(
     return transactions, identity
 
 
-if __name__ == "__main__":
+def main() -> int:
     transaction, identity = gen_fraud_data()
     transaction.to_csv("raw_data/transaction.csv", index=False)
     identity.to_csv("raw_data/identity.csv", index=False)
+
+    return 0
+
+
+if __name__ == "__main__":
+    main()

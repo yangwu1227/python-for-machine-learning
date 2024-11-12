@@ -7,7 +7,12 @@ import joblib
 import numpy as np
 import pandas as pd
 import xgboost as xgb
-from custom_utils import add_additional_args, create_pipeline, get_logger, parser
+from tree_based.projects.otto_product_sagemaker.src.model_utils import (
+    add_additional_args,
+    create_pipeline,
+    get_logger,
+    parser,
+)
 from sklearn.model_selection import StratifiedKFold
 from sklearn.pipeline import Pipeline
 from sklearn.utils.class_weight import compute_sample_weight
@@ -201,7 +206,7 @@ def train_xgboost(
     return model_pipeline
 
 
-if __name__ == "__main__":
+def main() -> int:
     # ---------------------------------- Set up ---------------------------------- #
 
     additional_args = {
@@ -297,3 +302,9 @@ if __name__ == "__main__":
         Key=os.path.join(args.s3_key, f"model/{job_name}-model.joblib"),
     )
     s3_client.close()
+
+    return 0
+
+
+if __name__ == "__main__":
+    main()

@@ -300,7 +300,7 @@ def get_features_and_labels(
     )
 
 
-if __name__ == "__main__":
+def main() -> int:
     logging = get_logger(__name__)
 
     args = parse_args()
@@ -316,3 +316,9 @@ if __name__ == "__main__":
 
     # Preprocessing
     get_features_and_labels(transactions, args.cat_cols_xgboost, args.output_dir)
+
+    return 0
+
+
+if __name__ == "__main__":
+    main()

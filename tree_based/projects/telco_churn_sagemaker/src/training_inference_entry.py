@@ -6,10 +6,10 @@ import joblib
 import numpy as np
 import pandas as pd
 import xgboost as xgb
-from custom_pipeline import create_pipeline
-from custom_utils import load_data
+from tree_based.projects.telco_churn_sagemaker.src.model_utils import load_data
 from sklearn.pipeline import Pipeline
 from sklearn.utils.class_weight import compute_sample_weight
+from module_utils import create_pipeline
 
 # --------------------- Parse argument from command line --------------------- #
 
@@ -204,7 +204,7 @@ def predict_fn(data: pd.DataFrame, model: Pipeline) -> np.ndarray:
     return model.predict_proba(data)
 
 
-if __name__ == "__main__":
+def main() -> int:
     args = parser()
 
     X_train, y_train = load_data(
@@ -262,3 +262,9 @@ if __name__ == "__main__":
     model_pipeline.fit(X=X_train, y=y_train, xgb_clf__sample_weight=sample_weights)
 
     joblib.dump(model_pipeline, os.path.join(args.model_dir, "model.joblib"))
+
+    return 0
+
+
+if __name__ == "__main__":
+    main()

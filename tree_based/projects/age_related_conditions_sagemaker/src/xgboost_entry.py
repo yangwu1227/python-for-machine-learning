@@ -126,8 +126,8 @@ def xgboost_objective(
         "colsample_bytree": trial.suggest_float("colsample_bytree", 0.3, 0.9),
         "colsample_bylevel": trial.suggest_float("colsample_bylevel", 0.3, 0.9),
         "colsample_bynode": trial.suggest_float("colsample_bynode", 0.3, 0.9),
-        "reg_alpha": trial.suggest_float("reg_alpha", 0, 10),
-        "reg_lambda": trial.suggest_float("reg_lambda", 1, 10),
+        "reg_alpha": trial.suggest_float("reg_alpha", 0.01, 0.1),
+        "reg_lambda": trial.suggest_float("reg_lambda", 0.01, 0.1),
         "max_bin": trial.suggest_categorical("max_bin", [2**i for i in range(8, 11)]),
         "grow_policy": trial.suggest_categorical(
             "grow_policy", ["depthwise", "lossguide"]

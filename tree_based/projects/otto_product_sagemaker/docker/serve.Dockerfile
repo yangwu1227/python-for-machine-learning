@@ -10,27 +10,26 @@ RUN wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86
 RUN apt-get update && \
     apt-get install -y --no-install-recommends build-essential && \
     source activate rapids && \
-    pip3 install \
+    pip3 install --no-cache-dir \
         sagemaker \
         sagemaker-training \
         boto3 \
-        s3fs \ 
-        flask \ 
-        lightgbm 
+        s3fs \
+        flask \
+        lightgbm && \
+    apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # Ensure python I/O is unbuffered so log messages are immediate
-ENV PYTHONUNBUFFERED=True
-# Disable the generation of bytecode '.pyc' files
-ENV PYTHONDONTWRITEBYTECODE=True
-# Set environment variable for the source code directory
-ENV PROGRAM_PATH='/opt/program'
-# Ensure PROGRAM_PATH is included in the search path for executables, so any executables (i.e., 'serve') in that directory will take precedence over other executables
-ENV PATH="/opt/program:${PATH}"
+ENV PYTHONUNBUFFERED=1 \
+    # Disable the generation of bytecode '.pyc' files
+    PYTHONDONTWRITEBYTECODE=1 \
+    PROGRAM_PATH='/opt/program' \
+    # Ensure PROGRAM_PATH is included in the search path for executables, so any executables (i.e., 'serve') in that directory will take precedence over other executables
+    PATH="/opt/program:$PATH"
 
 # Copy src directory into the container
 COPY ./src $PROGRAM_PATH
 
-# Change permissions of the 'serve' script
+# Change permissions for 'serve' script and set working directory
 RUN chmod +x $PROGRAM_PATH/serve
-
 WORKDIR $PROGRAM_PATH

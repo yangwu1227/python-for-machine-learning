@@ -8,7 +8,11 @@ import cudf
 import numpy as np
 import pandas as pd
 import xgboost as xgb
-from custom_utils import add_additional_args, get_logger, parser
+from tree_based.projects.otto_product_sagemaker.src.model_utils import (
+    add_additional_args,
+    get_logger,
+    parser,
+)
 from sklearn.model_selection import StratifiedKFold
 from sklearn.pipeline import Pipeline
 from sklearn.utils.class_weight import compute_sample_weight
@@ -165,7 +169,7 @@ def train_baseline(
     return feature_importances
 
 
-if __name__ == "__main__":
+def main() -> int:
     # ---------------------------------- Set up ---------------------------------- #
 
     additional_args = {
@@ -243,3 +247,9 @@ if __name__ == "__main__":
     logger.info("Finished feature importances to s3...")
 
     s3_client.close()
+
+    return 0
+
+
+if __name__ == "__main__":
+    main()

@@ -24,9 +24,9 @@ aws ecr get-login-password --region "$region" | docker login --username AWS --pa
 
 # Location of 'src' is out of the Docker context so we need to run this bash script from the directory that contains 'src'
 if [ "$mode" == "train" ]; then
-    docker build --build-arg SAGEMAKER_PROGRAM="$entry_point" . -t "$image_name" -f ./container/Dockerfile_train
+    docker build --build-arg SAGEMAKER_PROGRAM="$entry_point" . -t "$image_name" -f ./docker/train.Dockerfile
 elif [ "$mode" == "serve" ]; then
-    docker build . -t "$image_name" -f ./container/Dockerfile_serve
+    docker build . -t "$image_name" -f ./docker/serve.Dockerfile
 else
     echo "Invalid mode: $mode"
     exit 1

@@ -8,7 +8,11 @@ import pandas as pd
 import s3fs
 from cuml import LogisticRegression
 from cuml.metrics import log_loss
-from custom_utils import add_additional_args, get_logger, parser
+from tree_based.projects.otto_product_sagemaker.src.model_utils import (
+    add_additional_args,
+    get_logger,
+    parser,
+)
 from sklearn.ensemble import StackingClassifier
 from sklearn.model_selection import StratifiedKFold
 from sklearn.pipeline import Pipeline
@@ -116,7 +120,7 @@ def train_ensemble(
     return stack_model
 
 
-if __name__ == "__main__":
+def main() -> int:
     # ---------------------------------- Set up ---------------------------------- #
 
     additional_args = {
@@ -169,3 +173,9 @@ if __name__ == "__main__":
     joblib.dump(
         stack_model, os.path.join(args.model_dir, "stacking_ensemble_model.joblib")
     )
+
+    return 0
+
+
+if __name__ == "__main__":
+    main()

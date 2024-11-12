@@ -4,15 +4,15 @@ import pandas as pd
 # --------------------------- Datatype transformer --------------------------- #
 
 
-def DtypeTransformer(df: pd.DataFrame, copy=False) -> pd.DataFrame:
+def DtypeTransformer(data: pd.DataFrame, copy=False) -> pd.DataFrame:
     """
     Function to transform the data types of the dataframe.
     """
     if copy:
-        df = df.copy(deep=True)
+        data = data.copy(deep=True)
 
     # Enforce columns order so downstream transformers can expect consistency
-    df = df[
+    data = data[
         [
             # Id columns
             "encounter_id",
@@ -71,7 +71,7 @@ def DtypeTransformer(df: pd.DataFrame, copy=False) -> pd.DataFrame:
 
     # Integer id's can be downcast to 32 bit integers
     ids_map = {"encounter_id": np.int32, "patient_nbr": np.int32}
-    df = df.astype(ids_map)
+    data = data.astype(ids_map)
 
     # Numerical features can be downcast to 16 bit integers (max 32767)
     num_col_map = {
@@ -84,7 +84,7 @@ def DtypeTransformer(df: pd.DataFrame, copy=False) -> pd.DataFrame:
         "number_inpatient": np.int16,
         "number_diagnoses": np.int16,
     }
-    df = df.astype(num_col_map)
+    data = data.astype(num_col_map)
 
     # Convert integer-based categorical features to 'object' in preparation for downstream transformer to work them to 'category'
     cat_col_map = {
@@ -92,9 +92,9 @@ def DtypeTransformer(df: pd.DataFrame, copy=False) -> pd.DataFrame:
         "discharge_disposition_id": "object",
         "admission_source_id": "object",
     }
-    df = df.astype(cat_col_map)
+    data = data.astype(cat_col_map)
 
-    return df
+    return data
 
 
 # ---------------------- Restore column order and names ---------------------- #
@@ -106,7 +106,7 @@ def RestoreTransformer(data: np.array) -> pd.DataFrame:
     """
     # Assuming the numpy array is returned by a ColumnTransformer (must be the case to get correct column order)
     # The first 23 columns are the medication columns since ColumnTransformer appends the 'pass through' columns on the left
-    df = pd.DataFrame(
+    data = pd.DataFrame(
         data,
         columns=[
             # Medication categorical columns
@@ -165,13 +165,13 @@ def RestoreTransformer(data: np.array) -> pd.DataFrame:
         ],
     )
 
-    return df
+    return data
 
 
 # ------------------ Convert columns to categorical datatype ----------------- #
 
 
-def CatTransformer(df: pd.DataFrame) -> pd.DataFrame:
+def CatTransformer(data: pd.DataFrame) -> pd.DataFrame:
     """
     Function to convert columns to categorical datatype.
     """
@@ -218,15 +218,15 @@ def CatTransformer(df: pd.DataFrame) -> pd.DataFrame:
     ]
 
     for col in cat_col:
-        df[col] = df[col].astype("category")
+        data[col] = data[col].astype("category")
 
-    return df
+    return data
 
 
 # ------------------ Feature engineer for numerical columns ------------------ #
 
 
-def NumTransformer(df: pd.DataFrame) -> pd.DataFrame:
+def NumTransformer(data: pd.DataFrame) -> pd.DataFrame:
     """
     Group by aggregation of numerical columns based on patient id and demographic characteristics.
     """
@@ -244,8 +244,8 @@ def NumTransformer(df: pd.DataFrame) -> pd.DataFrame:
 
     for group in ["age", "gender", "race", "patient_nbr", "medical_specialty"]:
         for agg_func in ["mean", "median", "max", "sum"]:
-            df[[col + f"_{agg_func}_by_{group}" for col in num_col]] = df.groupby(
+            data[[col + f"_{agg_func}_by_{group}" for col in num_col]] = data.groupby(
                 group
             )[num_col].transform(agg_func, engine="cython")
 
-    return df
+    return data

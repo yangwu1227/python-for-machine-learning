@@ -1,22 +1,32 @@
 import pandas as pd
 from feature_engine.encoding import CountFrequencyEncoder, OneHotEncoder
 from sklearn.base import BaseEstimator, TransformerMixin
+from typing import Union, List, Self
 
 # --------------------------- Categorical features --------------------------- #
 
 
-def cat_feature_engineer(X, encode_type="count"):
+def cat_feature_engineer(X: pd.DataFrame, encode_type: str = "count") -> pd.DataFrame:
     """
-    This function assumes that the dataframe has already been processed such that select_dtypes('object') returns only string columns.
-    In practice, we may need more upstream processing to ensure this is the case.
+    Engineer categorical features using specified encoding methods.
 
-    We can use this function to engineer categorical features in two different ways:
+    Parameters
+    ----------
+    X : pd.DataFrame
+        The input DataFrame with categorical features.
+    encode_type : str, optional
+        Type of encoding to apply to categorical features. Options are "count" for count encoding
+        and "onehot" for one-hot encoding. Default is "count".
 
-    - Count: Replace the string with the count of that string in the column
+    Returns
+    -------
+    pd.DataFrame
+        Transformed DataFrame with categorical features encoded.
 
-    - One-hot: Replace the string with a one-hot encoding of that string in the column
-
-    The 'encode_type' argument can then be a hyperparameter to the pipeline.
+    Raises
+    ------
+    ValueError
+        If `encode_type` is not "count" or "onehot".
     """
     # Categorical features
     cat_features = X.select_dtypes("object").columns.tolist()
@@ -36,26 +46,32 @@ def cat_feature_engineer(X, encode_type="count"):
 # ---------------------------- Numerical features ---------------------------- #
 
 
-def num_feature_engineer(X, switch=True):
+def num_feature_engineer(X: pd.DataFrame, switch: bool = True) -> pd.DataFrame:
     """
-    This function assumes that the dataframe has already been processed such that select_dtypes('number') returns only numerical columns.
-    In practice, we need to include all the processing in the 'eda.ipynb' notebook in the pipeline, especially when new
-    numerical feature may be added in the future. The 'switch' argument is a hyperparameter to the pipeline, turning this transformation on or
-    off.
+    Engineer numerical features based on aggregation grouped by a key column.
+
+    Parameters
+    ----------
+    X : pd.DataFrame
+        The input DataFrame with numerical features.
+    switch : bool, optional
+        If True, applies feature engineering transformations. Default is True.
+
+    Returns
+    -------
+    pd.DataFrame
+        Transformed DataFrame with new numerical features based on aggregation statistics.
     """
     if switch:
         # Numerical features
         num_features = X.select_dtypes("number").columns.tolist()
         num_features.remove("age")
 
-        # Group by client 'age' and generate new columns ['mean', 'std', 'min', 'max', 'last'] for each col in 'num_features' (5 x len(num_features) total)
-        # Could also use df.groupby("customer_ID")[num_features].describe(), but that includes quantiles as well so it may more more wasteful
+        # Group by client 'age' and generate new columns ['mean', 'std', 'min', 'max', 'last'] for each col in 'num_features'
         num_agg = X.groupby("age")[num_features].agg(
             ["mean", "std", "min", "max", "last"]
         )
-        # The num_agg.columns is a 'pandas.core.indexes.multi.MultiIndex' instance (an iterable)
-        # Its iterator returns tuples of the form ('parent_col', 'child_col') e.g., ('num_var1', 'mean'), ('num_var2', 'std'), ...
-        # Join the elements of this tuple using an underscore to create new column names
+        # Creating column names from multi-index columns
         num_agg.columns = ["_".join(x) for x in num_agg.columns]
 
         # Reset index to make 'age' a column again
@@ -64,8 +80,7 @@ def num_feature_engineer(X, switch=True):
         # Merge the new numerical features onto the original dataframe
         X = pd.merge(X, num_agg, on="age", how="left")
 
-        # Impute missing values for the new numerical features, in case there are any
-        # If a certain descriptive statistic is not available for a given age (e.g., sample too small), then we impute the missing value with 0
+        # Impute missing values for the new numerical features
         X.fillna(value=0, inplace=True)
         return X
     else:
@@ -77,14 +92,56 @@ def num_feature_engineer(X, switch=True):
 
 class ColumnDropperTransformer(BaseEstimator, TransformerMixin):
     """
-    Drop columns from a dataframe.
+    Custom transformer to drop specified columns from a DataFrame.
+
+    Parameters
+    ----------
+    columns : Union[List[str], str]
+        List of column names or a single column name to be dropped from the DataFrame.
+
+    Methods
+    -------
+    transform(X)
+        Drop specified columns from the DataFrame.
+    fit(X, y=None)
+        Fit method (no-op).
     """
 
-    def __init__(self, columns):
+    def __init__(self, columns: Union[List[str], str]):
         self.columns = columns
 
-    def transform(self, X, y=None):
+    def transform(self, X: pd.DataFrame, y: pd.Series = None) -> pd.DataFrame:
+        """
+        Transform method to drop specified columns from the DataFrame.
+
+        Parameters
+        ----------
+        X : pd.DataFrame
+            Input DataFrame.
+        y : pd.Series, optional
+            Target values (ignored).
+
+        Returns
+        -------
+        pd.DataFrame
+            DataFrame with specified columns dropped.
+        """
         return X.drop(self.columns, axis=1)
 
-    def fit(self, X, y=None):
+    def fit(self, X: pd.DataFrame, y: pd.Series = None) -> Self:
+        """
+        Fit method (no-op).
+
+        Parameters
+        ----------
+        X : pd.DataFrame
+            Input DataFrame.
+        y : pd.Series, optional
+            Target values (ignored).
+
+        Returns
+        -------
+        ColumnDropperTransformer
+            Instance of itself.
+        """
         return self

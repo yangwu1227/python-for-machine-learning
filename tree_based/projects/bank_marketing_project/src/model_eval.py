@@ -1,5 +1,6 @@
 import matplotlib.pyplot as plt
 import numpy as np
+import pandas as pd
 import seaborn as sns
 from sklearn.metrics import (
     balanced_accuracy_score,
@@ -7,13 +8,29 @@ from sklearn.metrics import (
     precision_recall_curve,
     roc_curve,
 )
+from typing import List, Dict, Any, Optional
 
 # ------------------------------- Plot function ------------------------------ #
 
 
-def plot_histograms(var, seq_data, path=None):
+def plot_histograms(
+    var: str, seq_data: List[pd.DataFrame], path: Optional[str] = None
+) -> None:
     """
-    Plot histograms for each variable in the dataset for all five folds.
+    Plot histograms for a specified variable across five folds of the data.
+
+    Parameters
+    ----------
+    var : str
+        The variable/column name for which histograms are to be plotted.
+    seq_data : List[pd.DataFrame]
+        A list of DataFrames, each representing one fold of data.
+    path : str, optional
+        Path to save the histogram plot. If None, the plot is not saved.
+
+    Returns
+    -------
+    None
     """
     fig = plt.figure(figsize=(16, 9))
     plt.rcParams.update({"font.size": 8})
@@ -53,9 +70,20 @@ def plot_histograms(var, seq_data, path=None):
 # ------------------- Function to compute average accuracy ------------------- #
 
 
-def compute_average_accuracy(seq_data):
+def compute_average_accuracy(seq_data: List[Dict[str, Any]]) -> float:
     """
-    Compute the average accuracy of the model on five folds.
+    Compute the average balanced accuracy score for predictions across five folds.
+
+    Parameters
+    ----------
+    seq_data : List[Dict[str, Any]]
+        A list of dictionaries, each representing one fold of data.
+        Each dictionary should contain 'target' and 'predictions' keys.
+
+    Returns
+    -------
+    float
+        The average balanced accuracy score across the five folds.
     """
     # Compute accuracy for each fold
     accuracy = np.empty(shape=(5,))
@@ -72,7 +100,23 @@ def compute_average_accuracy(seq_data):
 # --------------------------- Plot confusion matrix -------------------------- #
 
 
-def plot_cm(labels, predictions, p=0.5):
+def plot_cm(labels: np.ndarray, predictions: np.ndarray, p: float = 0.5) -> None:
+    """
+    Plot the confusion matrix for binary classification.
+
+    Parameters
+    ----------
+    labels : np.ndarray
+        Ground truth binary labels.
+    predictions : np.ndarray
+        Predicted probabilities or labels.
+    p : float, optional
+        Probability threshold for classification. Default is 0.5.
+
+    Returns
+    -------
+    None
+    """
     cm = confusion_matrix(labels, predictions > p)
     plt.rcParams["figure.figsize"] = (17, 15)
     plt.figure(figsize=(5, 5))
@@ -91,7 +135,27 @@ def plot_cm(labels, predictions, p=0.5):
 # --------------------------------- Plot ROC --------------------------------- #
 
 
-def plot_roc(name, labels, predictions, **kwargs):
+def plot_roc(
+    name: str, labels: np.ndarray, predictions: np.ndarray, **kwargs: Any
+) -> None:
+    """
+    Plot the Receiver Operating Characteristic (ROC) curve.
+
+    Parameters
+    ----------
+    name : str
+        Name for the plot legend.
+    labels : np.ndarray
+        Ground truth binary labels.
+    predictions : np.ndarray
+        Predicted probabilities.
+    **kwargs : Any
+        Additional keyword arguments for plotting.
+
+    Returns
+    -------
+    None
+    """
     fp, tp, _ = roc_curve(labels, predictions)
     plt.rcParams["figure.figsize"] = (17, 15)
     plt.plot(100 * fp, 100 * tp, label=name, linewidth=2, **kwargs)
@@ -106,9 +170,28 @@ def plot_roc(name, labels, predictions, **kwargs):
 # --------------------------------- Plot PRC --------------------------------- #
 
 
-def plot_prc(name, labels, predictions, **kwargs):
-    precision, recall, _ = precision_recall_curve(labels, predictions)
+def plot_prc(
+    name: str, labels: np.ndarray, predictions: np.ndarray, **kwargs: Any
+) -> None:
+    """
+    Plot the Precision-Recall Curve (PRC).
 
+    Parameters
+    ----------
+    name : str
+        Name for the plot legend.
+    labels : np.ndarray
+        Ground truth binary labels.
+    predictions : np.ndarray
+        Predicted probabilities.
+    **kwargs : Any
+        Additional keyword arguments for plotting.
+
+    Returns
+    -------
+    None
+    """
+    precision, recall, _ = precision_recall_curve(labels, predictions)
     plt.plot(precision, recall, label=name, linewidth=2, **kwargs)
     plt.xlabel("Precision")
     plt.ylabel("Recall")

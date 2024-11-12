@@ -1,52 +1,19 @@
 import argparse
-import logging
 import os
 import pickle
-import sys
 import warnings
-from typing import Tuple
+from typing import Tuple, Callable
 
 import boto3
 import numpy as np
 import optuna
 import xgboost as xgb
-from custom_pipeline import create_pipeline
-from custom_utils import load_data
+from model_utils import get_logger, create_pipeline
+from tree_based.projects.telco_churn_sagemaker.src.model_utils import load_data
 from optuna.trial import TrialState
 from sklearn.metrics import average_precision_score
 from sklearn.model_selection import StratifiedKFold
 from sklearn.utils.class_weight import compute_sample_weight
-
-# ---------------------------------- Logger ---------------------------------- #
-
-
-def get_logger(name: str) -> logging.Logger:
-    """
-    Parameters
-    ----------
-    name : str
-        A string that specifies the name of the logger.
-
-    Returns
-    -------
-    logging.Logger
-        A logger with the specified name.
-    """
-    logger = logging.getLogger(name)  # Return a logger with the specified name
-
-    log_format = "%(asctime)s %(levelname)s %(name)s: %(message)s"
-    formatter = logging.Formatter(log_format)
-    # No matter how many processes we spawn, we only want one StreamHandler attached to the logger
-    if not any(
-        isinstance(handler, logging.StreamHandler) for handler in logger.handlers
-    ):
-        handler = logging.StreamHandler(sys.stdout)
-        handler.setFormatter(formatter)
-        logger.addHandler(handler)
-
-    logger.setLevel(logging.INFO)
-
-    return logger
 
 
 # --------------------- Parse argument from command line --------------------- #
@@ -97,7 +64,11 @@ def parser() -> argparse.Namespace:
 # -------------- Define surrogate objective function for Optuna -------------- #
 
 
-def objective(trial: optuna.Trial) -> float:
+def xgboost_objective(
+    trial: optuna.Trial,
+    args: argparse.Namespace,
+    train_data: Tuple[np.ndarray, np.ndarray],
+) -> float:
     """
     Objective function for Optuna.
 
@@ -105,12 +76,18 @@ def objective(trial: optuna.Trial) -> float:
     ----------
     trial : optuna.Trial
         Trial object for sampling hyperparameters.
+    args : argparse.Namespace
+        Namespace with arguments.
+    train_data : Tuple[np.ndarray, np.ndarray]
+        Tuple of training data (X_train, y_train).
+
 
     Returns
     -------
     float
         Performance metric on validation set.
     """
+    X_train, y_train = train_data
     skf = StratifiedKFold(n_splits=args.k, shuffle=True, random_state=args.seed)
 
     # Parameter space
@@ -121,44 +98,43 @@ def objective(trial: optuna.Trial) -> float:
             "objective": "binary:logistic",  # Outputs probabilities
             "eval_metric": "aucpr",  # Use area under PR curve as the evaluation metric on validation sets
             "learning_rate": trial.suggest_float(
-                name="learning_rate", low=0.001, high=0.7
+                name="learning_rate", low=0.001, high=0.3, log=True
             ),  # Range: [0, 1], larger eta shrinks the feature weights more to make the boosting process more conservative, i.e., fewer trees (regularizer)
             "gamma": trial.suggest_int(
-                "gamma", low=0, high=100
+                "gamma", low=0.05, high=1
             ),  # Range: [0, inf], the larger the more conservative the algorithm (regularizer)
             "max_delta_step": trial.suggest_int(
-                "max_delta_step", 1, 10
+                "max_delta_step", 0, 10
             ),  # Range: [0, inf], values from 1-10 might help control the update for imbalanced data (regularizer)
             "lambda": trial.suggest_int(
-                "lambda", low=10, high=700
+                "lambda", low=0.01, high=0.1
             ),  # Range: [0, inf], L2 regularization term on weights, the larger the more conservative the algorithm (regularizer)
             "alpha": trial.suggest_int(
-                "alpha", low=10, high=700
+                "alpha", low=0.01, high=0.1
             ),  # Range: [0, inf], L1 regularization term on weights, the larger the more conservative the algorithm (regularizer)
             "colsample_bylevel": trial.suggest_float(
-                name="colsample_bylevel", low=0.2, high=1
+                name="colsample_bylevel", low=0.3, high=0.9
             ),
             "colsample_bynode": trial.suggest_float(
-                name="colsample_bynode", low=0.2, high=1
+                name="colsample_bynode", low=0.3, high=0.9
             ),
             "colsample_bytree": trial.suggest_float(
-                name="colsample_bytree", low=0.2, high=1
+                name="colsample_bytree", low=0.3, high=0.9
             ),  # Range: (0, 1], subsample ratio of columns when constructing each tree, the smaller the more conservative the algorithm (regularizer)
             "subsample": trial.suggest_float(
-                name="subsample", low=0.5, high=1
+                name="subsample", low=0.5, high=0.9
             ),  # Range: (0, 1], subsample ratio of the training instances every boosting iteration, the smaller the more conservative the algorithm (regularizer)
             "sampling_method": "uniform",  # Typically set subsample >= 0.5 for good results
             "max_depth": trial.suggest_categorical(
-                "max_depth", np.arange(3, 20, dtype=np.int16).tolist()
+                "max_depth", np.arange(3, 15, dtype=np.int16).tolist()
             ),  # Range: [0, inf], deep trees boost predictive power but are more likely to overfit (bias reducer)
             "tree_method": "hist",
-            "predictor": "cpu_predictor",
             "scale_pos_weight": (y_train == 0).sum()
             / y_train.sum(),  # Class weight for positive class (churn = 'yes')
         },
         # Non-booster parameters
         "num_boost_round": trial.suggest_int(
-            "num_boost_round", low=500, high=1500, step=100
+            "num_boost_round", low=100, high=1500, step=100
         ),  # Range: [0, inf], number of boosting iterations, the larger the more likely to overfit (bias reducer)
         "num_feat": trial.suggest_categorical("num_feat", [50, 60, 70, 80, 90, 100]),
         "step": trial.suggest_categorical("step", [0.1, 0.2, 0.3]),
@@ -255,7 +231,7 @@ def create_study() -> Tuple[optuna.study.Study, str]:
     return study, storage_path
 
 
-if __name__ == "__main__":
+def main() -> int:
     warnings.filterwarnings(
         "ignore", category=UserWarning
     )  # Ignore warnings from optuna callback
@@ -275,7 +251,14 @@ if __name__ == "__main__":
 
     study, storage_path = create_study()
 
-    study.optimize(objective, n_trials=args.n_trials, n_jobs=-1)
+    def objective_wrapper(trial: optuna.Trial) -> Callable:
+        return xgboost_objective(
+            trial=trial,
+            args=args,
+            train_data=(X_train, y_train),
+        )
+
+    study.optimize(objective_wrapper, n_trials=args.n_trials, n_jobs=-1)
 
     pruned_trials = study.get_trials(deepcopy=False, states=[TrialState.PRUNED])
     complete_trials = study.get_trials(deepcopy=False, states=[TrialState.COMPLETE])
@@ -297,3 +280,9 @@ if __name__ == "__main__":
     )
 
     logger.info(f"Best hyperparameters: {study.best_params}")
+
+    return 0
+
+
+if __name__ == "__main__":
+    main()
