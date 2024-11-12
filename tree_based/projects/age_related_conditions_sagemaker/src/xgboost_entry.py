@@ -319,8 +319,12 @@ def main() -> int:
         # Save to model_dir for persistent storage
         model_dir = os.path.join(args.model_dir, f"best-model.joblib")
         joblib.dump(best_model, model_dir)
-    except Exception as _:
-        logger.error(f"The best model does not exist in the current training job")
+    except FileNotFoundError as error:
+        logger.info(
+            f"The best model does not exist in the current training job: {error}"
+        )
+    except Exception as error:
+        logger.error(f"An error occurred while saving the best model: {error}")
 
     return 0
 
