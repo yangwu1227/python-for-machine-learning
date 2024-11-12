@@ -16,4 +16,4 @@ $ pdm use $(which python3)
 $ pdm install --prod
 ```
 
-However, any other dependency management tool can be used instead. Not all dependencies are explicitly declared in the pyproject.toml file. 
+Any other dependency management tool can be used instead. Not all dependencies are explicitly declared in the pyproject.toml file. 
