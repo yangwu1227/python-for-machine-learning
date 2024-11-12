@@ -6,7 +6,7 @@ import joblib
 import numpy as np
 import pandas as pd
 import xgboost as xgb
-from tree_based.projects.telco_churn_sagemaker.src.model_utils import load_data
+from src.model_utils import load_data
 from sklearn.pipeline import Pipeline
 from sklearn.utils.class_weight import compute_sample_weight
 from module_utils import create_pipeline

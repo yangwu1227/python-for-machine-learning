@@ -9,7 +9,7 @@ import numpy as np
 import optuna
 import xgboost as xgb
 from model_utils import get_logger, create_pipeline
-from tree_based.projects.telco_churn_sagemaker.src.model_utils import load_data
+from src.model_utils import load_data
 from optuna.trial import TrialState
 from sklearn.metrics import average_precision_score
 from sklearn.model_selection import StratifiedKFold

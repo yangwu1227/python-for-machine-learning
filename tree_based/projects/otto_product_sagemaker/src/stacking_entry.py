@@ -8,7 +8,7 @@ import pandas as pd
 import s3fs
 from cuml import LogisticRegression
 from cuml.metrics import log_loss
-from tree_based.projects.otto_product_sagemaker.src.model_utils import (
+from src.model_utils import (
     add_additional_args,
     get_logger,
     parser,

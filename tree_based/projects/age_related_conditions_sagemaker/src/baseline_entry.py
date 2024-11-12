@@ -5,7 +5,7 @@ from typing import Any, Callable, Dict, List, Tuple
 import numpy as np
 import optuna
 import pandas as pd
-from tree_based.projects.age_related_conditions_sagemaker.src.model_utils import (
+from src.model_utils import (
     FeatureImportanceHandler,
     add_additional_args,
     create_study,

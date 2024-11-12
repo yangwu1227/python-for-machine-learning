@@ -7,7 +7,7 @@ import numpy as np
 import optuna
 import pandas as pd
 import xgboost as xgb
-from tree_based.projects.age_related_conditions_sagemaker.src.model_utils import (
+from src.model_utils import (
     add_additional_args,
     create_preprocessor,
     create_study,

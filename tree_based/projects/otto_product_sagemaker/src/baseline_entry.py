@@ -8,7 +8,7 @@ import cudf
 import numpy as np
 import pandas as pd
 import xgboost as xgb
-from tree_based.projects.otto_product_sagemaker.src.model_utils import (
+from src.model_utils import (
     add_additional_args,
     get_logger,
     parser,
