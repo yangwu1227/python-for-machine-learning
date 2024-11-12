@@ -2,7 +2,7 @@ import argparse
 import logging
 import os
 import warnings
-from typing import Any, Dict, List, Tuple, Union
+from typing import Any, Dict, Tuple, Union
 
 import joblib
 import matplotlib.pyplot as plt

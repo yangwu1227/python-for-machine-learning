@@ -3,7 +3,7 @@ import json
 import logging
 import os
 import sys
-from typing import Any, Callable, Dict, List, Optional, Tuple, Union
+from typing import Callable, Dict, Union
 
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"  # Nopep8
 import IPython
@@ -11,10 +11,6 @@ import tensorflow as tf
 from pygments import highlight
 from pygments.formatters import HtmlFormatter
 from pygments.lexers import PythonLexer
-from pygments.style import Style
-from pygments.token import (Comment, Error, Generic, Keyword, Name, Number,
-                            Operator, String)
-from tensorflow.keras.utils import image_dataset_from_directory
 
 # ---------------------------------- Logger ---------------------------------- #
 

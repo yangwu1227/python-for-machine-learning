@@ -1,6 +1,4 @@
-import argparse
 import json
-import logging
 import os
 import random
 import subprocess
@@ -15,7 +13,6 @@ from omegaconf import OmegaConf
 
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"  # Nopep8
 import matplotlib.pyplot as plt
-import tensorflow as tf
 from tensorflow.keras.utils import image_dataset_from_directory
 
 # ------------------------- Downsample a single class ------------------------ #

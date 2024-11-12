@@ -1,5 +1,5 @@
 import os
-from typing import List, Tuple, Union
+from typing import List
 
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"  # Nopep8
 import matplotlib
@@ -8,7 +8,7 @@ import tensorflow as tf
 matplotlib.use("Agg")  # Nopep8
 import matplotlib.pyplot as plt
 import numpy as np
-from flask import Flask, render_template, request, send_from_directory
+from flask import Flask, render_template, request
 from PIL import Image
 from werkzeug.datastructures import FileStorage
 

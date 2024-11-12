@@ -1,8 +1,6 @@
 from re import sub
 
 import cudf
-import cupy as cp
-import numpy as np
 import pandas as pd
 
 

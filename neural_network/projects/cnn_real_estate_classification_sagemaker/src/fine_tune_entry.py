@@ -1,11 +1,9 @@
 import json
 import logging
 import os
-import pickle
 from functools import partial
-from typing import Any, Dict, List, Tuple, Union
+from typing import Any, Dict
 
-import boto3
 import numpy as np
 import s3fs
 
@@ -414,8 +412,13 @@ class FineTuneTrainer(BaseTrainer):
 
 
 if __name__ == "__main__":
-    from custom_utils import (AugmentationModel, add_additional_args,
-                              get_logger, load_dataset, parser)
+    from custom_utils import (
+        AugmentationModel,
+        add_additional_args,
+        get_logger,
+        load_dataset,
+        parser,
+    )
 
     # ---------------------------------- Set up ---------------------------------- #
 

@@ -9,8 +9,14 @@ from ipywidgets import Output
 from matplotlib.gridspec import GridSpec
 from matplotlib.widgets import Button, CheckButtons
 from sklearn.linear_model import LogisticRegression, Ridge
-from utils.lab_utils_common import (dlc, np, plot_data, plt, predict_logistic,
-                                    zscore_normalize_features)
+from utils.lab_utils_common import (
+    dlc,
+    np,
+    plot_data,
+    plt,
+    predict_logistic,
+    zscore_normalize_features,
+)
 
 
 def map_one_feature(X1, degree):

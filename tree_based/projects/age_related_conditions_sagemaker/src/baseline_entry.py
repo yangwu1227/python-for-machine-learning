@@ -1,20 +1,25 @@
 import logging
 import os
-import sys
-from typing import Any, Callable, Dict, List, Optional, Tuple, Union
+from typing import Any, Callable, Dict, List, Tuple
 
 import numpy as np
 import optuna
 import pandas as pd
-from custom_utils import (FeatureImportanceHandler, add_additional_args,
-                          create_study, custom_log_loss, get_db_url,
-                          get_logger, parser, study_report)
+from tree_based.projects.age_related_conditions_sagemaker.src.model_utils import (
+    FeatureImportanceHandler,
+    add_additional_args,
+    create_study,
+    custom_log_loss,
+    get_db_url,
+    get_logger,
+    parser,
+    study_report,
+)
 from hydra import compose, core, initialize
 from omegaconf import OmegaConf
 from sklearn.compose import ColumnTransformer
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.impute import SimpleImputer
-from sklearn.metrics import log_loss
 from sklearn.model_selection import StratifiedKFold
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import OneHotEncoder, RobustScaler
@@ -140,7 +145,7 @@ def baseline_objective(
     """
     # Hyperparameters space
     model_hyperparameter = {
-        "n_estimators": trial.suggest_int("n_estimators", 100, 1500),
+        "n_estimators": trial.suggest_int("n_estimators", 100, 1000),
         # As a rule of thumb, log_2(n_samples = 617) = 9.27
         "max_depth": trial.suggest_int("max_depth", 3, 15),
         # Minimum number of samples required to split an internal node
@@ -227,15 +232,12 @@ def baseline_objective(
     return mean_log_loss
 
 
-if __name__ == "__main__":
+def main() -> int:
     # ---------------------------------- Set up ---------------------------------- #
 
     additional_args = {"study_name": str}
-
     args = add_additional_args(parser, additional_args)()
-
     logger = get_logger(name=__name__)
-
     job_name = args.training_env["job_name"]
 
     # Hydra
@@ -246,7 +248,6 @@ if __name__ == "__main__":
     # --------------------------------- Load data -------------------------------- #
 
     logger.info("Loading data...")
-
     data = pd.read_csv(os.path.join(args.train, "train.csv"))
     if args.test_mode:
         data = data.sample(300)
@@ -254,21 +255,18 @@ if __name__ == "__main__":
         data.reset_index(drop=True).drop(["Class", "Id"], axis=1),
         data["Class"].values,
     )
-
     logger.info(f"Training data shape: {X.shape}")
     logger.info(f"Class distribution: {{0: {np.sum(y == 0)}, 1: {np.sum(y == 1)}}}")
 
     # ------------------------------ Set up database ----------------------------- #
 
     logger.info("Setting up optuna database...")
-
     db_url = get_db_url(
         host=args.host,
         db_name=args.db_name,
         db_secret=args.db_secret,
         region_name=args.region_name,
     )
-
     logger.info(f"Database URL: {db_url}")
 
     # ------------------------------- Optimization ------------------------------- #
@@ -294,6 +292,11 @@ if __name__ == "__main__":
     study = create_study(
         study_name=args.study_name, storage=db_url, direction="minimize"
     )
-    study.optimize(objective_wrapper, n_trials=args.n_trials, n_jobs=-1)
-
+    study.optimize(objective_wrapper, n_trials=args.n_trials)
     study_report(study=study, logger=logger)
+
+    return 0
+
+
+if __name__ == "__main__":
+    main()

@@ -5,7 +5,6 @@ import dash
 import dash_bootstrap_components as dbc
 import joblib
 import pandas as pd
-import plotly.graph_objs as go
 from dash import dash_table, dcc, html
 from dash.dependencies import Input, Output, State
 from src.base_trainer import BaseTrainer

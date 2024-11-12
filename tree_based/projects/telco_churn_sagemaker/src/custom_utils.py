@@ -6,7 +6,6 @@ from typing import Any, Tuple
 import boto3
 import numpy as np
 import pandas as pd
-import xgboost as xgb
 from sklearn.metrics import average_precision_score
 from sklearn.model_selection import StratifiedShuffleSplit
 

@@ -1,5 +1,3 @@
-import argparse
-import json
 import logging
 import os
 import pickle
@@ -7,7 +5,6 @@ from typing import Any, Callable, Dict, List, Union
 
 import boto3
 import cudf
-import cupy as cp
 import numpy as np
 import pandas as pd
 import xgboost as xgb

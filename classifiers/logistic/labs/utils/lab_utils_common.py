@@ -12,7 +12,6 @@ import math
 
 import matplotlib.pyplot as plt
 import numpy as np
-from ipywidgets import Output
 from matplotlib.patches import FancyArrowPatch
 
 np.set_printoptions(precision=2)

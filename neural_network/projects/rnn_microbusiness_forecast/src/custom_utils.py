@@ -3,11 +3,10 @@ import json
 import logging
 import os
 import sys
-from typing import Callable, Dict, List, Tuple
+from typing import Callable, Dict, Tuple
 
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"  # Nopep8
 import numpy as np
-import tensorflow as tf
 
 # ------------------------------ Logger function ----------------------------- #
 

@@ -9,14 +9,11 @@ import xml.etree.ElementTree as ET
 from concurrent.futures import ProcessPoolExecutor
 from typing import Dict, List, Tuple
 
-import boto3
 import matplotlib.patches as patches
 import matplotlib.pyplot as plt
-import sagemaker
 from hydra import compose, core, initialize
 from omegaconf import OmegaConf
 from PIL import Image
-from sagemaker.session import Session
 
 # -------------------------------- XML parser -------------------------------- #
 

@@ -1,7 +1,7 @@
 import logging
 import os
 import sys
-from typing import Any, Dict, List, Tuple, Union
+from typing import Any, Dict, Tuple, Union
 
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"  # Nopep8
 import IPython
@@ -16,9 +16,6 @@ from plotly.subplots import make_subplots
 from pygments import highlight
 from pygments.formatters import HtmlFormatter
 from pygments.lexers import PythonLexer
-from pygments.style import Style
-from pygments.token import (Comment, Error, Generic, Keyword, Name, Number,
-                            Operator, String)
 
 # ------------------------------ Logger function ----------------------------- #
 

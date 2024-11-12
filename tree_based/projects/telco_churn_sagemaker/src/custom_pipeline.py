@@ -4,10 +4,8 @@ import numpy as np
 import pandas as pd
 from category_encoders.cat_boost import CatBoostEncoder
 from sklearn.base import BaseEstimator, TransformerMixin
-from sklearn.compose import ColumnTransformer
 from sklearn.feature_selection import RFE
 from sklearn.pipeline import Pipeline
-from sklearn.preprocessing import FunctionTransformer
 from sklearn.tree import DecisionTreeClassifier
 
 

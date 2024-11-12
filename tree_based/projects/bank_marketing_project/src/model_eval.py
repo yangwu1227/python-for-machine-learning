@@ -1,11 +1,12 @@
-# ---------------------------------- Imports --------------------------------- #
-
 import matplotlib.pyplot as plt
 import numpy as np
-import pandas as pd
 import seaborn as sns
-from sklearn.metrics import (balanced_accuracy_score, confusion_matrix,
-                             precision_recall_curve, roc_curve)
+from sklearn.metrics import (
+    balanced_accuracy_score,
+    confusion_matrix,
+    precision_recall_curve,
+    roc_curve,
+)
 
 # ------------------------------- Plot function ------------------------------ #
 

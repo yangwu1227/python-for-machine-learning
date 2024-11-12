@@ -2,7 +2,7 @@ import os
 from shutil import rmtree
 
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"  # Nopep8
-from typing import Callable, Dict, Tuple, Union
+from typing import Tuple
 
 import pytest
 import tensorflow as tf

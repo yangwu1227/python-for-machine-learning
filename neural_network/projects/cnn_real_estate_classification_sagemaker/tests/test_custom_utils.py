@@ -11,8 +11,12 @@ import tensorflow as tf
 from IPython.display import Image
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from src.custom_utils import (AugmentationModel, ErrorAnalyzer,
-                              TuningVisualizer, get_logger)
+from src.custom_utils import (
+    AugmentationModel,
+    ErrorAnalyzer,
+    TuningVisualizer,
+    get_logger,
+)
 
 # ------------------------- Tests for logger function ------------------------ #
 

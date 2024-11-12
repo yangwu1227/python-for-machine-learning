@@ -1,10 +1,8 @@
 import json
-import logging
 import os
 import subprocess
-import sys
-from random import Random, shuffle
-from shutil import copyfile, move, rmtree
+from random import Random
+from shutil import copyfile
 
 import sagemaker
 from custom_utils import get_logger

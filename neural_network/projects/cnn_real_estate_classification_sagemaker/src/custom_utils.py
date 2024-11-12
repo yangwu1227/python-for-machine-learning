@@ -11,12 +11,10 @@ os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"  # Nopep8
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-import plotly.express as px
 import plotly.graph_objects as go
 import tensorflow as tf
 from imblearn.metrics import classification_report_imbalanced
 from tensorflow.keras import backend as K
-from tensorflow.keras import layers
 
 # ------------------------------ Logger function ----------------------------- #
 

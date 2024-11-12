@@ -1,7 +1,6 @@
 import io
 import json
 import zipfile
-from logging import Logger
 from typing import Dict, Optional, Tuple, Union
 
 from boto3.resources.base import ServiceResource

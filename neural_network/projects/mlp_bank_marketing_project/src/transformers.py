@@ -1,12 +1,6 @@
-# ---------------------------------- Imports --------------------------------- #
-
 from re import sub
 
-import numpy as np
 import pandas as pd
-from feature_engine.encoding import CountFrequencyEncoder, OneHotEncoder
-from sklearn.base import BaseEstimator, TransformerMixin
-from sklearn.preprocessing import FunctionTransformer
 
 # ---------------------------- Numerical features ---------------------------- #
 

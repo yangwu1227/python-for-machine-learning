@@ -1,7 +1,5 @@
 import os
-from typing import Dict, List, Tuple, Union
 
-import numpy as np
 
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"  # Nopep8
 import tensorflow as tf

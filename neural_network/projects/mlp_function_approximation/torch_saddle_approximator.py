@@ -2,13 +2,12 @@ import argparse
 import logging
 import os
 from copy import deepcopy
-from typing import Callable, Dict, List, Tuple, Union
+from typing import Callable, List, Tuple
 
 import numpy as np
 import optuna
 import torch
 from IPython.display import display
-from optuna.trial import TrialState
 from torch.utils.data import DataLoader, TensorDataset
 
 # --------------------------- Monkey saddle surface -------------------------- #
@@ -627,8 +626,7 @@ def objective(
 
 
 if __name__ == "__main__":
-    from custom_utils import (create_study, get_logger, plot_2d_surfaces,
-                              study_report)
+    from custom_utils import create_study, get_logger, plot_2d_surfaces, study_report
 
     logger = get_logger(name="tf_monkey_saddle_approximator")
 

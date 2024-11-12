@@ -3,7 +3,7 @@ lab_utils_common.py
 Functions common to all optional labs, Course 1, Week 2.
 """
 
-from typing import List, Tuple
+from typing import Tuple
 
 import matplotlib.pyplot as plt
 import numpy as np

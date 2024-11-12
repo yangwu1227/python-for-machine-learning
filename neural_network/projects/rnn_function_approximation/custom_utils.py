@@ -1,5 +1,4 @@
 import logging
-import os
 import sys
 from typing import Any, Dict, Tuple
 
@@ -7,7 +6,6 @@ import matplotlib.pyplot as plt
 import numpy as np
 import torch
 import torch.nn as nn
-from mpl_toolkits.mplot3d import Axes3D
 
 # ---------------------------------- Logger ---------------------------------- #
 

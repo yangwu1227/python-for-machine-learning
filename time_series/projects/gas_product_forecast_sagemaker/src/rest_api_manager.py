@@ -1,9 +1,3 @@
-import calendar
-import datetime
-import json
-import logging
-import sys
-import time
 from typing import Dict
 
 import boto3

@@ -6,7 +6,7 @@ import logging
 import os
 import sys
 from collections import OrderedDict
-from typing import Any, Callable, Dict, List, Optional, Tuple, Union
+from typing import Any, Callable, Dict, List, Tuple, Union
 
 import s3fs
 from IPython.display import Image
@@ -316,7 +316,7 @@ class StudyVisualizer:
 
         return Image(fig_bytes)
 
-    def plot_optimization_history(self, figsize: Tuple[float]) -> Image:
+    def plot_optimization_history(self, figsize: Tuple[float, float]) -> Image:
         """
         Plot optimization history.
 
@@ -332,7 +332,7 @@ class StudyVisualizer:
         """
         return self._static_plot("plot_optimization_history", figsize)
 
-    def plot_param_importances(self, figsize: Tuple[float]) -> Image:
+    def plot_param_importances(self, figsize: Tuple[float, float]) -> Image:
         """
         Plot parameter importances.
 
@@ -349,7 +349,7 @@ class StudyVisualizer:
         return self._static_plot("plot_param_importances", figsize)
 
     def plot_parallel_coordinate(
-        self, params: List[str], figsize: Tuple[float]
+        self, params: List[str], figsize: Tuple[float, float]
     ) -> Image:
         """
         Plot parallel coordinate.
@@ -368,7 +368,7 @@ class StudyVisualizer:
         """
         return self._static_plot("plot_parallel_coordinate", figsize, params=params)
 
-    def plot_contour(self, params: List[str], figsize: Tuple[float]) -> Image:
+    def plot_contour(self, params: List[str], figsize: Tuple[float, float]) -> Image:
         """
         Plot contour.
 
@@ -381,7 +381,7 @@ class StudyVisualizer:
         """
         return self._static_plot("plot_contour", figsize, params=params)
 
-    def plot_slice(self, params: List[str], figsize: Tuple[float]) -> Image:
+    def plot_slice(self, params: List[str], figsize: Tuple[float, float]) -> Image:
         """
         Plot slice.
 

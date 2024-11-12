@@ -1,9 +1,7 @@
-import argparse
 import logging
 import os
 import subprocess
-import sys
-from typing import Any, Callable, Dict, List, Optional, Tuple, Union
+from typing import Any, Callable, Dict, List, Tuple
 
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"  # Nopep8
 import optuna
@@ -618,9 +616,16 @@ def tf_objective(
 
 if __name__ == "__main__":
     # These imports are only needed when running this file on SageMaker
-    from custom_utils import (add_additional_args, create_study,
-                              dataset_from_csv, get_db_url, get_logger, parser,
-                              study_report, test_sample)
+    from custom_utils import (
+        add_additional_args,
+        create_study,
+        dataset_from_csv,
+        get_db_url,
+        get_logger,
+        parser,
+        study_report,
+        test_sample,
+    )
 
     # ---------------------------------- Set up ---------------------------------- #
 

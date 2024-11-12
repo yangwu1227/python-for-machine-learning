@@ -1,14 +1,11 @@
 import json
 import os
-import re
 import shutil
 import subprocess
-import sys
 
 import s3fs
 
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"  # NoPep8
-import sagemaker
 import tensorflow as tf
 from custom_utils import get_logger
 from hydra import compose, core, initialize

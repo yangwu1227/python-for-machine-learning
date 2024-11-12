@@ -2,9 +2,8 @@ from __future__ import annotations
 
 import logging
 import os
-import sys
 from functools import partial
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, List, Tuple
 
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"  # Nopep8
 import numpy as np

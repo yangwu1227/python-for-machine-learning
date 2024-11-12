@@ -9,11 +9,7 @@ import boto3
 import numpy as np
 
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"  # Nopep8
-import bokeh
-import bokeh.io
-import tensorflow as tf
 from bokeh.models import HoverTool
-from bokeh.plotting import figure, show
 from sagemaker.analytics import HyperparameterTuningJobAnalytics
 
 # ------------------------- Class for data ingestion ------------------------- #

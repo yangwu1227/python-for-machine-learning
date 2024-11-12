@@ -6,18 +6,15 @@ import logging
 import os
 import sys
 from functools import partial
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, List, Tuple, Union
 
 import boto3
 import numpy as np
 from botocore.exceptions import ClientError
 
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"  # Nopep8
-import bokeh
-import bokeh.io
 import tensorflow as tf
 from bokeh.models import HoverTool
-from bokeh.plotting import figure, show
 from sagemaker.analytics import HyperparameterTuningJobAnalytics
 
 # ---------------------------------- Logger ---------------------------------- #

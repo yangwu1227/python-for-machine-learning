@@ -1,8 +1,7 @@
 import argparse
-import logging
 import os
 from datetime import datetime
-from typing import Any, Callable, Dict, List, Tuple, Type, Union
+from typing import Tuple
 
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"  # Nopep8
 import keras_tuner as kt

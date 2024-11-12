@@ -12,9 +12,8 @@ import math
 
 import matplotlib.pyplot as plt
 import numpy as np
-from ipywidgets import Output
 from matplotlib.patches import FancyArrowPatch
-from matplotlib.widgets import Button, CheckButtons
+from matplotlib.widgets import CheckButtons
 
 np.set_printoptions(precision=2)
 

@@ -5,12 +5,10 @@ import operator
 import os
 import sys
 from itertools import combinations
-from typing import Any, Callable, Dict, List, Optional, Tuple, Union
+from typing import Callable, Dict, List, Union
 
 import cudf
 import cupy as cp
-import numpy as np
-import pandas as pd
 from cuml import TruncatedSVD
 from cuml.preprocessing import MaxAbsScaler
 from sklearn.base import BaseEstimator, TransformerMixin

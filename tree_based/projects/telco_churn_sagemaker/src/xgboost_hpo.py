@@ -4,14 +4,11 @@ import os
 import pickle
 import sys
 import warnings
-from re import sub
-from typing import List, Tuple
+from typing import Tuple
 
 import boto3
 import numpy as np
 import optuna
-import pandas as pd
-import sagemaker
 import xgboost as xgb
 from custom_pipeline import create_pipeline
 from custom_utils import load_data

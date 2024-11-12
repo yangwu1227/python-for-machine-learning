@@ -1,23 +1,25 @@
 import logging
 import os
-import sys
-from typing import Any, Callable, Dict, List, Optional, Tuple, Union
+from typing import Any, Callable, Dict, Tuple
 
 import joblib
 import numpy as np
 import optuna
 import pandas as pd
 import xgboost as xgb
-from custom_utils import (add_additional_args, create_preprocessor,
-                          create_study, custom_log_loss, get_db_url,
-                          get_logger, parser, study_report)
+from tree_based.projects.age_related_conditions_sagemaker.src.model_utils import (
+    add_additional_args,
+    create_preprocessor,
+    create_study,
+    custom_log_loss,
+    get_db_url,
+    get_logger,
+    parser,
+    study_report,
+)
 from hydra import compose, core, initialize
-from inference import input_fn, model_fn, predict_fn
 from omegaconf import OmegaConf
-from sklearn.compose import ColumnTransformer
-from sklearn.metrics import log_loss
 from sklearn.model_selection import StratifiedKFold
-from sklearn.pipeline import Pipeline
 from sklearn.utils.class_weight import compute_sample_weight
 
 # ------------------ Function for creating xgboost estimator ----------------- #
@@ -112,21 +114,20 @@ def xgboost_objective(
     """
     # Hyperparameters space
     model_hyperparameter = {
-        "n_estimators": trial.suggest_int("n_estimators", 500, 1700),
+        "n_estimators": trial.suggest_int("n_estimators", 100, 1500),
         "max_depth": trial.suggest_int("max_depth", 3, 15),
-        "learning_rate": trial.suggest_float("learning_rate", 1e-3, 0.8, log=True),
-        "gamma": trial.suggest_float("gamma", 1, 20),
-        "max_delta_step": trial.suggest_int("max_delta_step", 1, 20),
-        "min_child_weight": trial.suggest_float(
-            "min_child_weight", 0, 20
-        ),  # Smaller values since this is a imbalanced dataset and small number of samples from a minority class can be in a leaf
-        "max_leaves": trial.suggest_int("max_leaves", 0, 200),
+        # Heuristic (2 to 10) / n_estimators
+        "learning_rate": trial.suggest_float("learning_rate", 1e-3, 0.3, log=True),
+        "gamma": trial.suggest_float("gamma", 0.05, 1),
+        "max_delta_step": trial.suggest_int("max_delta_step", 0, 10),
+        # Smaller values for imbalanced dataset since small number of samples from a minority class can be in a leaf
+        "min_child_weight": trial.suggest_float("min_child_weight", 1, 10),
         "subsample": trial.suggest_float("subsample", 0.5, 0.9),
         "colsample_bytree": trial.suggest_float("colsample_bytree", 0.3, 0.9),
         "colsample_bylevel": trial.suggest_float("colsample_bylevel", 0.3, 0.9),
         "colsample_bynode": trial.suggest_float("colsample_bynode", 0.3, 0.9),
-        "reg_alpha": trial.suggest_float("reg_alpha", 0.01, 200),
-        "reg_lambda": trial.suggest_float("reg_lambda", 0.01, 200),
+        "reg_alpha": trial.suggest_float("reg_alpha", 0, 10),
+        "reg_lambda": trial.suggest_float("reg_lambda", 1, 10),
         "max_bin": trial.suggest_categorical("max_bin", [2**i for i in range(8, 11)]),
         "grow_policy": trial.suggest_categorical(
             "grow_policy", ["depthwise", "lossguide"]
@@ -141,7 +142,7 @@ def xgboost_objective(
     log_loss_scores = {}
 
     for fold, (train_index, val_index) in enumerate(
-        skf.split(train_data[0], train_data[1])
+        skf.split(train_data[0], train_data[1]), 1
     ):
         X_train, X_val = train_data[0].iloc[train_index], train_data[0].iloc[val_index]
         y_train, y_val = train_data[1].iloc[train_index], train_data[1].iloc[val_index]
@@ -166,7 +167,7 @@ def xgboost_objective(
         )
 
         logger.info(
-            f"Preprocessing training and validation data for trial {trial.number} fold {fold + 1}..."
+            f"Preprocessing training and validation data for trial {trial.number} fold {fold}..."
         )
 
         # Fit and transform training data
@@ -181,7 +182,7 @@ def xgboost_objective(
             scale_pos_weight=scale_pos_weight,
         )
 
-        logger.info(f"Training estimator for trial {trial.number} fold {fold + 1}...")
+        logger.info(f"Training estimator for trial {trial.number} fold {fold}...")
 
         # Train estimator
         fold_estimator.fit(
@@ -193,10 +194,10 @@ def xgboost_objective(
         )
 
         # Compute log loss on validation set
-        logger.info(f"Computing log loss for trial {trial.number} fold {fold + 1}...")
+        logger.info(f"Computing log loss for trial {trial.number} fold {fold}...")
         # Obtain the 1-D positive class probabilities
         y_pred = fold_estimator.predict_proba(X_val)[:, 1]
-        log_loss_scores[f"fold_{fold + 1}"] = custom_log_loss(y_val, y_pred)
+        log_loss_scores[f"fold_{fold}"] = custom_log_loss(y_val, y_pred)
 
     # Compute mean log loss
     mean_log_loss = np.mean(list(log_loss_scores.values()))
@@ -248,15 +249,12 @@ def xgboost_objective(
     return mean_log_loss
 
 
-if __name__ == "__main__":
+def main() -> int:
     # ---------------------------------- Set up ---------------------------------- #
 
     additional_args = {"study_name": str}
-
     args = add_additional_args(parser, additional_args)()
-
     logger = get_logger(name=__name__)
-
     job_name = args.training_env["job_name"]
 
     # Hydra
@@ -267,26 +265,22 @@ if __name__ == "__main__":
     # --------------------------------- Load data -------------------------------- #
 
     logger.info("Loading data...")
-
     data = pd.read_csv(os.path.join(args.train, "train.csv"))
     if args.test_mode:
         data = data.sample(300)
     X, y = data.reset_index(drop=True).drop(["Class", "Id"], axis=1), data["Class"]
-
     logger.info(f"Training data shape: {X.shape}")
     logger.info(f"Class distribution: {{0: {np.sum(y == 0)}, 1: {np.sum(y == 1)}}}")
 
     # ------------------------------ Set up database ----------------------------- #
 
     logger.info("Setting up optuna database...")
-
     db_url = get_db_url(
         host=args.host,
         db_name=args.db_name,
         db_secret=args.db_secret,
         region_name=args.region_name,
     )
-
     logger.info(f"Database URL: {db_url}")
 
     # ------------------------------- Optimization ------------------------------- #
@@ -308,18 +302,28 @@ if __name__ == "__main__":
     study = create_study(
         study_name=args.study_name, storage=db_url, direction="minimize"
     )
-    study.optimize(objective_wrapper, n_trials=args.n_trials, n_jobs=-1)
-
+    study.optimize(objective_wrapper, n_trials=args.n_trials)
     study_report(study=study, logger=logger)
 
     # ----------------------- Retrieve and save best model ----------------------- #
 
-    logger.info("Retrieving best model and saving to model directory...")
+    # Handle cases where the best model may not exist in the current training job
+    # During parallel training jobs, the best model for a given trial may be saved in another training job
+    try:
+        logger.info("Retrieving best model and saving to model directory...")
 
-    best_model = joblib.load(
-        os.path.join("/tmp", f"model_trial_{study.best_trial.number}.joblib")
-    )
+        best_model = joblib.load(
+            os.path.join("/tmp", f"model_trial_{study.best_trial.number}.joblib")
+        )
 
-    # Save to model_dir for persistent storage
-    model_dir = os.path.join(args.model_dir, f"best-model.joblib")
-    joblib.dump(best_model, model_dir)
+        # Save to model_dir for persistent storage
+        model_dir = os.path.join(args.model_dir, f"best-model.joblib")
+        joblib.dump(best_model, model_dir)
+    except Exception as _:
+        logger.error(f"The best model does not exist in the current training job")
+
+    return 0
+
+
+if __name__ == "__main__":
+    main()

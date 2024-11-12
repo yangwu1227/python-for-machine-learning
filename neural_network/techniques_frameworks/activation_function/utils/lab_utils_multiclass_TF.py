@@ -6,8 +6,6 @@ import matplotlib.colors as colors
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib import cm
-from matplotlib.colors import LinearSegmentedColormap, ListedColormap
-from matplotlib.patches import FancyArrowPatch
 from utils.lab_utils_common import dlc
 
 # Define color dictionary

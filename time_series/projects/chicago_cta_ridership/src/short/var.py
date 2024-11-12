@@ -1,10 +1,9 @@
 import warnings
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Dict, Union
 
 import numpy as np
 import pandas as pd
-from sktime.forecasting.compose import (ForecastingPipeline,
-                                        TransformedTargetForecaster)
+from sktime.forecasting.compose import ForecastingPipeline, TransformedTargetForecaster
 from sktime.forecasting.model_selection import ForecastingGridSearchCV
 from sktime.forecasting.var import VAR
 from sktime.transformations.compose import OptionalPassthrough

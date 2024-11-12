@@ -2,7 +2,7 @@ import io
 import logging
 import os
 import sys
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, List, Optional, Tuple
 
 import boto3
 import joblib
@@ -12,10 +12,8 @@ import pandas as pd
 import seaborn as sns
 from hydra import compose, core, initialize
 from matplotlib.axes import Axes
-from matplotlib.figure import Figure
 from matplotlib.ticker import MaxNLocator
 from omegaconf import OmegaConf
-from sktime.forecasting.compose import ColumnEnsembleForecaster
 from sktime.split import SlidingWindowSplitter
 
 # ---------------------------------- Set up ---------------------------------- #

@@ -1,7 +1,6 @@
 import os
-import sys
 from contextlib import asynccontextmanager
-from typing import Any, Dict
+from typing import Dict
 
 import joblib
 import pandas as pd
@@ -9,8 +8,6 @@ import uvicorn
 from fastapi import FastAPI, HTTPException, Request, Response, status
 from hydra import compose, core, initialize
 from omegaconf import OmegaConf
-from sktime.forecasting.compose import TransformedTargetForecaster
-from sktime.transformations.series.fourier import FourierFeatures
 
 
 def main():
