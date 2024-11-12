@@ -115,7 +115,7 @@ def write_pairs_to_file_threaded(
             pool.join()
 
 
-if __name__ == "__main__":
+def main() -> int:
     # Root logger
     logger = logging.getLogger(__name__)
     logging.basicConfig(
@@ -132,3 +132,9 @@ if __name__ == "__main__":
         num_pairs=1_000_000,
         logger=logger,
     )
+
+    return 0
+
+
+if __name__ == "__main__":
+    main()
