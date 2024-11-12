@@ -32,10 +32,8 @@ web = [
     "uvicorn>=0.30.5",
     "pydantic>=2.8.2",
 ]
-hpo = [
-    "optuna>=3.6.1",
-]
 ml = [
+    "optuna>=3.6.1",
     "scikit-learn>=1.5.1",
     "yellowbrick>=1.5",
     "imbalanced-learn>=0.12.3",
@@ -44,13 +42,11 @@ ml = [
     "umap-learn>=0.5.6",
     "feature-engine>=1.8.0",
 ]
-ts = [
-    "skforecast>=0.13.0",
-    "statsforecast>=1.7.6",
-]
 sl = [
     "statsmodels>=0.14.2",
     "scikit-survival>=0.23.0",
+    "skforecast>=0.13.0",
+    "statsforecast>=1.7.6",
 ]
 nlp = [
     "gensim>=4.3.2",
@@ -66,19 +62,6 @@ pytorch = [
 
 [tool.pdm]
 distribution = false
-
-[tool.pdm.dev-dependencies]
-notebook = [
-    "ipykernel>=6.29.5",
-    "ipywidgets>=8.1.3",
-    "nbformat>=5.10.4",
-]
-lint-fmt = [
-    "isort>=5.13.2",
-    "black>=24.10.0",
-    "ruff>=0.6.9",
-    "mypy>=1.11.2",
-]
 
 [tool.ruff]
 exclude = [
@@ -117,3 +100,19 @@ target-version = "py311"
 quote-style = "double"
 indent-style = "space"
 line-ending = "auto"
+
+[dependency-groups]
+config = [
+    "hydra-core>=1.3.2",
+    "dvc>=3.56.0",
+    "omegaconf>=2.3.0",
+]
+notebook = [
+    "ipykernel>=6.29.5",
+    "ipywidgets>=8.1.3",
+    "nbformat>=5.10.4",
+]
+lint-fmt = [
+    "ruff>=0.6.9",
+    "mypy>=1.11.2",
+]
