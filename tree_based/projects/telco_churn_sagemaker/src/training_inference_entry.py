@@ -6,10 +6,10 @@ import joblib
 import numpy as np
 import pandas as pd
 import xgboost as xgb
-from src.model_utils import load_data
+from module_utils import create_pipeline
 from sklearn.pipeline import Pipeline
 from sklearn.utils.class_weight import compute_sample_weight
-from module_utils import create_pipeline
+from src.model_utils import load_data
 
 # --------------------- Parse argument from command line --------------------- #
 

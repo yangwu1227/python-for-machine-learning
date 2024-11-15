@@ -6,13 +6,11 @@ from typing import Any, Tuple
 import boto3
 import numpy as np
 import pandas as pd
-from sklearn.metrics import average_precision_score
-from sklearn.model_selection import StratifiedShuffleSplit
-import numpy as np
-import pandas as pd
 from category_encoders.cat_boost import CatBoostEncoder
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.feature_selection import RFE
+from sklearn.metrics import average_precision_score
+from sklearn.model_selection import StratifiedShuffleSplit
 from sklearn.pipeline import Pipeline
 from sklearn.tree import DecisionTreeClassifier
 

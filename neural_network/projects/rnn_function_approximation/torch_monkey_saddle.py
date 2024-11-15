@@ -244,11 +244,6 @@ def main() -> int:
 
 
 if __name__ == "__main__":
-    from custom_utils import (
-        get_logger,
-        grid_to_seq,
-        plot_predictions,
-        trainer,
-    )
+    from custom_utils import get_logger, grid_to_seq, plot_predictions, trainer
 
     sys.exit(main())

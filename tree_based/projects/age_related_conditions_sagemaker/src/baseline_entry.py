@@ -5,6 +5,15 @@ from typing import Any, Callable, Dict, List, Tuple
 import numpy as np
 import optuna
 import pandas as pd
+from hydra import compose, core, initialize
+from omegaconf import OmegaConf
+from sklearn.compose import ColumnTransformer
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.impute import SimpleImputer
+from sklearn.model_selection import StratifiedKFold
+from sklearn.pipeline import Pipeline
+from sklearn.preprocessing import OneHotEncoder, RobustScaler
+from sklearn.utils.class_weight import compute_sample_weight
 from src.model_utils import (
     FeatureImportanceHandler,
     add_additional_args,
@@ -15,15 +24,6 @@ from src.model_utils import (
     parser,
     study_report,
 )
-from hydra import compose, core, initialize
-from omegaconf import OmegaConf
-from sklearn.compose import ColumnTransformer
-from sklearn.ensemble import RandomForestClassifier
-from sklearn.impute import SimpleImputer
-from sklearn.model_selection import StratifiedKFold
-from sklearn.pipeline import Pipeline
-from sklearn.preprocessing import OneHotEncoder, RobustScaler
-from sklearn.utils.class_weight import compute_sample_weight
 
 # ------------------- Function to create baseline pipeline ------------------- #
 

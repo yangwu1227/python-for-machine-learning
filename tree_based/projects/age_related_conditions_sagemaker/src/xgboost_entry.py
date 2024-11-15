@@ -7,6 +7,10 @@ import numpy as np
 import optuna
 import pandas as pd
 import xgboost as xgb
+from hydra import compose, core, initialize
+from omegaconf import OmegaConf
+from sklearn.model_selection import StratifiedKFold
+from sklearn.utils.class_weight import compute_sample_weight
 from src.model_utils import (
     add_additional_args,
     create_preprocessor,
@@ -17,10 +21,6 @@ from src.model_utils import (
     parser,
     study_report,
 )
-from hydra import compose, core, initialize
-from omegaconf import OmegaConf
-from sklearn.model_selection import StratifiedKFold
-from sklearn.utils.class_weight import compute_sample_weight
 
 # ------------------ Function for creating xgboost estimator ----------------- #
 

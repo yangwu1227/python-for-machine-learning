@@ -1,7 +1,8 @@
+from typing import List, Self, Union
+
 import pandas as pd
 from feature_engine.encoding import CountFrequencyEncoder, OneHotEncoder
 from sklearn.base import BaseEstimator, TransformerMixin
-from typing import Union, List, Self
 
 # --------------------------- Categorical features --------------------------- #
 

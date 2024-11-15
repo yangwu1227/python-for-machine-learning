@@ -10,9 +10,7 @@ from hydra import compose, core, initialize
 from omegaconf import OmegaConf
 from sktime.forecasting.base import ForecastingHorizon
 from sktime.forecasting.compose import TransformedTargetForecaster
-from sktime.forecasting.model_selection import (
-    temporal_train_test_split,
-)
+from sktime.forecasting.model_selection import temporal_train_test_split
 from sktime.forecasting.naive import NaiveForecaster
 from sktime.forecasting.trend import STLForecaster
 from sktime.transformations.series.boxcox import LogTransformer

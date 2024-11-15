@@ -8,15 +8,11 @@ import pandas as pd
 import s3fs
 from cuml import LogisticRegression
 from cuml.metrics import log_loss
-from src.model_utils import (
-    add_additional_args,
-    get_logger,
-    parser,
-)
 from sklearn.ensemble import StackingClassifier
 from sklearn.model_selection import StratifiedKFold
 from sklearn.pipeline import Pipeline
 from sklearn.utils.class_weight import compute_sample_weight
+from src.model_utils import add_additional_args, get_logger, parser
 
 # ------------------- Function to train the stacking model ------------------- #
 

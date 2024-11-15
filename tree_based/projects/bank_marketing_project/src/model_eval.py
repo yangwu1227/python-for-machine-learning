@@ -1,3 +1,5 @@
+from typing import Any, Dict, List, Optional
+
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
@@ -8,7 +10,6 @@ from sklearn.metrics import (
     precision_recall_curve,
     roc_curve,
 )
-from typing import List, Dict, Any, Optional
 
 # ------------------------------- Plot function ------------------------------ #
 

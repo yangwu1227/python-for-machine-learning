@@ -1,5 +1,6 @@
-import cupy as cp
 from typing import List
+
+import cupy as cp
 
 
 def misclassification_cost_matrix(target: cp.ndarray, n: int) -> List[float]:
