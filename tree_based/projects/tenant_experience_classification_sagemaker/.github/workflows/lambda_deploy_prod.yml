@@ -1,0 +1,18 @@
+name: Deploy the Lambda Function From S3 (Prod)
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'terraform/lambda/code/**'
+      - '.github/workflows/lambda_deploy_prod.yml'
+      - '.github/workflows/lambda_deploy.yml'
+  workflow_dispatch:
+
+jobs:
+  deploy-lambda-prod:
+    uses: ./.github/workflows/lambda_deploy.yml
+    with:
+      environment: prod
+    secrets: inherit

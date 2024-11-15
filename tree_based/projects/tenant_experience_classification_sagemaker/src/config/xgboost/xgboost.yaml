@@ -1,0 +1,5 @@
+base_job_name: xgboost-training
+model_name: xgboost-model
+study_name: xgboost-hpo
+instance_type: ml.c5.9xlarge
+instance_count: 1
