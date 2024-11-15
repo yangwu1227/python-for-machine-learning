@@ -9,7 +9,7 @@ This is a **loosely structured, dump-all** repository that includes notebooks, p
 The dependencies are managed by [pdm](https://github.com/pdm-project/pdm) and [conda](https://conda.io/projects/conda/en/latest/user-guide/tasks/manage-python.html):
 
 ```shell
-$ yes | conda create --name python_for_machine_learning python=3.11.9
+$ yes | conda create --name python_for_machine_learning python=3.12.7
 $ conda activate python_for_machine_learning
 # Use the conda-installed python interpreter
 $ pdm use $(which python3)
