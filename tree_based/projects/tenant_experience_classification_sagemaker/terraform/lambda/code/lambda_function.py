@@ -84,7 +84,7 @@ def optimize_payload_and_concurrency(
     total_count : int
         The total number of objects.
     limit : int
-        The maximum allowed payload size in bytes (default is 95 MB),
+        The maximum allowed payload size in bytes (default is 90 MB),
         allowing a small buffer relative to the 100 MB limit to avoid
         any edges cases.
 
