@@ -331,7 +331,7 @@ class Processor(object):
             ],
         }
         self.logger.info(
-            f"Successfully split data into train and test sets for long-horizon forecasting"
+            "Successfully split data into train and test sets for long-horizon forecasting"
         )
 
         # Save data to s3

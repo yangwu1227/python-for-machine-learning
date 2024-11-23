@@ -778,7 +778,7 @@ if __name__ == "__main__":
 
     # --------------------- Retrain with best hyperparameters -------------------- #
 
-    logger.info(f"Retraining with best hyperparameters...")
+    logger.info("Retraining with best hyperparameters...")
 
     study = optuna.load_study(study_name="saddle_approximator", storage=storage)
 

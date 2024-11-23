@@ -127,7 +127,7 @@ class BaseTrainer(object):
         if not isinstance(horizon, str):
             raise TypeError(f"Expected type str for horizon, got {type(horizon)}")
         if horizon not in ["short", "medium", "long"]:
-            raise ValueError(f'The horizon must be one of "short", "medium", or "long"')
+            raise ValueError('The horizon must be one of "short", "medium", or "long"')
         self._horizon = horizon
 
     def _attribute_is_none(self, attribute: str) -> bool:

@@ -317,7 +317,7 @@ def main() -> int:
         )
 
         # Save to model_dir for persistent storage
-        model_dir = os.path.join(args.model_dir, f"best-model.joblib")
+        model_dir = os.path.join(args.model_dir, "best-model.joblib")
         joblib.dump(best_model, model_dir)
     except FileNotFoundError as error:
         logger.info(

@@ -93,7 +93,7 @@ class RestApiManager(object):
             self.logger.info(
                 f"Found root resource of the REST API with ID {self.root_id}"
             )
-        except ClientError as error:
+        except ClientError:
             self.logger.exception(
                 "Cannot get the ID of the root resource of the REST API"
             )

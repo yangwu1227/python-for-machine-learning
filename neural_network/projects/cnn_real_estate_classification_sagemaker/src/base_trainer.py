@@ -223,6 +223,6 @@ class BaseTrainer(object):
         None
         """
         # Delete the temporary directories
-        os.system(f"rm -rf /tmp/worker_temp_*")
+        os.system("rm -rf /tmp/worker_temp_*")
 
         return None

@@ -348,7 +348,7 @@ def main() -> int:
             os.path.join("/tmp", f"model_trial_{study.best_trial.number}.joblib")
         )
         # Save to model_dir for persistent storage, which will be uploaded to S3
-        model_dir = os.path.join(args.model_dir, f"best-model.joblib")
+        model_dir = os.path.join(args.model_dir, "best-model.joblib")
         joblib.dump(best_model, model_dir)
         logger.info(f"Best model saved to {model_dir}")
     except FileNotFoundError as error:

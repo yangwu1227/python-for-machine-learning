@@ -349,7 +349,7 @@ class TabTransformerTrainer(object):
         categorical_features = tf.keras.layers.Flatten()(encoded_categorical_features)
         # Apply layer normalization to the numerical features
         numerical_features = tf.keras.layers.LayerNormalization(
-            epsilon=epsilon, name=f"numerical_layer_normalization"
+            epsilon=epsilon, name="numerical_layer_normalization"
         )(numerical_features)
         # Concatenate the input for the final MLP block (batch_size, (num_cat_feat * embedding_dims) + num_cont_feat)
         features = tf.keras.layers.concatenate(
