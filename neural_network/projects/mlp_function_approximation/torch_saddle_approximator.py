@@ -2,11 +2,13 @@ import argparse
 import logging
 import os
 from copy import deepcopy
-from typing import Callable, List, Tuple
+from typing import Any, MutableMapping, List, Tuple
 
 import numpy as np
 import optuna
 import torch
+from torch.optim import Optimizer
+from torch.nn.modules.loss import _Loss
 from IPython.display import display
 from torch.utils.data import DataLoader, TensorDataset
 
@@ -114,10 +116,10 @@ def generate_monkey_saddle_data(
     z = monkey_saddle(x, y, **kwargs)
 
     # Input matrix (num_samples**2 x 2) and target (num_samples**2 x 1)
-    X = torch.tensor(np.array([x.flatten(), y.flatten()]).T, dtype=torch.float32)
-    y = torch.tensor(z.flatten(), dtype=torch.float32).reshape(-1, 1)
+    X_tensor = torch.tensor(np.array([x.flatten(), y.flatten()]).T, dtype=torch.float32)
+    y_tensor = torch.tensor(z.flatten(), dtype=torch.float32).reshape(-1, 1)
 
-    data = TensorDataset(X, y)
+    data = TensorDataset(X_tensor, y_tensor)
 
     return data
 
@@ -166,11 +168,11 @@ class MLPRegressor(torch.nn.Module):
 
         # Properly registered such all module methods can use this dictionary
         self.activations = torch.nn.ModuleDict(
-            [
-                ["relu", torch.nn.ReLU()],
-                ["tanh", torch.nn.Tanh()],
-                ["leaky_relu", torch.nn.LeakyReLU()],
-            ]
+            {
+                "relu": torch.nn.ReLU(),
+                "tanh": torch.nn.Tanh(),
+                "leaky_relu": torch.nn.LeakyReLU(),
+            }
         )
         # Do not use ModuleDict since the initialization functions are not subclasses of torch.nn.Module
         initializers = {
@@ -201,7 +203,8 @@ class MLPRegressor(torch.nn.Module):
         # ------------------------------ Initialization ------------------------------ #
 
         for layer in self.layers:
-            self.initializer(layer.weight)
+            # Since the initializers have different signatures, and thus hard to annotate, we ignore the error
+            self.initializer(layer.weight)  # type: ignore[operator]
             torch.nn.init.zeros_(layer.bias)
 
     def forward(self, x: torch.Tensor, activation: str) -> torch.Tensor:
@@ -292,7 +295,7 @@ class EarlyStopping:
             self.counter = 0
             if self.restore_best_model:
                 # OrderedDict is mutable, so we need to make a deep copy to prevent the best_state_dict from being modified
-                self.best_state_dict = deepcopy(model.state_dict())
+                self.best_state_dict = deepcopy(model.state_dict())  # type: ignore[assignment]
         # If the improvement (self.best_loss - val_loss) is less than minimum delta, increment the counter
         # This includes the case where the val_loss is the same as or greater than the best loss (since min_delta is non-negative)
         elif np.less((self.best_loss - val_loss), self.min_delta):
@@ -424,10 +427,10 @@ def trainer(
         "SGD": torch.optim.SGD(params=model.parameters(), lr=learning_rate),
         "RMSprop": torch.optim.RMSprop(params=model.parameters(), lr=learning_rate),
     }
-    loss_fn = loss_fns[loss_fn]
-    optimizer = optimizers[optimizer]
+    loss_func: _Loss = loss_fns[loss_fn]
+    optimizer_func: Optimizer = optimizers[optimizer]
     lr_schedulers = torch.optim.lr_scheduler.ExponentialLR(
-        optimizer=optimizer, gamma=gamma
+        optimizer=optimizer_func, gamma=gamma
     )
 
     # ----------------------------- Early stopping ----------------------------- #
@@ -455,16 +458,16 @@ def trainer(
             y_train_batch = y_train_batch.to(device)
 
             # Zero parameter gradients
-            optimizer.zero_grad()
+            optimizer_func.zero_grad()
 
             # Forward pass __call__ method of the model calls the forward method
             outputs = model(X_train_batch, activation=activation)
             # Compute the loss (a scalar tf.Tensor if reduction is 'mean' or 'sum')
-            train_loss = loss_fn(outputs, y_train_batch)
+            train_loss = loss_func(outputs, y_train_batch)
             # Compute the gradient of the loss with respect to the model parameters
             train_loss.backward()
             # A single optimization step (parameter update)
-            optimizer.step()
+            optimizer_func.step()
 
             train_running_loss += (
                 train_loss.item()
@@ -501,7 +504,7 @@ def trainer(
 
                 # Mini-batch predictions with shape (batch_size, 1)
                 outputs = model(X_val_batch, activation=activation)
-                val_loss = loss_fn(outputs, y_val_batch)
+                val_loss = loss_func(outputs, y_val_batch)
 
                 val_running_loss += val_loss.item()
                 # This is not reset to 0.0
@@ -531,7 +534,8 @@ def trainer(
 
                 # If early stopping was activated and restore best model is True
                 if restore_best_model:
-                    matched_keys = model.load_state_dict(early_stopper.best_state_dict)
+                    # Best state dict may be None, which load state dict does not accept
+                    model.load_state_dict(early_stopper.best_state_dict)  # type: ignore[arg-type]
                 return model, best_val_loss
 
     # If early stopping was not activate, simply return the model and the best validation loss (from the last epoch)
@@ -589,7 +593,7 @@ def objective(
     float
         The validation loss that is computed over all mini-batches for a given epoch.
     """
-    hyperparameters = {
+    hyperparameters: MutableMapping[str, Any] = {
         "num_layers": trial.suggest_int("num_layers", 1, 3),
         "activation": trial.suggest_categorical("activation", ["relu", "tanh"]),
         "initializer": trial.suggest_categorical(
@@ -607,7 +611,7 @@ def objective(
 
     logger.info(f"Begin training for trial {trial.number}...")
 
-    model, best_val_loss = trainer(
+    _, best_val_loss = trainer(
         train=train,
         val=val,
         logger=logger,
@@ -747,7 +751,7 @@ if __name__ == "__main__":
     # ---------------------------------- Optuna ---------------------------------- #
 
     # Wrapper for objective
-    def objective_wrapper(trial: optuna.Trial) -> Callable:
+    def objective_wrapper(trial: optuna.Trial) -> float:
         return objective(
             trial=trial,
             train=train_data,
@@ -823,4 +827,4 @@ if __name__ == "__main__":
         name="Monkey Saddle",
     )
 
-    display(image)
+    display(image)  # type: ignore[no-untyped-call]

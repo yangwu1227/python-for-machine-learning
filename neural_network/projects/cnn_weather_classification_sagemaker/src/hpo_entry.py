@@ -1,5 +1,5 @@
 import os
-from typing import Tuple
+from typing import Tuple, MutableMapping, Any, Union
 
 import numpy as np
 
@@ -15,8 +15,8 @@ from tensorflow.errors import InvalidArgumentError
 
 def objective(
     trial: optuna.Trial,
-    train_data: Tuple[np.ndarray],
-    val_data: Tuple[np.ndarray],
+    train_data: Tuple[np.ndarray, np.ndarray],
+    val_data: Tuple[np.ndarray, np.ndarray],
     job_name: str,
 ) -> float:
     """
@@ -26,9 +26,9 @@ def objective(
     ----------
     trial : optuna.Trial
         Optuna trial object.
-    train_data : Tuple[np.ndarray]
+    train_data : Tuple[np.ndarray, np.ndarray]
         Training data.
-    val_data : Tuple[np.ndarray]
+    val_data : Tuple[np.ndarray, np.ndarray]
         Validation data.
     job_name : str
         Name of the aws training job.
@@ -42,7 +42,7 @@ def objective(
     tf.keras.backend.clear_session()
 
     # Data augmentation hyperparameters
-    aug_params = {}
+    aug_params: MutableMapping[str, Union[float, str]] = {}
     # aug_params['random_brightness_factor'] = trial.suggest_float('random_brightness_factor', 0.1, 1.0)
     aug_params["random_contrast_factor"] = trial.suggest_float(
         "random_contrast_factor", 0.1, 1.0
@@ -58,7 +58,7 @@ def objective(
     )
 
     # Convolutional layers hyperparameters
-    conv_params = {}
+    conv_params: MutableMapping[str, Any] = {}
     conv_params["n_conv_layers"] = trial.suggest_int("n_conv_layers", 1, 3)
     conv_params["filters_list"] = [
         trial.suggest_categorical(f"filters_{i}", [32, 64, 128, 256])
@@ -73,7 +73,7 @@ def objective(
     )
 
     # Dense layers hyperparameters
-    dense_params = {}
+    dense_params: MutableMapping[str, Any] = {}
     dense_params["n_dense_layers"] = trial.suggest_int("n_dense_layers", 1, 2)
     dense_params["units_list"] = [
         trial.suggest_categorical(f"units_{i}", [32, 64, 128, 256])
@@ -88,14 +88,14 @@ def objective(
     dense_params["dropout_rate"] = trial.suggest_float("dropout_rate", 0.1, 0.5)
 
     # Optimizer hyperparameters
-    opt_params = {}
+    opt_params: MutableMapping[str, Union[int, float]] = {}
     opt_params["learning_rate"] = trial.suggest_float(
         "learning_rate", 1e-5, 1e-1, log=True
     )
     opt_params["clipnorm"] = trial.suggest_float("clipnorm", 0.1, 1.0)
 
     # Fit hyperparameters
-    fit_params = {}
+    fit_params: MutableMapping[str, int] = {}
     fit_params["epochs"] = trial.suggest_int("epochs", 10, 30)
 
     # Create and compile model

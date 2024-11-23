@@ -1,6 +1,7 @@
 import logging
 import os
-from typing import Any, Callable, Dict, Tuple
+from typing import Any, Dict, Tuple, cast
+from collections.abc import Callable
 
 import joblib
 import numpy as np
@@ -81,7 +82,7 @@ def xgboost_objective(
     config: Dict[str, Any],
     preprocessor_func: Callable,
     estimator_func: Callable,
-    train_data: Tuple[np.ndarray],
+    train_data: Tuple[pd.DataFrame, np.ndarray],
     test_mode: int,
     logger: logging.Logger,
 ) -> float:
@@ -100,7 +101,7 @@ def xgboost_objective(
         Function that creates the preprocessor pipeline.
     estimator_func : Callable
         Function that creates the estimator.
-    train_data : Tuple[np.ndarray]
+    train_data : Tuple[pd.DataFrame, np.ndarray]
         Tuple containing train data and labels.
     test_mode: int
         Whether to run in test mode or not.
@@ -141,11 +142,12 @@ def xgboost_objective(
     # Container for the cross-validation scores
     log_loss_scores = {}
 
+    X, y = train_data
     for fold, (train_index, val_index) in enumerate(
         skf.split(train_data[0], train_data[1]), 1
     ):
-        X_train, X_val = train_data[0].iloc[train_index], train_data[0].iloc[val_index]
-        y_train, y_val = train_data[1].iloc[train_index], train_data[1].iloc[val_index]
+        X_train, X_val = X.iloc[train_index], X.iloc[val_index]
+        y_train, y_val = y[train_index], y[val_index]
 
         logger.info(
             f"Training set trial {trial.number} target distribution: {{0: {np.round(np.mean(y_train == 0), 2)}, 1: {np.round(np.mean(y_train == 1), 2)}}}"
@@ -260,7 +262,10 @@ def main() -> int:
     # Hydra
     core.global_hydra.GlobalHydra.instance().clear()
     initialize(version_base="1.2", config_path="config", job_name="xgboost_training")
-    config = OmegaConf.to_container(compose(config_name="main"), resolve=True)
+    config: Dict[str, Any] = cast(
+        Dict[str, Any],
+        OmegaConf.to_container(compose(config_name="main"), resolve=True),
+    )
 
     # --------------------------------- Load data -------------------------------- #
 
@@ -268,7 +273,10 @@ def main() -> int:
     data = pd.read_csv(os.path.join(args.train, "train.csv"))
     if args.test_mode:
         data = data.sample(300)
-    X, y = data.reset_index(drop=True).drop(["Class", "Id"], axis=1), data["Class"]
+    X, y = (
+        data.reset_index(drop=True).drop(["Class", "Id"], axis=1),
+        data["Class"].values,
+    )
     logger.info(f"Training data shape: {X.shape}")
     logger.info(f"Class distribution: {{0: {np.sum(y == 0)}, 1: {np.sum(y == 1)}}}")
 
@@ -287,7 +295,7 @@ def main() -> int:
 
     logger.info("Optimizing objective function...")
 
-    def objective_wrapper(trial: optuna.Trial) -> Callable:
+    def objective_wrapper(trial: optuna.Trial) -> float:
         return xgboost_objective(
             trial=trial,
             aws_params={"job_name": job_name},

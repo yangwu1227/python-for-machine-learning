@@ -1,13 +1,24 @@
 import logging
 import os
 import subprocess
-from typing import Any, Callable, Dict, List, Tuple
+from typing import Any, Dict, List, Tuple, cast
 
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"  # Nopep8
 import optuna
 import tensorflow as tf
 from hydra import compose, core, initialize
 from omegaconf import OmegaConf
+
+from model_utils import (
+    add_additional_args,
+    create_study,
+    dataset_from_csv,
+    get_db_url,
+    get_logger,
+    parser,
+    study_report,
+    test_sample,
+)
 
 # ------------------------------- Trainer class ------------------------------ #
 
@@ -479,7 +490,7 @@ def tf_objective(
     strategy: tf.distribute.Strategy,
     model_dir: str,
     logger: logging.Logger,
-) -> None:
+) -> float:
     """
     This function is the objective function for Optuna hyperparameter optimization. For each trial,
     it creates a TabTransformerTrainer object and trains the model. Then retrains the model on the
@@ -575,7 +586,7 @@ def tf_objective(
         logger=logger,
     )
 
-    trained_model, val_auc_pr = trainer.fit()
+    _, val_auc_pr = trainer.fit()
 
     # -------- Retrain on the entire dataset with the best hyperparameters ------- #
 
@@ -614,19 +625,7 @@ def tf_objective(
     return val_auc_pr
 
 
-if __name__ == "__main__":
-    # These imports are only needed when running this file on SageMaker
-    from custom_utils import (
-        add_additional_args,
-        create_study,
-        dataset_from_csv,
-        get_db_url,
-        get_logger,
-        parser,
-        study_report,
-        test_sample,
-    )
-
+def main() -> int:
     # ---------------------------------- Set up ---------------------------------- #
 
     logger = get_logger("tab_transformer_hpo")
@@ -634,7 +633,11 @@ if __name__ == "__main__":
     # Hydra
     core.global_hydra.GlobalHydra.instance().clear()
     initialize(version_base="1.2", config_path="config", job_name="tab_transformer_hpo")
-    config = OmegaConf.to_container(compose(config_name="main"), resolve=True)
+    # OmegaConf's return type is too broad, type narrowing is needed
+    config: Dict[str, Any] = cast(
+        Dict[str, Any],
+        OmegaConf.to_container(compose(config_name="main"), resolve=True),
+    )
 
     additional_args = {"study_name": str}
 
@@ -673,20 +676,23 @@ if __name__ == "__main__":
     else:
         logger.info("Running in SageMaker mode...")
 
-        num_replicas_in_sync = strategy.num_replicas_in_sync
+        # In distributed mode, need the number of replicas to scale the batch size
+        num_replicas_in_sync = strategy.num_replicas_in_sync if strategy else 1
 
         train_num_batches, train_dataset = dataset_from_csv(
             file_path=os.path.join(args.train, "train.csv"),
             config=config,
             train=True,
-            batch_size=config["tf_keras"]["batch_size"] * num_replicas_in_sync,
+            batch_size=config["tf_keras"]["batch_size"]
+            * num_replicas_in_sync,  # Global batch size
         )
 
         val_num_batches, val_dataset = dataset_from_csv(
             file_path=os.path.join(args.val, "val.csv"),
             config=config,
             train=False,
-            batch_size=config["tf_keras"]["batch_size"] * num_replicas_in_sync,
+            batch_size=config["tf_keras"]["batch_size"]
+            * num_replicas_in_sync,  # Global batch size
         )
 
     # --------------------------------- HPO setup -------------------------------- #
@@ -704,7 +710,7 @@ if __name__ == "__main__":
 
     logger.info("Optimizing objective function...")
 
-    def tf_objective_wrapper(trial: optuna.Trial) -> Callable:
+    def tf_objective_wrapper(trial: optuna.Trial) -> float:
         return tf_objective(
             trial=trial,
             config=config,
@@ -734,3 +740,9 @@ if __name__ == "__main__":
     )
 
     best_model.save(os.path.join(args.model_dir, "00000000"))
+
+    return 0
+
+
+if __name__ == "__main__":
+    main()

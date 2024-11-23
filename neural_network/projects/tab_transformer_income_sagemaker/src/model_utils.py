@@ -1,15 +1,13 @@
 import argparse
 import ast
-import base64
 import json
 import logging
 import os
 import sys
 from collections import OrderedDict
-from typing import Any, Callable, Dict, List, Tuple, Union
+from typing import Any, Callable, Dict, List, Tuple, Optional
 
 import s3fs
-from IPython.display import Image
 
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"  # Nopep8
 import boto3
@@ -127,7 +125,7 @@ def add_additional_args(
 # ----------------------- Function for database secret ----------------------- #
 
 
-def get_secret(secret_name: str, region_name: str = "ur-east-1") -> Union[Dict, bytes]:
+def get_secret(secret_name: str, region_name: str = "us-east-1") -> Optional[Dict]:
     """
     Get secret from AWS Secrets Manager.
 
@@ -140,7 +138,7 @@ def get_secret(secret_name: str, region_name: str = "ur-east-1") -> Union[Dict, 
 
     Returns
     -------
-    Union[Dict, bytes]
+    Optional[Dict]
         Secret retrieved from AWS Secrets Manager.
     """
     # Create a secrets manager client
@@ -164,18 +162,16 @@ def get_secret(secret_name: str, region_name: str = "ur-east-1") -> Union[Dict, 
         elif e.response["Error"]["Code"] == "ResourceNotFoundException":
             # Can't find the resource that we asked for
             raise e
+        else:
+            raise e
     else:
         # If the secret was a JSON-encoded dictionary string, convert it to dictionary
         if "SecretString" in get_secret_value_response:
             secret = get_secret_value_response["SecretString"]
             secret = ast.literal_eval(secret)  # Convert string to dictionary
             return secret
-        # If the secret was binary, decode it
-        else:
-            decoded_binary_secret = base64.b64decode(
-                get_secret_value_response["SecretBinary"]
-            )
-            return decoded_binary_secret
+
+    return None
 
 
 # --------------------- Function for setting up database --------------------- #
@@ -204,6 +200,10 @@ def get_db_url(
         Database URL.
     """
     secret = get_secret(db_secret, region_name)
+    if secret is None:
+        raise ValueError(
+            f"Failed to retrieve '{db_secret}' from AWS Secrets Manager in '{region_name}'"
+        )
     connector = "pymysql"
     user_name = secret["username"]
     password = secret["password"]
@@ -271,133 +271,6 @@ def study_report(study: optuna.study.Study, logger: logging.Logger) -> None:
     logger.info(f"Best trial params: {best_trial.params}")
 
     return None
-
-
-# ---------------- Class for visualizing hyperparameter tuning --------------- #
-
-
-class StudyVisualizer:
-    """
-    Class for visualizing hyperparameter tuning via Optuna
-    """
-
-    def __init__(self, study: optuna.study.Study) -> None:
-        """
-        Parameters
-        ----------
-        study : optuna.study.Study
-            Optuna study instance.
-        """
-        self.study = study
-        self.plot_func_dict = plot_functions = {
-            "plot_optimization_history": optuna.visualization.plot_optimization_history,
-            "plot_slice": optuna.visualization.plot_slice,
-            "plot_parallel_coordinate": optuna.visualization.plot_parallel_coordinate,
-            "plot_contour": optuna.visualization.plot_contour,
-            "plot_param_importances": optuna.visualization.plot_param_importances,
-        }
-
-    def _static_plot(
-        self, plot_func: str, figsize: Tuple[float, float], **kwargs
-    ) -> Image:
-        """
-        Create static plot.
-
-        Parameters
-        ----------
-        figsize : Tuple[float, float]
-            Figure size.
-        **kwargs
-            Keyword arguments to pass to the plot function.
-        """
-        fig = self.plot_func_dict[plot_func](self.study, **kwargs)
-        fig.update_layout(width=figsize[0], height=figsize[1])
-        fig_bytes = fig.to_image(format="png")
-
-        return Image(fig_bytes)
-
-    def plot_optimization_history(self, figsize: Tuple[float, float]) -> Image:
-        """
-        Plot optimization history.
-
-        Parameters
-        ----------
-        figsize : Tuple[float]
-            Figure size.
-
-        Returns
-        -------
-        Image
-            Image of the plot.
-        """
-        return self._static_plot("plot_optimization_history", figsize)
-
-    def plot_param_importances(self, figsize: Tuple[float, float]) -> Image:
-        """
-        Plot parameter importances.
-
-        Parameters
-        ----------
-        figsize : Tuple[float]
-            Figure size.
-
-        Returns
-        -------
-        Image
-            Image of the plot.
-        """
-        return self._static_plot("plot_param_importances", figsize)
-
-    def plot_parallel_coordinate(
-        self, params: List[str], figsize: Tuple[float, float]
-    ) -> Image:
-        """
-        Plot parallel coordinate.
-
-        Parameters
-        ----------
-        params : List[str]
-            List of parameters to plot.
-        figsize : Tuple[float]
-            Figure size.
-
-        Returns
-        -------
-        Image
-            Image of the plot.
-        """
-        return self._static_plot("plot_parallel_coordinate", figsize, params=params)
-
-    def plot_contour(self, params: List[str], figsize: Tuple[float, float]) -> Image:
-        """
-        Plot contour.
-
-        Parameters
-        ----------
-        params : List[str]
-            List of parameters to plot.
-        figsize : Tuple[float]
-            Figure size.
-        """
-        return self._static_plot("plot_contour", figsize, params=params)
-
-    def plot_slice(self, params: List[str], figsize: Tuple[float, float]) -> Image:
-        """
-        Plot slice.
-
-        Parameters
-        ----------
-        params : List[str]
-            List of parameters to plot.
-        figsize : Tuple[float]
-            Figure size.
-
-        Returns
-        -------
-        Image
-            Image of the plot.
-        """
-        return self._static_plot("plot_slice", figsize, params=params)
 
 
 # ------------------------------- Data from csv ------------------------------ #
@@ -579,8 +452,7 @@ def test_sample(
         data, list(config["tf_keras"]["cat_feat_vocab"].keys())
     )
 
-    sampled_data.write_csv("/tmp/sample.csv", has_header=config["header"])
-
+    sampled_data.write_csv(file="/tmp/sample.csv", include_header=config["header"])
     num_batches, dataset = dataset_from_csv(
         "/tmp/sample.csv", config, train, batch_size, **kwargs
     )

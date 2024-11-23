@@ -1,6 +1,5 @@
 import argparse
 import ast
-import base64
 import json
 import logging
 import operator
@@ -8,7 +7,8 @@ import os
 import pickle
 import sys
 from itertools import combinations
-from typing import Any, Callable, Dict, List, Tuple, Union
+from typing import Any, Dict, List, Tuple, Union, Optional
+from collections.abc import Callable
 
 import boto3
 import numpy as np
@@ -131,7 +131,7 @@ def add_additional_args(
 # ----------------------- Function for database secret ----------------------- #
 
 
-def get_secret(secret_name: str, region_name: str = "ur-east-1") -> Union[Dict, bytes]:
+def get_secret(secret_name: str, region_name: str = "us-east-1") -> Optional[Dict]:
     """
     Get secret from AWS Secrets Manager.
 
@@ -144,7 +144,7 @@ def get_secret(secret_name: str, region_name: str = "ur-east-1") -> Union[Dict, 
 
     Returns
     -------
-    Union[Dict, bytes]
+    Optional[Dict]
         Secret retrieved from AWS Secrets Manager.
     """
     # Create a secrets manager client
@@ -176,12 +176,8 @@ def get_secret(secret_name: str, region_name: str = "ur-east-1") -> Union[Dict, 
             secret = get_secret_value_response["SecretString"]
             secret = ast.literal_eval(secret)  # Convert string to dictionary
             return secret
-        # If the secret was binary, decode it
-        else:
-            decoded_binary_secret = base64.b64decode(
-                get_secret_value_response["SecretBinary"]
-            )
-            return decoded_binary_secret
+
+    return None
 
 
 # --------------------- Function for setting up database --------------------- #
@@ -210,6 +206,10 @@ def get_db_url(
         Database URL.
     """
     secret = get_secret(db_secret, region_name)
+    if secret is None:
+        raise ValueError(
+            f"Failed to retrieve '{db_secret}' from AWS Secrets Manager in '{region_name}'"
+        )
     connector = "pymysql"
     user_name = secret["username"]
     password = secret["password"]
@@ -221,7 +221,7 @@ def get_db_url(
 # ------------------------- Custom log loss function ------------------------- #
 
 
-def custom_log_loss(y_true: np.array, y_pred: np.array) -> float:
+def custom_log_loss(y_true: np.ndarray, y_pred: np.ndarray) -> float:
     """
     Custom log loss function. Note that this function expects a 1-D
     array for both y_true and y_pred. In the case of y_pred, the
@@ -229,9 +229,9 @@ def custom_log_loss(y_true: np.array, y_pred: np.array) -> float:
 
     Parameters
     ----------
-    y_true : np.array
+    y_true : np.ndarray
         The 1-D true labels.
-    y_pred : np.array
+    y_pred : np.ndarray
         The 1-D predicted probabilities of the positive class.
 
     Returns
@@ -493,7 +493,7 @@ class FeatureImportanceHandler:
         model_pipeline: Pipeline,
         scorer: Callable,
         n_repeats: int,
-        val_data: Tuple[np.ndarray],
+        val_data: Tuple[np.ndarray, np.ndarray],
     ) -> Dict[str, float]:
         """
         Compute the permutation feature importance for a given model pipeline over 10 iterations.
@@ -506,7 +506,7 @@ class FeatureImportanceHandler:
             Scorer function.
         n_repeats : int
             Number of iterations for computing the permutation feature importance.
-        val_data : Tuple[np.ndarray]
+        val_data : Tuple[np.ndarray, np.ndarray]
             Validation data.
 
         Returns

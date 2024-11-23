@@ -4,6 +4,7 @@ import numpy as np
 import polars as pl
 from great_tables import loc, style
 from scipy.stats import brunnermunzel, rankdata
+from great_tables import GT
 
 
 def rankdata_2samp(x1: np.ndarray, x2: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
@@ -76,7 +77,7 @@ def compute_treatment_effect(x1: np.ndarray, x2: np.ndarray) -> float:
     return relative_treatment_effect_estimate
 
 
-def analyze_campaigns(campaign_data: Dict[str, Dict[str, np.ndarray]]) -> pl.DataFrame:
+def analyze_campaigns(campaign_data: Dict[str, Dict[str, np.ndarray]]) -> GT:
     """
     Perform Brunner-Munzel tests on control and test campaign data and calculate estimated treatment effect.
 
@@ -88,7 +89,7 @@ def analyze_campaigns(campaign_data: Dict[str, Dict[str, np.ndarray]]) -> pl.Dat
 
     Returns
     -------
-    pl.DataFrame
+    GT
         A Polars DataFrame containing the fields, Brunner-Munzel statistics, estimated treatment effect (test minus control),
         p-values, and conclusion for each field.
     """

@@ -1,6 +1,7 @@
 import logging
 import os
-from typing import Any, Callable, Dict, List, Tuple
+from typing import Any, Dict, List, Tuple, cast
+from collections.abc import Callable
 
 import numpy as np
 import optuna
@@ -112,7 +113,7 @@ def baseline_objective(
     pipeline_func: Callable,
     num_feat: List[str],
     cat_feat: List[str],
-    train_data: Tuple[np.ndarray],
+    train_data: Tuple[pd.DataFrame, np.ndarray],
     test_mode: int,
     logger: logging.Logger,
 ) -> float:
@@ -131,7 +132,7 @@ def baseline_objective(
         List of numerical features.
     cat_feat : List[str]
         List of categorical features.
-    train_data : Tuple[np.ndarray]
+    train_data : Tuple[pd.DataFrame, np.ndarray]
         Tuple containing train data and labels.
     test_mode: int
         Whether to run in test mode or not.
@@ -179,6 +180,7 @@ def baseline_objective(
     log_loss_scores = {}
     feature_importances = {}
 
+    X, y = train_data
     for fold, (train_idx, val_idx) in enumerate(
         skf.split(train_data[0], train_data[1])
     ):
@@ -243,7 +245,10 @@ def main() -> int:
     # Hydra
     core.global_hydra.GlobalHydra.instance().clear()
     initialize(version_base="1.2", config_path="config", job_name="baseline")
-    config = OmegaConf.to_container(compose(config_name="main"), resolve=True)
+    config: Dict[str, Any] = cast(
+        Dict[str, Any],
+        OmegaConf.to_container(compose(config_name="main"), resolve=True),
+    )
 
     # --------------------------------- Load data -------------------------------- #
 
@@ -273,7 +278,7 @@ def main() -> int:
 
     logger.info("Optimizing objective function...")
 
-    def objective_wrapper(trial: optuna.Trial) -> Callable:
+    def objective_wrapper(trial: optuna.Trial) -> float:
         return baseline_objective(
             trial=trial,
             aws_params={

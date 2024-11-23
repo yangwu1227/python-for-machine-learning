@@ -78,7 +78,7 @@ def pretty_print_code(filename: str) -> Union[IPython.core.display.HTML, None]:
         '<style type="text/css">{}</style>{}'.format(
             formatter.get_style_defs(".highlight"), result
         )
-    )
+    )  # type: ignore[no-untyped-call]
 
 
 # ---------- Function to report best hyperparameters and best score ---------- #
@@ -201,7 +201,7 @@ def plot_2d_surfaces(
 
     fig_bytes = fig.to_image(format="png")
 
-    return Image(fig_bytes)
+    return Image(fig_bytes)  # type: ignore[no-untyped-call]
 
 
 # ----------------------- Function to plot one surface ----------------------- #
@@ -235,7 +235,7 @@ def plot_2d_surface(x: np.ndarray, y: np.ndarray, z: np.ndarray) -> Image:
     )
     fig_bytes = fig.to_image(format="png")
 
-    return Image(fig_bytes)
+    return Image(fig_bytes)  # type: ignore[no-untyped-call]
 
 
 # -------------------------- Optuna report function -------------------------- #

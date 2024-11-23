@@ -1,7 +1,8 @@
 from typing import List, Tuple
 
-import optuna
 from IPython.display import Image
+
+import optuna
 
 
 class StudyVisualizer:
