@@ -62,6 +62,7 @@ serve_initial_instance_count: 1
 serve_instance_type: ml.t3.medium
 serve_endpoint_name: forecast-endpoint
 serve_volume_size: 10
+serve_container_startup_health_check_timeout: 300
 
 # Lambda
 lambda_source_file: lambda_function.py
