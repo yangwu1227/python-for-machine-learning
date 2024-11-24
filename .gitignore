@@ -14,3 +14,6 @@ tree_based_models/ensemble/models/bagging/*.pkl
 
 # PDM
 .pdm-python
+
+# Uv
+.python-version

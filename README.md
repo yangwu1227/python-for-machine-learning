@@ -2,18 +2,12 @@
 
 A repository for machine learning application and learning. 
 
-This is a **loosely structured, dump-all** repository that includes notebooks, projects, scripts, and files, accommodating a wide range of machine learning tasks, experiments, and projects. It’s designed without strict organization or dependency management, providing the flexibility to explore and learn across various topics.
+This is a **loosely structured, dump-all** repository that includes notebooks, projects, scripts, and files, focusing on a wide range of machine learning tasks, experiments, and topics.
 
-## Set Up
+## Dependencies
 
-The dependencies are managed by [pdm](https://github.com/pdm-project/pdm) and [conda](https://conda.io/projects/conda/en/latest/user-guide/tasks/manage-python.html):
+The project dependencies are managed using [uv](https://docs.astral.sh/uv/):
 
-```shell
-$ yes | conda create --name python_for_machine_learning python=3.12.7
-$ conda activate python_for_machine_learning
-# Use the conda-installed python interpreter
-$ pdm use $(which python3)
-$ pdm install --prod
-```
-
-Any other dependency management tool can be used instead. Not all dependencies are explicitly declared in the pyproject.toml file. 
+```bash
+$ uv sync --frozen
+````
