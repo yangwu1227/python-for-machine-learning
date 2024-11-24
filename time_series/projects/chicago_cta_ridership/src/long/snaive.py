@@ -1,5 +1,6 @@
+# mypy: disable-error-code="union-attr"
 import warnings
-from typing import Dict, Union
+from typing import Dict, Union, Optional
 
 import numpy as np
 import pandas as pd
@@ -9,6 +10,7 @@ from sktime.forecasting.compose import (
 )
 from sktime.forecasting.model_selection import ForecastingGridSearchCV
 from sktime.forecasting.naive import NaiveForecaster
+from sktime.forecasting.base import ForecastingHorizon
 from sktime.transformations.compose import OptionalPassthrough
 from sktime.transformations.series.boxcox import LogTransformer
 from sktime.transformations.series.detrend import Deseasonalizer, Detrender
@@ -37,12 +39,12 @@ class SNaiveTrainer(LongTrainer):
             config_name=config_name,
             s3_helper=s3_helper,
         )
-        self.best_forecaster = None
-        self.grid_search = None
-        self.y_pred = None
-        self.y_forecast = None
-        self.oos_fh = None
-        self.data_type = data_type
+        self.best_forecaster: Optional[ColumnEnsembleForecaster] = None
+        self.grid_search: Optional[ForecastingGridSearchCV] = None
+        self.y_pred: Optional[pd.DataFrame] = None
+        self.y_forecast: Optional[pd.DataFrame] = None
+        self.oos_fh: Optional[ForecastingHorizon] = None
+        self.data_type: str = data_type
 
     def _create_model(self) -> ColumnEnsembleForecaster:
         """
@@ -95,7 +97,7 @@ class SNaiveTrainer(LongTrainer):
 
         if self.model is None:
             self.logger.info("Creating model...")
-            self.model = self._create_model()
+            self.model: ColumnEnsembleForecaster = self._create_model()
         else:
             self.logger.info("Model already created, skipping creation...")
 
@@ -104,7 +106,7 @@ class SNaiveTrainer(LongTrainer):
         for target in self.config["targets"]:
             grid[f"{target}__detrend__passthrough"] = [True, False]
             grid[f"{target}__deseasonalize__passthrough"] = [True, False]
-            grid[f"{target}__snaive__strategy"] = ["last", "mean", "drift"]
+            grid[f"{target}__snaive__strategy"] = ["last", "mean", "drift"]  # type: ignore[list-item]
 
         grid_search = ForecastingGridSearchCV(
             forecaster=self.model,
@@ -188,7 +190,7 @@ class SNaiveTrainer(LongTrainer):
         return {"y_train": self.y_full, "y_pred": self.y_forecast, "pi": pi}
 
     def diagnostics(
-        self, full_model: bool, lags: int = None, auto_lag: bool = None
+        self, full_model: bool, lags: Optional[int] = None, auto_lag: bool = False
     ) -> pd.DataFrame:
         if full_model:
             if self._attribute_is_none("best_forecaster"):

@@ -235,12 +235,14 @@ class BaseTrainer(object):
 
         if self._attribute_is_none("cv"):
             self.logger.info("Creating cross-validation splitter...")
-            self.test_fh = ForecastingHorizon(self.y_test.index, is_relative=False)
-            self.cv = SlidingWindowSplitter(
-                fh=np.arange(1, len(self.test_fh)),
-                window_length=self.config[self.horizon]["window_length"],
-                step_length=self.config[self.horizon]["step_length"],
-            )
+            if self.y_test is not None:
+                self.test_fh = ForecastingHorizon(self.y_test.index, is_relative=False)
+            if self.test_fh is not None:
+                self.cv = SlidingWindowSplitter(
+                    fh=np.arange(1, len(self.test_fh)),
+                    window_length=self.config[self.horizon]["window_length"],
+                    step_length=self.config[self.horizon]["step_length"],
+                )
         else:
             self.logger.info(
                 "Cross-validation splitter already created, skipping creation..."
@@ -623,7 +625,7 @@ class ForecastVisualizer(object):
                 if isinstance(data.index, pd.PeriodIndex):
                     data.index = data.index.to_timestamp()
                 if key == "y_train":
-                    data = data.loc[start_date:]
+                    data = data.loc[pd.to_datetime(start_date) :]
             elif data is not None and isinstance(data, dict):
                 data = {target: pi.copy() for target, pi in data.items()}
                 for target, pi in data.items():
@@ -660,7 +662,7 @@ class ForecastVisualizer(object):
         fig.update_layout(title_text=title, height=height, width=width)
         if static:
             fig_bytes = fig.to_image(format="png")
-            return Image(fig_bytes)
+            return Image(fig_bytes)  # type: ignore[no-untyped-call]
         else:
             return fig
 
@@ -681,7 +683,7 @@ class ForecastVisualizer(object):
         )
         y_train, y_test, y_pred, pi = (
             data_dict["y_train"],
-            data_dict.get("y_test"),
+            data_dict["y_test"],
             data_dict["y_pred"],
             data_dict["pi"],
         )
@@ -754,7 +756,7 @@ class ForecastVisualizer(object):
             )
 
             # Test Data (if provided)
-            if y_test is not None and var_name in y_test:
+            if isinstance(y_test, pd.DataFrame) and var_name in y_test:
                 fig.add_trace(
                     go.Scatter(
                         x=y_test.index,

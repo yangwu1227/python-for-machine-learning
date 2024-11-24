@@ -1,5 +1,6 @@
+# mypy: disable-error-code="union-attr"
 import warnings
-from typing import Dict, Union
+from typing import Dict, Union, Optional
 
 import numpy as np
 import pandas as pd
@@ -8,6 +9,7 @@ from sktime.forecasting.compose import (
     ForecastingPipeline,
     TransformedTargetForecaster,
 )
+from sktime.forecasting.base import ForecastingHorizon
 from sktime.forecasting.model_selection import ForecastingGridSearchCV
 from sktime.forecasting.statsforecast import StatsForecastAutoARIMA
 from sktime.transformations.compose import OptionalPassthrough
@@ -29,7 +31,7 @@ class ArimaTrainer(BaseTrainer):
         config_path: str,
         logger_name: str,
         config_name: str,
-        s3_helper: S3Helper = None,
+        s3_helper: Optional[S3Helper] = None,
     ) -> None:
         """
         Initialize the trainer object.
@@ -54,12 +56,11 @@ class ArimaTrainer(BaseTrainer):
             config_name=config_name,
             s3_helper=s3_helper,
         )
-        self.best_forecaster = None
-        self.grid_search = None
-        self.X_train = None
-        self.y_pred = None
-        self.y_forecast = None
-        self.oos_fh = None
+        self.best_forecaster: Optional[ColumnEnsembleForecaster] = None
+        self.grid_search: Optional[ForecastingGridSearchCV] = None
+        self.y_pred: Optional[pd.DataFrame] = None
+        self.y_forecast: Optional[pd.DataFrame] = None
+        self.oos_fh: Optional[ForecastingHorizon] = None
 
     def _create_model(self) -> ColumnEnsembleForecaster:
         """
@@ -136,7 +137,7 @@ class ArimaTrainer(BaseTrainer):
 
         if self.model is None:
             self.logger.info("Creating model...")
-            self.model = self._create_model()
+            self.model: ColumnEnsembleForecaster = self._create_model()
         else:
             self.logger.info("Model already created, skipping creation...")
 
@@ -248,7 +249,7 @@ class ArimaTrainer(BaseTrainer):
         return {"y_train": self.y_full, "y_pred": self.y_forecast, "pi": pi}
 
     def diagnostics(
-        self, full_model: bool, lags: int = None, auto_lag: bool = None
+        self, full_model: bool, lags: Optional[int] = None, auto_lag: bool = False
     ) -> pd.DataFrame:
         if full_model:
             if self._attribute_is_none("best_forecaster"):

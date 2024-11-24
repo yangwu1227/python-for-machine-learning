@@ -1,6 +1,9 @@
 import numpy as np
 import pandas as pd
-from typing import Optional, Any
+from typing import Optional, Union
+from sktime.forecasting.model_selection import ForecastingGridSearchCV
+from sktime.forecasting.compose import ColumnEnsembleForecaster
+from sktime.forecasting.compose import TransformedTargetForecaster
 from sktime.forecasting.base import ForecastingHorizon
 from sktime.split import SlidingWindowSplitter
 from src.base_trainer import BaseTrainer
@@ -36,8 +39,10 @@ class LongTrainer(BaseTrainer):
             config_name=config_name,
             s3_helper=s3_helper,
         )
-        self.best_forecaster: Optional[Any] = None
-        self.grid_search: Optional[Any] = None
+        self.best_forecaster: Optional[
+            Union[ColumnEnsembleForecaster, TransformedTargetForecaster]
+        ] = None
+        self.grid_search: Optional[ForecastingGridSearchCV] = None
         self.y_pred: Optional[pd.DataFrame] = None
         self.y_forecast: Optional[pd.DataFrame] = None
         self.oos_fh: Optional[ForecastingHorizon] = None

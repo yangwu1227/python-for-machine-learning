@@ -1,5 +1,6 @@
+# mypy: disable-error-code="union-attr"
 import warnings
-from typing import Dict, Union, Optional, Any
+from typing import Dict, Union, Optional
 
 import numpy as np
 import pandas as pd
@@ -45,8 +46,8 @@ class STLTrainer(LongTrainer):
             config_name=config_name,
             s3_helper=s3_helper,
         )
-        self.best_forecaster: Optional[Any] = None
-        self.grid_search: Optional[Any] = None
+        self.best_forecaster: Optional[ColumnEnsembleForecaster] = None
+        self.grid_search: Optional[ForecastingGridSearchCV] = None
         self.y_pred: Optional[pd.DataFrame] = None
         self.y_forecast: Optional[pd.DataFrame] = None
         self.oos_fh: Optional[ForecastingHorizon] = None
@@ -110,7 +111,7 @@ class STLTrainer(LongTrainer):
 
         if self.model is None:
             self.logger.info("Creating model...")
-            self.model = self._create_model()
+            self.model: ColumnEnsembleForecaster = self._create_model()
         else:
             self.logger.info("Model already created, skipping creation...")
 
