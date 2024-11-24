@@ -3,7 +3,9 @@ from functools import partial
 from typing import List, Tuple
 
 import tensorflow as tf
-from custom_utils import *
+from model_utils import parser, get_logger, DataHandler
+
+logger = get_logger(__name__)
 
 # ------------------------- Function for building cnn ------------------------ #
 
@@ -18,7 +20,7 @@ def build_cnn(
     batch_norm_momentum: float,
     learning_rate: float,
     clipnorm: float,
-    input_shape: Tuple[int] = (28, 28, 1),
+    input_shape: Tuple[int, int, int] = (28, 28, 1),
 ) -> tf.keras.models.Sequential:
     """
     Build and compile a convolutional neural network with the following architecture:
@@ -47,7 +49,7 @@ def build_cnn(
         Learning rate for the Adam optimizer
     clipnorm : float
         Clipnorm for the Adam optimizer
-    input_shape : Tuple[int], optional
+    input_shape : Tuple[int, int, int], optional
         Dimension of the input feature vector, by default (28, 28, 1)
 
     Returns
@@ -110,9 +112,7 @@ def build_cnn(
     return cnn_model
 
 
-if __name__ == "__main__":
-    logger = get_logger(__name__)
-
+def main() -> int:
     args = parser()
 
     # ------------------------------ Data ingestion ------------------------------ #
@@ -162,3 +162,9 @@ if __name__ == "__main__":
 
     # Save model, a version number is needed for the TF serving container to load the model
     cnn_model.save(os.path.join(args.model_dir, "00000000"))
+
+    return 0
+
+
+if __name__ == "__main__":
+    main()

@@ -3,8 +3,8 @@ import json
 import logging
 import os
 import sys
-from typing import Callable, Dict, List, Tuple
-
+from typing import Dict, List, Tuple, Any
+from collections.abc import Callable
 from IPython.display import Image
 
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"  # Nopep8
@@ -264,7 +264,7 @@ class AugmentationModel(object):
     A class for creating a parametrized data augmentation layers, which is essentially a sequetial model. This class can be extended to include more data augmentation layers, which the user can specify using 'layer_name' and **kwargs pairs.
     """
 
-    def __init__(self, aug_params):
+    def __init__(self, aug_params: Dict[str, Dict[str, Any]]) -> None:
         """
         Instantiate the augmentation model. The augmentation parameters are passed as a dictionary.
         The format of the dictionary is must be 'layer_name': {'param1': value1, 'param2': value2, ...}.
@@ -281,7 +281,7 @@ class AugmentationModel(object):
         self.aug_params = aug_params
 
     @property
-    def aug_params(self):
+    def aug_params(self) -> Dict[str, Dict[str, Any]]:
         return self._aug_params
 
     # Validate aug_params input
@@ -444,7 +444,7 @@ class TuningVisualizer(object):
         """
         fig_bytes = fig.to_image(format="png")
 
-        return Image(fig_bytes)
+        return Image(fig_bytes)  # type: ignore[no-untyped-call]
 
     def plot_parallel_coordinate(
         self,
@@ -565,14 +565,15 @@ class ErrorAnalyzer(object):
         # Misclassified and correctly classified indices for each class
         self.clf_by_class = self._clf_by_class()
 
-    def _clf_by_class(self) -> Dict[str, np.ndarray]:
+    def _clf_by_class(self) -> Dict[str, Dict[str, np.ndarray]]:
         """
         Report the misclassified and correctly classified indices by class.
 
         Returns
         -------
-        Dict[str, np.ndarray]
+        Dict[str, Dict[str, np.ndarray]]
             A dictionary mapping each class to its misclassified and correctly classified indices.
+            Example: {'class1': {'correctly_classified': np.array([1, 2, 3]), 'misclassified': np.array([4, 5, 6])}}.
         """
         clf_by_class = {}
         for encode, label in zip(self.class_encode, self.class_label):
@@ -600,7 +601,7 @@ class ErrorAnalyzer(object):
         sample_correct_clf: int = 5,
         figsize: Tuple[int, int] = (12, 10),
         **kwargs,
-    ) -> None:
+    ) -> plt.Figure:
         """
         Plot the misclassified images for a given class. Note that this method first samples
         10 images from the misclassified images for the given class. To adequately conduct
@@ -654,9 +655,8 @@ class ErrorAnalyzer(object):
             ax = axs[i // 5, i % 5]
             ax.imshow(self.images[idx].astype(np.int16), **kwargs)
             true_label = self.class_label[self.class_encode.index(self.y_true[idx])]
-            pred_label = self.class_label[
-                self.class_encode.index(np.argmax(self.y_pred[idx]))
-            ]
+            max_index = int(np.argmax(self.y_pred[idx]))
+            pred_label = self.class_label[self.class_encode.index(max_index)]
             ax.set_title(f"True: {true_label}\nPred: {pred_label}")
             ax.axis("off")
 
@@ -669,4 +669,4 @@ class ErrorAnalyzer(object):
 
         fig.tight_layout()
 
-        return plt
+        return fig

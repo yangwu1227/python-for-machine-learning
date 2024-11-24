@@ -4,7 +4,7 @@ import json
 import logging
 import os
 from math import sqrt
-from typing import Any, Dict, List, Tuple
+from typing import Any, Dict, List, Tuple, Optional, cast
 
 import numpy as np
 import s3fs
@@ -14,6 +14,16 @@ import tensorflow as tf
 from base_trainer import BaseTrainer
 from hydra import compose, core, initialize
 from omegaconf import OmegaConf
+
+from model_utils import (
+    AugmentationModel,
+    add_additional_args,
+    get_logger,
+    load_dataset,
+    parser,
+)
+
+logger = get_logger(name="vision_transformer")
 
 # -------------------------- Shifted patch tokenizer ------------------------- #
 
@@ -338,7 +348,7 @@ class MultiHeadAttentionLSA(tf.keras.layers.MultiHeadAttention):
     locally by forcing each token to focus more on tokens with large relation to itself."
     """
 
-    def __init__(self, **kwargs):
+    def __init__(self, **kwargs) -> None:
         """
         Constructor for the MultiHeadAttentionLSA class.
         """
@@ -354,7 +364,7 @@ class MultiHeadAttentionLSA(tf.keras.layers.MultiHeadAttention):
         key: tf.Tensor,
         value: tf.Tensor,
         attention_mask: tf.Tensor = None,
-        training: bool = None,
+        training: Optional[bool] = None,
     ) -> Tuple[tf.Tensor, tf.Tensor]:
         """
         This function applies dot-product attention with query, key, value tensors. We keep the `call` method of the MultiHeadAttention class
@@ -376,7 +386,7 @@ class MultiHeadAttentionLSA(tf.keras.layers.MultiHeadAttention):
             Projected value `Tensor` of shape `(B, S, N, value_dim)`.
         attention_mask : tf.Tensor
             Boolean mask of shape `(B, T, S)`, that prevents attention to certain positions.
-        training : bool
+        training : Optional[bool]
             Whether the layer should behave in training mode (add dropout) or in inference mode. Defaults to `None`.
 
         Returns
@@ -746,23 +756,14 @@ class VisionTransformerTrainer(BaseTrainer):
         return None
 
 
-if __name__ == "__main__":
-    from custom_utils import (
-        AugmentationModel,
-        add_additional_args,
-        get_logger,
-        load_dataset,
-        parser,
-    )
-
-    # ---------------------------------- Set up ---------------------------------- #
-
-    logger = get_logger(name="vision_transformer")
-
+def main() -> int:
     # Hydra
     core.global_hydra.GlobalHydra.instance().clear()
     initialize(version_base="1.2", config_path="config", job_name="vision_transformer")
-    config = OmegaConf.to_container(compose(config_name="main"), resolve=True)
+    config: Dict[str, Any] = cast(
+        Dict[str, Any],
+        OmegaConf.to_container(compose(config_name="main"), resolve=True),
+    )
 
     additional_args = {
         # Data augmentation parameters
@@ -887,3 +888,9 @@ if __name__ == "__main__":
     trainer.fit()
 
     del trainer
+
+    return 0
+
+
+if __name__ == "__main__":
+    main()

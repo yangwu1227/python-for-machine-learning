@@ -2,7 +2,7 @@ import argparse
 import logging
 import os
 import warnings
-from typing import Any, Dict
+from typing import Any, Dict, cast
 
 import numpy as np
 import pandas as pd
@@ -14,6 +14,10 @@ from sktime.forecasting.model_selection import temporal_train_test_split
 from sktime.forecasting.naive import NaiveForecaster
 from sktime.forecasting.trend import STLForecaster
 from sktime.transformations.series.boxcox import LogTransformer
+
+from model_utils import get_logger
+
+logger = get_logger(__name__)
 
 # ------------------------ STL with naive forecasting ------------------------ #
 
@@ -85,9 +89,7 @@ def forecast(
 # ------------------------------ Main function ------------------------------ #
 
 
-def main():
-    logger = get_logger(__name__)
-
+def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "--test_mode",
@@ -98,7 +100,10 @@ def main():
 
     core.global_hydra.GlobalHydra.instance().clear()
     initialize(version_base="1.2", config_path="config", job_name="preprocess")
-    config = OmegaConf.to_container(compose(config_name="main"), resolve=True)
+    config: Dict[str, Any] = cast(
+        Dict[str, Any],
+        OmegaConf.to_container(compose(config_name="main"), resolve=True),
+    )
 
     logger.info("Loading raw data...")
     data = pd.read_csv(
@@ -173,6 +178,4 @@ def main():
 
 
 if __name__ == "__main__":
-    from custom_utils import get_logger
-
     main()

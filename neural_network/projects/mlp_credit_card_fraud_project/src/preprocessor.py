@@ -80,7 +80,7 @@ class CustomScaler(keras.layers.Layer):
         )
 
     def call(
-        self, inputs: Union[pd.DataFrame, np.array, tf.Tensor], training=None
+        self, inputs: Union[pd.DataFrame, np.ndarray, tf.Tensor], training: bool = False
     ) -> tf.Tensor:
         """
         A transformation from inputs to outputs-- the layer's forward pass.
@@ -88,10 +88,10 @@ class CustomScaler(keras.layers.Layer):
 
         Parameters
         ----------
-        inputs :
+        inputs : Union[pd.DataFrame, np.ndarray, tf.Tensor]
             Data to be transformed.
         training : bool, optional
-            Flag for training (adapt to training data and compute weights) or inference (reuse weights on unseen data), by default None.
+            Flag for training (adapt to training data and compute weights) or inference (reuse weights on unseen data), by default False.
 
         Returns
         -------
@@ -110,7 +110,9 @@ class CustomScaler(keras.layers.Layer):
 # ---------- Convert a Pandas DataFrame to a tf.data.Dataset object ---------- #
 
 
-def df_to_dataset(data, shuffle=True, batch_size=32, seed=None):
+def df_to_dataset(
+    data: pd.DataFrame, shuffle=True, batch_size=32, seed=None
+) -> tf.data.Dataset:
     df = data.copy()
     labels = df.pop("class")
     # DataFrame.item returns tuple with column name and the content as a Series

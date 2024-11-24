@@ -32,7 +32,7 @@ src
 │   ├── vision_transformer
 │   │   └── vision_transformer.yaml
 │   └── main.yaml
-├── custom_utils.py
+├── model_utils.py
 ├── fine_tune_entry.py
 ├── ingest_data.py
 ├── requirements.txt
@@ -55,7 +55,7 @@ src
  
     A note on the implementation is that all the modeling is carried out using tensorflow 2.12.0 at the time of writing this documentation. Since then, tensorflow 2.13.0 has become available as a SageMaker training image, and so we can swtich to take advantage of the new focal loss function, which is an improved loss function for handling class imbalance. This option can be toggled using the `use_focal_loss` hyperparameter.
 
-* The `custom_utils.py` module contains utility functions for training and analysis.
+* The `model_utils.py` module contains utility functions for training and analysis.
 
 When training begins, the files located in the `src` directory (including the `requirements.txt` file) will be copied onto the training docker image.
 

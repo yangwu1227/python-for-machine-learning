@@ -3,7 +3,7 @@ import logging
 import os
 from functools import partial
 from itertools import chain
-from typing import Any, Dict
+from typing import Any, Dict, cast
 
 import s3fs
 from hydra import compose, core, initialize
@@ -12,6 +12,16 @@ from omegaconf import OmegaConf
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"  # Nopep8
 import tensorflow as tf
 from base_trainer import BaseTrainer
+
+from model_utils import (
+    AugmentationModel,
+    add_additional_args,
+    get_logger,
+    load_datasets,
+    parser,
+)
+
+logger = get_logger(name="baseline_training")
 
 # ------------------------------- Trainer class ------------------------------ #
 
@@ -229,23 +239,16 @@ class BaselineTrainer(BaseTrainer):
         return None
 
 
-if __name__ == "__main__":
-    from custom_utils import (
-        AugmentationModel,
-        add_additional_args,
-        get_logger,
-        load_datasets,
-        parser,
-    )
-
+def main() -> int:
     # ---------------------------------- Set up ---------------------------------- #
-
-    logger = get_logger(name="baseline_training")
 
     # Hyra
     core.global_hydra.GlobalHydra.instance().clear()
     initialize(version_base="1.2", config_path="config", job_name="baseline_training")
-    config = OmegaConf.to_container(compose(config_name="main"), resolve=True)
+    config: Dict[str, Any] = cast(
+        Dict[str, Any],
+        OmegaConf.to_container(compose(config_name="main"), resolve=True),
+    )
 
     # Parser hyperparameters specified by the SageMaker
     filters = {f"conv2d_num_filters_block_{i}": int for i in range(0, 5)}
@@ -362,3 +365,9 @@ if __name__ == "__main__":
     trainer.fit()
 
     del trainer
+
+    return 0
+
+
+if __name__ == "__main__":
+    main()

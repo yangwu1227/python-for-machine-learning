@@ -1,9 +1,10 @@
 import warnings
-from typing import Dict, Union
+from typing import Dict, Union, Optional, Any
 
 import numpy as np
 import pandas as pd
 from sktime.forecasting.compose import ForecastingPipeline, TransformedTargetForecaster
+from sktime.forecasting.base import ForecastingHorizon
 from sktime.forecasting.model_selection import ForecastingGridSearchCV
 from sktime.forecasting.var import VAR
 from sktime.transformations.compose import OptionalPassthrough
@@ -12,7 +13,7 @@ from sktime.transformations.series.date import DateTimeFeatures
 from sktime.transformations.series.detrend import Deseasonalizer, Detrender
 from sktime.transformations.series.difference import Differencer
 from src.base_trainer import BaseTrainer
-from src.custom_utils import S3Helper
+from src.model_utils import S3Helper
 
 
 class VARTrainer(BaseTrainer):
@@ -26,7 +27,7 @@ class VARTrainer(BaseTrainer):
         config_path: str,
         logger_name: str,
         config_name: str,
-        s3_helper: S3Helper = None,
+        s3_helper: Optional[S3Helper] = None,
     ) -> None:
         super().__init__(
             horizon=horizon,
@@ -35,11 +36,11 @@ class VARTrainer(BaseTrainer):
             config_name=config_name,
             s3_helper=s3_helper,
         )
-        self.best_forecaster = None
-        self.grid_search = None
-        self.y_pred = None
-        self.y_forecast = None
-        self.oos_fh = None
+        self.best_forecaster: Optional[Any] = None
+        self.grid_search: Optional[Any] = None
+        self.y_pred: Optional[pd.DataFrame] = None
+        self.y_forecast: Optional[pd.DataFrame] = None
+        self.oos_fh: Optional[ForecastingHorizon] = None
 
     def _create_model(self) -> ForecastingPipeline:
         """

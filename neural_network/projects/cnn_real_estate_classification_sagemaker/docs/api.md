@@ -22,7 +22,7 @@
     Example
 
     ```python
-    from custom_utils import parser, add_additiona_args
+    from model_utils import parser, add_additiona_args
 
     additional_args = {
         'argument1': 1,
@@ -43,12 +43,12 @@
     Example
 
     ```python
-    from custom_utils import classification_report
+    from model_utils import classification_report
 
     assert y_train.shape == (num_samples, )
     assert y_pred.shape == (num_samples, )
 
-    clf_report, agg_metrics = custom_utils.classification_report(y_train, y_pred, labels=['class_1', 'class_2', 'class_4'])
+    clf_report, agg_metrics = model_utils.classification_report(y_train, y_pred, labels=['class_1', 'class_2', 'class_4'])
 
     clf_report
     ```
@@ -62,7 +62,7 @@
     Example
 
     ```python
-    from custom_utils import AugmentationModel
+    from model_utils import AugmentationModel
 
     data_augmentation = AugmentationModel(aug_params={
         'RandomFlip': {'mode': 'horizontal'},
@@ -82,7 +82,7 @@
     Example
 
     ```python
-    from custom_utils import TuningVisualizer
+    from model_utils import TuningVisualizer
     import pandas as pd
 
     assert isinstance(fine_tune_hpo_results, pd.DataFrame)
@@ -102,7 +102,7 @@
     Example
 
     ```python
-    from custom_utils import ErrorAnalyzer
+    from model_utils import ErrorAnalyzer
 
     error_analyzer = ErrorAnalyzer(
         y_true=y_train, # Shape (num_samples, )

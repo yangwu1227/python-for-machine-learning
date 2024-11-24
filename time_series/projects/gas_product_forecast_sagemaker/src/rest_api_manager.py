@@ -1,9 +1,9 @@
-from typing import Dict
+from typing import Dict, Optional
 
 import boto3
 import requests
 from botocore.exceptions import ClientError
-from src.custom_utils import get_logger
+from src.model_utils import get_logger
 
 
 class RestApiManager(object):
@@ -44,13 +44,13 @@ class RestApiManager(object):
         self.api_name = api_name
         self.api_base_path = api_base_path
         self.api_stage = api_stage
-        self.api_id = None
-        self._api_key_value = None
-        self.api_key_id = None
+        self.api_id: Optional[str] = None
+        self._api_key_value: Optional[str] = None
+        self.api_key_id: Optional[str] = None
 
-        self.root_id = None
-        self.resource_id = None
-        self.usage_plan_id = None
+        self.root_id: Optional[str] = None
+        self.resource_id: Optional[str] = None
+        self.usage_plan_id: Optional[str] = None
 
         self.account_id = boto3.client("sts").get_caller_identity().get("Account")
         self.lambda_function_name = lambda_function_name
@@ -74,7 +74,7 @@ class RestApiManager(object):
             self.logger.exception(
                 f'Cannot create REST API {self.api_name} due to {error.response["Error"]["Message"]}'
             )
-            raise
+            raise error
 
     def _get_root_resource_id(self) -> None:
         """
@@ -93,11 +93,11 @@ class RestApiManager(object):
             self.logger.info(
                 f"Found root resource of the REST API with ID {self.root_id}"
             )
-        except ClientError:
+        except ClientError as error:
             self.logger.exception(
                 "Cannot get the ID of the root resource of the REST API"
             )
-            raise
+            raise error
 
     def _create_resource(self) -> None:
         """
@@ -121,7 +121,7 @@ class RestApiManager(object):
             self.logger.exception(
                 f'Cannot create resource {self.api_base_path} due to {error.response["Error"]["Message"]}'
             )
-            raise
+            raise error
 
     def _create_post_method(self, apiKeyRequired: bool) -> None:
         """
@@ -149,7 +149,7 @@ class RestApiManager(object):
             self.logger.exception(
                 f'Cannot create POST method for resource {self.resource_id} due to {error.response["Error"]["Message"]}'
             )
-            raise
+            raise error
 
     def _setup_lambda_integration(self) -> None:
         """
@@ -177,7 +177,7 @@ class RestApiManager(object):
             self.logger.exception(
                 f'Cannot set up Lambda integration for POST method on resource {self.resource_id} due to {error.response["Error"]["Message"]}'
             )
-            raise
+            raise error
 
     def _deploy_rest_api(self) -> None:
         """
@@ -222,7 +222,7 @@ class RestApiManager(object):
             self.logger.exception(
                 f'Cannot add permission to let Amazon API Gateway invoke {self.lambda_function_arn} due to {error.response["Error"]["Message"]}'
             )
-            raise
+            raise error
 
     def _create_api_key(self, api_key_name: str, enabled: bool) -> None:
         """
@@ -252,7 +252,7 @@ class RestApiManager(object):
             self.logger.exception(
                 f'Cannot create API key due to {error.response["Error"]["Message"]}'
             )
-            raise
+            raise error
 
     def get_api_key(self) -> str:
         """
@@ -306,7 +306,7 @@ class RestApiManager(object):
             self.logger.exception(
                 f'Cannot create usage plan due to {error.response["Error"]["Message"]}'
             )
-            raise
+            raise error
 
     def _add_api_key_to_usage_plan(self) -> None:
         """
@@ -327,7 +327,7 @@ class RestApiManager(object):
             self.logger.exception(
                 f'Cannot add API key {self.api_key_id} to usage plan {self.usage_plan_id} due to {error.response["Error"]["Message"]}'
             )
-            raise
+            raise error
 
     def _construct_api_url(self) -> str:
         """
@@ -440,9 +440,9 @@ class RestApiManager(object):
     def setup_rest_api(
         self,
         apiKeyRequired: bool,
-        api_key_name: str = None,
-        enabled: bool = None,
-        usage_plan_name: str = None,
+        api_key_name: Optional[str] = None,
+        enabled: Optional[bool] = None,
+        usage_plan_name: Optional[str] = None,
     ) -> None:
         """
         Set up a REST API with a POST method that invokes an AWS Lambda function.

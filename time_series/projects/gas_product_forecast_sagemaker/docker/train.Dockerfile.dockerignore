@@ -1,4 +1,4 @@
 src/*
 !src/config
 !src/train_entry.py
-!src/custom_utils.py
+!src/model_utils.py

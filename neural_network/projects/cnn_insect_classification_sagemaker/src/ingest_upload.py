@@ -2,9 +2,8 @@ import json
 import os
 import random
 import subprocess
-import sys
 from multiprocessing import Pool
-from typing import Dict, Tuple
+from typing import Dict, Tuple, Any, cast
 
 import numpy as np
 import s3fs
@@ -14,6 +13,7 @@ from omegaconf import OmegaConf
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"  # Nopep8
 import matplotlib.pyplot as plt
 from tensorflow.keras.utils import image_dataset_from_directory
+from model_utils import get_logger
 
 # ------------------------- Downsample a single class ------------------------ #
 
@@ -198,7 +198,10 @@ def main() -> int:
     # Hyra
     core.global_hydra.GlobalHydra.instance().clear()
     initialize(version_base="1.2", config_path="config", job_name="data_ingest")
-    config = OmegaConf.to_container(compose(config_name="main"), resolve=True)
+    config: Dict[str, Any] = cast(
+        Dict[str, Any],
+        OmegaConf.to_container(compose(config_name="main"), resolve=True),
+    )
 
     # --------------------------- Download raw data zip -------------------------- #
 
@@ -231,8 +234,8 @@ def main() -> int:
 
     # --------------------------------- Load data -------------------------------- #
 
-    class_percentages = {}
-    total_counts = {}
+    class_percentages: Dict[str, Any] = {}
+    total_counts: Dict[str, Any] = {}
     fs = s3fs.S3FileSystem()
 
     for dir_key in directories:
@@ -280,19 +283,19 @@ def main() -> int:
     # Compute the indices for the X-axis, spread them out a bit more to avoid bars being jammed together
     indices = np.arange(len(class_percentages["train"])) * 1.5
 
-    train_bar = ax.bar(
+    _ = ax.bar(
         indices,
         class_percentages["train"].values(),
         width=bar_width,
         label=f'Train (Total: {total_counts["train"]})',
     )
-    val_bar = ax.bar(
+    _ = ax.bar(
         [i + bar_width for i in indices],
         class_percentages["val"].values(),
         width=bar_width,
         label=f'Validation (Total: {total_counts["val"]})',
     )
-    test_bar = ax.bar(
+    _ = ax.bar(
         [i + 2 * bar_width for i in indices],
         class_percentages["test"].values(),
         width=bar_width,
@@ -321,6 +324,4 @@ def main() -> int:
 
 
 if __name__ == "__main__":
-    from custom_utils import get_logger
-
-    sys.exit(main())
+    main()

@@ -113,6 +113,9 @@ def xgboost_objective(
     float
         The mean balanced log loss from cross-validation.
     """
+    X_train: pd.DataFrame = train_data[0]
+    y_train: np.ndarray = train_data[1]
+
     # Hyperparameters space
     model_hyperparameter = {
         "n_estimators": trial.suggest_int("n_estimators", 100, 1500),
@@ -141,19 +144,15 @@ def xgboost_objective(
 
     # Container for the cross-validation scores
     log_loss_scores = {}
-
-    X, y = train_data
-    for fold, (train_index, val_index) in enumerate(
-        skf.split(train_data[0], train_data[1]), 1
-    ):
-        X_train, X_val = X.iloc[train_index], X.iloc[val_index]
-        y_train, y_val = y[train_index], y[val_index]
+    for fold, (train_index, val_index) in enumerate(skf.split(X_train, y_train), 1):
+        fold_X_train, fold_X_val = X_train.iloc[train_index], X_train.iloc[val_index]
+        fold_y_train, fold_y_val = y_train[train_index], y_train[val_index]
 
         logger.info(
-            f"Training set trial {trial.number} target distribution: {{0: {np.round(np.mean(y_train == 0), 2)}, 1: {np.round(np.mean(y_train == 1), 2)}}}"
+            f"Training set trial {trial.number} target distribution: {{0: {np.round(np.mean(fold_y_train == 0), 2)}, 1: {np.round(np.mean(fold_y_train == 1), 2)}}}"
         )
         logger.info(
-            f"Validation set trial {trial.number} target distribution: {{0: {np.round(np.mean(y_val == 0), 2)}, 1: {np.round(np.mean(y_val == 1), 2)}}}"
+            f"Validation set trial {trial.number} target distribution: {{0: {np.round(np.mean(fold_y_val == 0), 2)}, 1: {np.round(np.mean(fold_y_val == 1), 2)}}}"
         )
 
         # Compute sample weights
@@ -173,9 +172,9 @@ def xgboost_objective(
         )
 
         # Fit and transform training data
-        X_train = fold_preprocessor.fit_transform(X_train, y_train)
+        fold_X_train = fold_preprocessor.fit_transform(fold_X_train, fold_y_train)
         # Transform validation data
-        X_val = fold_preprocessor.transform(X_val)
+        fold_X_val = fold_preprocessor.transform(fold_X_val)
 
         # Create estimator
         fold_estimator = estimator_func(
@@ -191,15 +190,15 @@ def xgboost_objective(
             X=X_train,
             y=y_train,
             sample_weight=sample_weights,
-            eval_set=[(X_train, y_train), (X_val, y_val)],
+            eval_set=[(fold_X_train, fold_y_train), (fold_X_val, fold_y_val)],
             verbose=200,
         )
 
         # Compute log loss on validation set
         logger.info(f"Computing log loss for trial {trial.number} fold {fold}...")
         # Obtain the 1-D positive class probabilities
-        y_pred = fold_estimator.predict_proba(X_val)[:, 1]
-        log_loss_scores[f"fold_{fold}"] = custom_log_loss(y_val, y_pred)
+        fold_y_pred = fold_estimator.predict_proba(fold_X_val)[:, 1]
+        log_loss_scores[f"fold_{fold}"] = custom_log_loss(fold_y_val, fold_y_pred)
 
     # Compute mean log loss
     mean_log_loss = np.mean(list(log_loss_scores.values()))
@@ -208,8 +207,6 @@ def xgboost_objective(
     # ---------------------- Retrain on entire training data --------------------- #
 
     logger.info(f"Retraining on entire training data for trial {trial.number}...")
-    X_train, y_train = train_data[0], train_data[1]
-
     # Sample weights
     sample_weights = compute_sample_weight(class_weight="balanced", y=y_train)
     # Compute the ratio of the number of negative class to the positive class

@@ -3,7 +3,7 @@ import io
 import logging
 import os
 import sys
-from typing import List, Tuple
+from typing import List, Tuple, Union
 
 import boto3
 import numpy as np
@@ -75,10 +75,10 @@ class NumpyS3(object):
 
 
 class DataHandler(NumpyS3):
-    def __init__(self, bucket: str, key: str, s3_uri: str = None, client=None):
+    def __init__(self, bucket: str, key: str, client=None):
         super().__init__(bucket, key, client)
 
-    def load_data(self, mode: str) -> Tuple[np.ndarray, np.ndarray]:
+    def load_data(self, mode: str) -> Union[Tuple[np.ndarray, np.ndarray], np.ndarray]:
         """
         Load data from s3 bucket.
 
@@ -89,7 +89,7 @@ class DataHandler(NumpyS3):
 
         Returns
         -------
-        Tuple[np.ndarray, np.ndarray]
+        Union[Tuple[np.ndarray, np.ndarray], np.ndarray]
             Tuple of numpy arrays--- X and y.
         """
 
@@ -110,8 +110,8 @@ class DataHandler(NumpyS3):
                 -1, 28, 28, 1
             )
             return X_test
-
-        return None
+        else:
+            raise ValueError("Mode must be one of 'train', 'val', 'test'")
 
     def __repr__(self) -> str:
         return f"DataHandler(bucket = {self.bucket}, key = {self.key})"

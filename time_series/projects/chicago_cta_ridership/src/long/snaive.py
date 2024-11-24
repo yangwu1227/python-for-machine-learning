@@ -12,7 +12,7 @@ from sktime.forecasting.naive import NaiveForecaster
 from sktime.transformations.compose import OptionalPassthrough
 from sktime.transformations.series.boxcox import LogTransformer
 from sktime.transformations.series.detrend import Deseasonalizer, Detrender
-from src.custom_utils import S3Helper
+from src.model_utils import S3Helper
 from src.long.long_trainer import LongTrainer
 
 

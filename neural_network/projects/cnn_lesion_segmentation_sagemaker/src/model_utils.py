@@ -106,26 +106,35 @@ def parser() -> argparse.Namespace:
 # --------------------------------- Load data -------------------------------- #
 
 
-def load_data(paths: Dict[str, str], test_mode: bool = False) -> Tuple[np.ndarray]:
+def load_data(
+    paths: Dict[str, str], test_mode: bool = False
+) -> Union[
+    Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray],
+    Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray],
+]:
     """
     Load data from the given path.
 
     Parameters
     ----------
-    path : List[str]
-        List of key: path to the data directories.
+    paths : Dict[str, str]
+        Dictionary of key: path to the data directories.
     test_mode : bool, optional
         Whether to load the test set, by default False.
 
     Returns
     -------
-    Tuple[np.ndarray]
-        A tuple of numpy arrays containing the images and masks.
+    Union[
+        Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray],
+        Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray]
+    ]
+        A tuple containing the training and validation data, and optionally test data.
     """
     train_images = np.load(file=os.path.join(paths["train"], "train_images.npy"))
     train_masks = np.load(file=os.path.join(paths["train"], "train_masks.npy"))
     val_images = np.load(file=os.path.join(paths["val"], "val_images.npy"))
     val_masks = np.load(file=os.path.join(paths["val"], "val_masks.npy"))
+
     if test_mode:
         test_images = np.load(file=os.path.join(paths["test"], "test_images.npy"))
         test_masks = np.load(file=os.path.join(paths["test"], "test_masks.npy"))

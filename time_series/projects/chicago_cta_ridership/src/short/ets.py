@@ -11,7 +11,7 @@ from sktime.forecasting.model_selection import ForecastingGridSearchCV
 from sktime.forecasting.statsforecast import StatsForecastAutoETS
 from sktime.transformations.series.boxcox import LogTransformer
 from src.base_trainer import BaseTrainer
-from src.custom_utils import S3Helper
+from src.model_utils import S3Helper
 
 
 class ETSTrainer(BaseTrainer):

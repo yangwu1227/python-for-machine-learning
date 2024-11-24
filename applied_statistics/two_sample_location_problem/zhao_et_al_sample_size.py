@@ -1,15 +1,14 @@
-from typing import Optional
 
 import numpy as np
 from scipy.stats import norm
 
 
 def two_sided_sample_size(
-    control_prop: np.ndarray[float],
-    treatment_prop: np.ndarray[float],
+    control_prop: np.ndarray,
+    treatment_prop: np.ndarray,
     treatment_fraction: float,
-    alpha: Optional[float] = 0.05,
-    power: Optional[float] = 0.8,
+    alpha: float = 0.05,
+    power: float = 0.8,
 ) -> float:
     """
     Calculate the total sample size required for a two-sided Wilcoxon-Mann-Whitney test
@@ -19,15 +18,15 @@ def two_sided_sample_size(
 
     Parameters:
     ----------
-    control_prop : np.ndarray[float]
+    control_prop : np.ndarray
         Proportion of each category in the control group.
-    treatment_prop : np.ndarray[float]
+    treatment_prop : np.ndarray
         Proportion of each category in the treatment group.
     treatment_fraction : float
         Fraction of the total sample that will be allocated to the treatment group.
-    alpha : Optional[float], default=0.05
+    alpha : float, default=0.05
         Significance level for the test.
-    power : Optional[float], default=0.8
+    power : float, default=0.8
         Desired power level for the test.
 
     Returns:
@@ -71,8 +70,8 @@ def two_sided_sample_size(
 
 def main() -> int:
     treatment_fraction = 0.5
-    control_prop = [0.1, 0.2, 0.3, 0.2, 0.2]
-    treatment_prop = [0.2, 0.3, 0.3, 0.1, 0.1]
+    control_prop = np.array([0.1, 0.2, 0.3, 0.2, 0.2])
+    treatment_prop = np.array([0.2, 0.3, 0.3, 0.1, 0.1])
 
     n_total = two_sided_sample_size(control_prop, treatment_prop, treatment_fraction)
 

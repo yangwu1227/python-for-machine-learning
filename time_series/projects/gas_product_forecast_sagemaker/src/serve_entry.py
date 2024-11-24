@@ -1,6 +1,6 @@
 import os
 from contextlib import asynccontextmanager
-from typing import Dict
+from typing import Dict, Any, cast
 
 import joblib
 import pandas as pd
@@ -9,8 +9,10 @@ from fastapi import FastAPI, HTTPException, Request, Response, status
 from hydra import compose, core, initialize
 from omegaconf import OmegaConf
 
+from model_utils import get_logger
 
-def main():
+
+def main() -> int:
     logger = get_logger(__name__)
 
     # ---------------------- Application lifespan management --------------------- #
@@ -29,8 +31,9 @@ def main():
         """
         core.global_hydra.GlobalHydra.instance().clear()
         initialize(version_base="1.2", config_path="config", job_name="serve")
-        app.state.config = OmegaConf.to_container(
-            compose(config_name="main"), resolve=True
+        app.state.config = cast(
+            Dict[str, Any],
+            OmegaConf.to_container(compose(config_name="main"), resolve=True),
         )
 
         logger.info("Starting up: Loading model and transformer...")
@@ -193,18 +196,18 @@ def main():
                 status_code=status.HTTP_200_OK,
             )
 
-        except ValueError as e:
-            logger.error(f"Validation error: {str(e)}")
-            raise HTTPException(status_code=400, detail=str(e))
+        except ValueError as error:
+            logger.error(f"Validation error: {error}")
+            raise HTTPException(status_code=400, detail=str(error))
 
-        except Exception as e:
-            logger.error(f"Error during invocation: {str(e)}")
+        except Exception as error:
+            logger.error(f"Error during invocation: {error}")
             raise HTTPException(status_code=500, detail="Error during invocation")
 
     uvicorn.run(app, port=8080, host="0.0.0.0", log_level="info")
 
+    return 0
+
 
 if __name__ == "__main__":
-    from custom_utils import get_logger
-
     main()

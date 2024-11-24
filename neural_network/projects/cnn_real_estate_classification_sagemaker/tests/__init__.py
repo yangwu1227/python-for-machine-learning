@@ -1,4 +1,4 @@
-# Initialize package by adding ../src to sys.path and importing custom_utils
+# Initialize package by adding ../src to sys.path and importing model_utils
 import os
 import sys
 

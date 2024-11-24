@@ -1,5 +1,5 @@
 import warnings
-from typing import Dict, Union
+from typing import Dict, Union, Optional, Any
 
 import numpy as np
 import pandas as pd
@@ -8,6 +8,7 @@ from sktime.forecasting.compose import (
     ColumnEnsembleForecaster,
     TransformedTargetForecaster,
 )
+from sktime.forecasting.base import ForecastingHorizon
 from sktime.forecasting.model_selection import ForecastingGridSearchCV
 from sktime.forecasting.statsforecast import StatsForecastAutoETS
 from sktime.forecasting.trend import STLForecaster
@@ -15,7 +16,7 @@ from sktime.transformations.compose import OptionalPassthrough
 from sktime.transformations.series.boxcox import LogTransformer
 from sktime.transformations.series.detrend import Deseasonalizer, Detrender
 from src.base_trainer import ForecastVisualizer
-from src.custom_utils import S3Helper
+from src.model_utils import S3Helper
 from src.long.long_trainer import LongTrainer
 
 
@@ -34,7 +35,7 @@ class STLTrainer(LongTrainer):
         config_path: str,
         logger_name: str,
         config_name: str,
-        s3_helper: S3Helper = None,
+        s3_helper: Optional[S3Helper] = None,
         data_type: str = "original",
     ) -> None:
         super().__init__(
@@ -44,12 +45,12 @@ class STLTrainer(LongTrainer):
             config_name=config_name,
             s3_helper=s3_helper,
         )
-        self.best_forecaster = None
-        self.grid_search = None
-        self.y_pred = None
-        self.y_forecast = None
-        self.oos_fh = None
-        self.data_type = data_type
+        self.best_forecaster: Optional[Any] = None
+        self.grid_search: Optional[Any] = None
+        self.y_pred: Optional[pd.DataFrame] = None
+        self.y_forecast: Optional[pd.DataFrame] = None
+        self.oos_fh: Optional[ForecastingHorizon] = None
+        self.data_type: str = data_type
 
     def _create_model(self) -> ColumnEnsembleForecaster:
         """
@@ -189,7 +190,7 @@ class STLTrainer(LongTrainer):
         return {"y_train": self.y_full, "y_pred": self.y_forecast}
 
     def diagnostics(
-        self, full_model: bool, lags: int = None, auto_lag: bool = None
+        self, full_model: bool, lags: Optional[int] = None, auto_lag: bool = False
     ) -> pd.DataFrame:
         if full_model:
             if self._attribute_is_none("best_forecaster"):
@@ -232,7 +233,7 @@ class STLTrainer(LongTrainer):
         y_pred: pd.DataFrame,
         y_test: pd.DataFrame = None,
         static: bool = True,
-        title: str = None,
+        title: Optional[str] = None,
         height: int = 450,
         width: int = 1200,
     ) -> Union[None, Image]:
@@ -292,7 +293,7 @@ class STLTrainer(LongTrainer):
         y_train_counterfactual: pd.DataFrame,
         y_pred_counterfactual: pd.DataFrame,
         static: bool = True,
-        title: str = None,
+        title: Optional[str] = None,
         height: int = 450,
         width: int = 1200,
     ) -> Union[None, Image]:

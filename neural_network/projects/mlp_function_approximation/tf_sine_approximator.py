@@ -137,7 +137,7 @@ class SineHyperModel(kt.HyperModel):
 
 
 if __name__ == "__main__":
-    from custom_utils import get_logger, plot_1d_curve, report_keras_hpo
+    from model_utils import get_logger, plot_1d_curve, report_keras_hpo
 
     logger = get_logger("tf_sine_apprixmator")
 

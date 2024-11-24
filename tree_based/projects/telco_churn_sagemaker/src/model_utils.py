@@ -1,7 +1,8 @@
 import logging
 import pickle
 from re import sub
-from typing import Any, Tuple
+import sys
+from typing import Any, Tuple, List, Optional
 
 import boto3
 import numpy as np
@@ -35,7 +36,7 @@ class FeatureEngine(TransformerMixin, BaseEstimator):
         self.num_feat = num_feat
         self.cat_feat = cat_feat
 
-    def fit(self, X: pd.DataFrame, y: np.ndarray = None):
+    def fit(self, X: pd.DataFrame, y: Optional[np.ndarray] = None):
         """
         Fit the FeatureEngine transformer. This is a no-op.
 
@@ -235,7 +236,7 @@ class S3Pickle:
 
 
 def load_data(
-    data_s3_url: str, logger: logging.Logger = None
+    data_s3_url: str, logger: Optional[logging.Logger] = None
 ) -> Tuple[pd.DataFrame, np.ndarray]:
     """
      Load data from S3 bucket and return X and y.
@@ -244,7 +245,7 @@ def load_data(
     ----------
     data_s3_url : str
         S3 url of data.
-    logger : logging.Logger
+    logger : Optional[logging.Logger]
         Logger object.
 
     Returns
@@ -258,7 +259,7 @@ def load_data(
     data.drop(["Customer ID", "Churn Category"], axis=1, inplace=True)
 
     # Change column names to lower case and relace white spaces with underscore
-    data.columns = [sub("\s", "_", col.lower()) for col in data.columns]
+    data.columns = [sub(r"\s", "_", col.lower()) for col in data.columns]
 
     X, y = data.drop(["churn_value"], axis=1), data.churn_value.values
 

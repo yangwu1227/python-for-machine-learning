@@ -1,12 +1,11 @@
 import argparse
 import ast
-import base64
 import json
 import logging
 import os
 import sys
 from functools import partial
-from typing import Any, Dict, List, Tuple, Union
+from typing import Any, Dict, List, Tuple, Optional, Union
 
 import boto3
 import numpy as np
@@ -105,7 +104,12 @@ def parser() -> argparse.Namespace:
 # --------------------------- Function to load data -------------------------- #
 
 
-def load_data(paths: Dict[str, str], test_mode: bool = False) -> Tuple[np.ndarray]:
+def load_data(
+    paths: Dict[str, str], test_mode: bool = False
+) -> Union[
+    Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray],
+    Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray],
+]:
     """
     Load data from the given path.
 
@@ -118,8 +122,12 @@ def load_data(paths: Dict[str, str], test_mode: bool = False) -> Tuple[np.ndarra
 
     Returns
     -------
-    Tuple[np.ndarray]
-        A tuple of numpy arrays--- X_train, y_train, X_val, y_val, X_test, y_test
+    Union[
+        Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray],
+        Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray],
+    ]:
+        A tuple of numpy arrays--- X_train, y_train, X_val, y_val. If test_mode is True, then
+        the tuple will also contain X_test and y_test.
     """
     X_train = np.load(file=os.path.join(paths["train"], "X_train.npy"))
     y_train = np.load(file=os.path.join(paths["train"], "y_train.npy"))
@@ -136,7 +144,7 @@ def load_data(paths: Dict[str, str], test_mode: bool = False) -> Tuple[np.ndarra
 # --------------------- Function for setting up database --------------------- #
 
 
-def get_secret(secret_name: str, region_name: str = "ur-east-1") -> Union[Dict, bytes]:
+def get_secret(secret_name: str, region_name: str = "us-east-1") -> Optional[Dict]:
     """
     Get secret from AWS Secrets Manager.
 
@@ -149,11 +157,10 @@ def get_secret(secret_name: str, region_name: str = "ur-east-1") -> Union[Dict, 
 
     Returns
     -------
-    Union[Dict, bytes]
+    Optional[Dict]
         Secret retrieved from AWS Secrets Manager.
     """
-
-    # Create a Secrets manager client
+    # Create a secrets manager client
     session = boto3.session.Session()
     client = session.client(service_name="secretsmanager", region_name=region_name)
     try:
@@ -174,18 +181,16 @@ def get_secret(secret_name: str, region_name: str = "ur-east-1") -> Union[Dict, 
         elif e.response["Error"]["Code"] == "ResourceNotFoundException":
             # Can't find the resource that we asked for
             raise e
+        else:
+            raise e
     else:
         # If the secret was a JSON-encoded dictionary string, convert it to dictionary
         if "SecretString" in get_secret_value_response:
             secret = get_secret_value_response["SecretString"]
             secret = ast.literal_eval(secret)  # Convert string to dictionary
             return secret
-        # If the secret was binary, decode it
-        else:
-            decoded_binary_secret = base64.b64decode(
-                get_secret_value_response["SecretBinary"]
-            )
-            return decoded_binary_secret
+
+    return None
 
 
 # ---------------------- Class for plotting HPO results ---------------------- #
@@ -240,7 +245,7 @@ def baseline_cnn(
     dense_params: Dict[str, Any],
     aug_params: Dict[str, Any],
     opt_params: Dict[str, Any],
-    input_shape: Tuple[int] = (256, 256, 3),
+    input_shape: Tuple[int, int, int] = (256, 256, 3),
 ) -> tf.keras.models.Sequential:
     """
     Build and compile a convolutional neural network.

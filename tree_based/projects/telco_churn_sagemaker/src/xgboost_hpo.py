@@ -2,10 +2,11 @@ import argparse
 import os
 import pickle
 import warnings
-from typing import Callable, Tuple
+from typing import Tuple
 
 import boto3
 import numpy as np
+import pandas as pd
 import optuna
 import xgboost as xgb
 from model_utils import create_pipeline, get_logger
@@ -66,7 +67,7 @@ def parser() -> argparse.Namespace:
 def xgboost_objective(
     trial: optuna.Trial,
     args: argparse.Namespace,
-    train_data: Tuple[np.ndarray, np.ndarray],
+    train_data: Tuple[pd.DataFrame, np.ndarray],
 ) -> float:
     """
     Objective function for Optuna.
@@ -77,7 +78,7 @@ def xgboost_objective(
         Trial object for sampling hyperparameters.
     args : argparse.Namespace
         Namespace with arguments.
-    train_data : Tuple[np.ndarray, np.ndarray]
+    train_data : Tuple[pd.DataFrame, np.ndarray]
         Tuple of training data (X_train, y_train).
 
 
@@ -86,8 +87,9 @@ def xgboost_objective(
     float
         Performance metric on validation set.
     """
-    X_train, y_train = train_data
     skf = StratifiedKFold(n_splits=args.k, shuffle=True, random_state=args.seed)
+    X_train: pd.DataFrame = train_data[0]
+    y_train: np.ndarray = train_data[1]
 
     # Parameter space
     search_space = {
@@ -99,16 +101,16 @@ def xgboost_objective(
             "learning_rate": trial.suggest_float(
                 name="learning_rate", low=0.001, high=0.3, log=True
             ),  # Range: [0, 1], larger eta shrinks the feature weights more to make the boosting process more conservative, i.e., fewer trees (regularizer)
-            "gamma": trial.suggest_int(
+            "gamma": trial.suggest_float(
                 "gamma", low=0.05, high=1
             ),  # Range: [0, inf], the larger the more conservative the algorithm (regularizer)
             "max_delta_step": trial.suggest_int(
                 "max_delta_step", 0, 10
             ),  # Range: [0, inf], values from 1-10 might help control the update for imbalanced data (regularizer)
-            "lambda": trial.suggest_int(
+            "lambda": trial.suggest_float(
                 "lambda", low=0.01, high=0.1
             ),  # Range: [0, inf], L2 regularization term on weights, the larger the more conservative the algorithm (regularizer)
-            "alpha": trial.suggest_int(
+            "alpha": trial.suggest_float(
                 "alpha", low=0.01, high=0.1
             ),  # Range: [0, inf], L1 regularization term on weights, the larger the more conservative the algorithm (regularizer)
             "colsample_bylevel": trial.suggest_float(
@@ -140,7 +142,7 @@ def xgboost_objective(
     }
 
     ap_scores = np.empty(args.k)
-    for fold, (train_index, val_index) in enumerate(skf.split(X_train, y_train)):
+    for fold, (train_index, val_index) in enumerate(skf.split(X_train, y_train), 1):
         # Split into train and validation sets
         fold_X_train, fold_y_train = X_train.iloc[train_index], y_train[train_index]
         fold_X_val, fold_y_val = X_train.iloc[val_index], y_train[val_index]
@@ -168,8 +170,6 @@ def xgboost_objective(
         dvalid = xgb.DMatrix(
             data=fold_X_val, label=fold_y_val, feature_names=feature_names
         )
-        # Optuna pruning call back
-        # pruning_callback = optuna.integration.XGBoostPruningCallback(trial, observation_key='valid-aucpr')
         # Early stopping
         early_stopping_callback = xgb.callback.EarlyStopping(
             rounds=200,
@@ -195,7 +195,7 @@ def xgboost_objective(
             y_true=fold_y_val, y_score=oof_pred, average="weighted"
         )
 
-    mean_ap_scores = np.mean(ap_scores)
+    mean_ap_scores = float(np.mean(ap_scores))
 
     return mean_ap_scores
 
@@ -250,7 +250,7 @@ def main() -> int:
 
     study, storage_path = create_study()
 
-    def objective_wrapper(trial: optuna.Trial) -> Callable:
+    def objective_wrapper(trial: optuna.Trial) -> float:
         return xgboost_objective(
             trial=trial,
             args=args,

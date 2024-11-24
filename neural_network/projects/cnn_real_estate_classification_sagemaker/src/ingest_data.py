@@ -2,12 +2,13 @@ import json
 import os
 import shutil
 import subprocess
+from typing import Dict, Any, cast
 
 import s3fs
 
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"  # NoPep8
 import tensorflow as tf
-from custom_utils import get_logger
+from model_utils import get_logger
 from hydra import compose, core, initialize
 from omegaconf import OmegaConf
 
@@ -17,7 +18,10 @@ def main() -> int:
 
     core.global_hydra.GlobalHydra.instance().clear()
     initialize(version_base="1.2", config_path="config", job_name="ingest_data")
-    config = OmegaConf.to_container(compose(config_name="main"), resolve=True)
+    config: Dict[str, Any] = cast(
+        Dict[str, Any],
+        OmegaConf.to_container(compose(config_name="main"), resolve=True),
+    )
 
     logger = get_logger("ingest_data")
 
@@ -95,12 +99,12 @@ def main() -> int:
             for class_name in class_counts
         }
         # Sort by class name and convert class names to indices
-        class_weights = {
+        class_weights_sorted = {
             i: class_weights[class_name]
             for i, class_name in enumerate(sorted(class_weights))
         }
         with fs.open(f"{s3_dir_key}_weights.json", "w") as f:
-            json.dump(class_weights, f)
+            json.dump(class_weights_sorted, f)
 
     logger.info("Finished uploading data and weights to s3...")
 

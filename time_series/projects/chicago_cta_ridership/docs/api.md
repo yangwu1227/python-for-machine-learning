@@ -7,7 +7,7 @@
 Data read and write usage:
 
 ```python
-from src.custom_utils import S3Helper
+from src.model_utils import S3Helper
 s3_helper = S3Helper()
 # Read from s3
 data = s3_helper.read_parquet(obj_key='data/raw/chicago_cta_ridership.parquet')
@@ -18,7 +18,7 @@ s3_helper.to_parquet(data=data, obj_key='data/processed/processed_data.parquet')
 To list all objects in the project S3 bucket:
 
 ```python
-from src.custom_utils import S3Helper
+from src.model_utils import S3Helper
 s3_helper = S3Helper()
 s3_helper.list_objects()
 ```
@@ -32,7 +32,7 @@ A utility class to set up a logger and read configuration parameters for each en
 Initialize the class with logger and configuration names and paths:
 
 ```python
-from src.custom_utils import SetUp
+from src.model_utils import SetUp
 
 # Initialize the SetUp class
 setup = SetUp(
@@ -59,21 +59,21 @@ print(config['parameter_key'])
 Calculate the maximum window size for cross-validation:
 
 ```python
-from src.custom_utils import CVHelper
+from src.model_utils import CVHelper
 window_size = CVHelper.calculate_window_size(num_splits=5, n=100, h=10, s=5)
 ```
 
 Calculate the number of splits for a dataset based on sliding window parameters:
 
 ```python
-from src.custom_utils import CVHelper
+from src.model_utils import CVHelper
 num_splits = CVHelper.calculate_num_splits(n=100, h=10, s=5, w=20)
 ```
 
 Plot the sliding windows for cross-validation given the window size, step size, and forecast horizon:
 
 ```python
-from src.custom_utils import CVHelper
+from src.model_utils import CVHelper
 CVHelper.plot_cv_windows(w=20, s=5, h=10, start_date='2020-01-01', end_date='2020-12-31', freq='D')
 ```
 

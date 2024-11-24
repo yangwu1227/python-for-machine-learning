@@ -244,4 +244,4 @@ def pretty_print_code(filename: str) -> Union[IPython.core.display.HTML, None]:
         '<style type="text/css">{}</style>{}'.format(
             formatter.get_style_defs(".highlight"), result
         )
-    )
+    )  # type: ignore[no-untyped-call]

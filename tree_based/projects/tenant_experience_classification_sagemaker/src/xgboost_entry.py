@@ -92,7 +92,7 @@ def xgboost_objective(
     aws_params: Dict[str, str],
     preprocessor_func: Callable,
     estimator_func: Callable,
-    train_data: Tuple[pl.DataFrame, pl.Series],
+    train_data: Tuple[pl.DataFrame, np.ndarray],
     test_mode: int,
     logger: logging.Logger,
 ) -> float:
@@ -109,7 +109,7 @@ def xgboost_objective(
         Function that creates the processing pipeline.
     estimator_func : Callable
         Function that creates the estimator.
-    train_data : Tuple[pl.DataFrame, pl.Series],
+    train_data : Tuple[pl.DataFrame, np.ndarray]
         Tuple containing train data and labels.
     test_mode: int
         Whether to run in test mode or not.
@@ -121,6 +121,9 @@ def xgboost_objective(
     float
         The mean average precision from cross-validation.
     """
+    X_train: pl.DataFrame = train_data[0]
+    y_train: np.ndarray = train_data[1]
+
     # Hyperparameters space
     model_hyperparameter = {
         "n_estimators": trial.suggest_int("n_estimators", 100, 1500),
@@ -150,46 +153,44 @@ def xgboost_objective(
     # Container for the cross-validation scores
     avg_precision_scores = {}
 
-    for fold, (train_val_index, cal_index) in enumerate(
-        skf.split(train_data[0], train_data[1]), 1
-    ):
+    for fold, (train_val_index, cal_index) in enumerate(skf.split(X_train, y_train), 1):
         # Split the data into train_val and calibration sets
-        X_train_val = train_data[0][train_val_index]
-        y_train_val = train_data[1][train_val_index]
-        X_cal = train_data[0][cal_index]
-        y_cal = train_data[1][cal_index]
+        fold_X_train_val = X_train[train_val_index]
+        fold_y_train_val = y_train[train_val_index]
+        fold_X_cal = X_train[cal_index]
+        fold_y_cal = y_train[cal_index]
 
         # Further split train_val into training and validation sets
-        X_train, X_val, y_train, y_val = train_test_split(
-            X_train_val,
-            y_train_val,
+        fold_X_train, fold_X_val, fold_y_train, fold_y_val = train_test_split(
+            fold_X_train_val,
+            fold_y_train_val,
             test_size=0.2,
-            stratify=y_train_val,
+            stratify=fold_y_train_val,
             shuffle=True,
         )
 
         logger.info(
-            f"Training set trial {trial.number} target distribution: {{0: {np.round(np.mean(y_train == 0), 2)}, 1: {np.round(np.mean(y_train == 1), 2)}}}"
+            f"Training set trial {trial.number} target distribution: {{0: {np.round(np.mean(fold_y_train == 0), 2)}, 1: {np.round(np.mean(fold_y_train == 1), 2)}}}"
         )
         logger.info(
-            f"Validation set trial {trial.number} target distribution: {{0: {np.round(np.mean(y_val == 0), 2)}, 1: {np.round(np.mean(y_val == 1), 2)}}}"
+            f"Validation set trial {trial.number} target distribution: {{0: {np.round(np.mean(fold_y_val == 0), 2)}, 1: {np.round(np.mean(fold_y_val == 1), 2)}}}"
         )
         logger.info(
-            f"Calibration set trial {trial.number} target distribution: {{0: {np.round(np.mean(y_cal == 0), 2)}, 1: {np.round(np.mean(y_cal == 1), 2)}}}"
+            f"Calibration set trial {trial.number} target distribution: {{0: {np.round(np.mean(fold_y_cal == 0), 2)}, 1: {np.round(np.mean(fold_y_cal == 1), 2)}}}"
         )
 
         # Compute sample weights
-        sample_weights = compute_sample_weight(class_weight="balanced", y=y_train)
+        sample_weights = compute_sample_weight(class_weight="balanced", y=fold_y_train)
         # Compute the ratio of the number of negative class to the positive class
-        scale_pos_weight = np.sum(y_train == 0) / np.sum(y_train == 1)
+        scale_pos_weight = np.sum(fold_y_train == 0) / np.sum(fold_y_train == 1)
 
         # Create preprocessor
         fold_preprocessor = preprocessor_func()
         logger.info(
             f"Preprocessing training and validation data for trial {trial.number} fold {fold}..."
         )
-        X_train = fold_preprocessor.fit_transform(X_train, y_train)
-        X_val = fold_preprocessor.transform(X_val)
+        fold_X_train = fold_preprocessor.fit_transform(fold_X_train, fold_y_train)
+        fold_X_val = fold_preprocessor.transform(fold_X_val)
 
         # Create estimator
         fold_estimator = estimator_func(
@@ -203,10 +204,10 @@ def xgboost_objective(
 
         # Train estimator with calibration
         fold_estimator.fit(
-            X=X_train,
-            y=y_train,
+            X=fold_X_train,
+            y=fold_y_train,
             sample_weight=sample_weights,
-            eval_set=[(X_train, y_train), (X_val, y_val)],
+            eval_set=[(fold_X_train, fold_y_train), (fold_X_val, fold_y_val)],
             verbose=200,
         )
         fold_calibrated_estimator = CalibratedClassifierCV(
@@ -214,15 +215,17 @@ def xgboost_objective(
             method="isotonic",
             cv="prefit",
         )
-        fold_calibrated_estimator.fit(X_cal, y_cal)
+        fold_calibrated_estimator.fit(fold_X_cal, fold_y_cal)
 
         # Compute average precision on validation set
         logger.info(
             f"Computing average precision for trial {trial.number} fold {fold}..."
         )
         # Obtain the 1-D positive class probabilities
-        y_pred = fold_calibrated_estimator.predict_proba(X_val)[:, 1]
-        avg_precision_scores[f"fold_{fold}"] = average_precision_score(y_val, y_pred)
+        fold_y_pred = fold_calibrated_estimator.predict_proba(fold_X_val)[:, 1]
+        avg_precision_scores[f"fold_{fold}"] = average_precision_score(
+            fold_y_val, fold_y_pred
+        )
 
     # Compute mean average precision
     mean_avg_precision = np.mean(list(avg_precision_scores.values()))
@@ -233,8 +236,6 @@ def xgboost_objective(
     # ---------------------- Retrain on entire training data --------------------- #
 
     logger.info(f"Retraining on entire training data for trial {trial.number}...")
-    X_train, y_train = train_data[0], train_data[1]
-
     # Sample weights
     sample_weights = compute_sample_weight(class_weight="balanced", y=y_train)
     # Compute the ratio of the number of negative class to the positive class

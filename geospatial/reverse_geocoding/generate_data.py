@@ -1,3 +1,4 @@
+# mypy: ignore-errors
 import csv
 import logging
 import multiprocessing.pool as mpp
@@ -6,8 +7,16 @@ from typing import List, TextIO, Tuple
 
 import numpy as np
 
+logger = logging.getLogger(__name__)
+logging.basicConfig(
+    format="%(asctime)s %(levelname)s %(name)s: %(message)s",
+    level=logging.INFO,
+    handlers=[logging.StreamHandler(sys.stdout)],
+)
+logger.setLevel(logging.INFO)
 
-def generate_random_pairs(num_pairs: int) -> List[Tuple[float, float]]:
+
+def generate_random_pairs(num_pairs: int) -> Tuple[np.ndarray, np.ndarray]:
     """
     Generate a list of `num_pairs` random long/lat pairs.
 
@@ -18,12 +27,12 @@ def generate_random_pairs(num_pairs: int) -> List[Tuple[float, float]]:
 
     Returns
     -------
-    List[Tuple[float, float]]
-        A list of `num_pairs` random long/lat pairs represented as tuples of floats.
+    Tuple[np.ndarray, np.ndarray]
+        Two NumPy arrays: one for longitudes and one for latitudes.
 
     Examples
     --------
-    >>> generate_random_pairs(5)
+    >>> longitudes, latitudes = generate_random_pairs(5)
     """
     # Bounding box of the United States.
     us_bounds = {
@@ -43,10 +52,12 @@ def generate_random_pairs(num_pairs: int) -> List[Tuple[float, float]]:
 
     logger.info(f"Generated {num_pairs} random long/lat pairs")
 
-    return list(zip(longitudes, latitudes))
+    return longitudes, latitudes
 
 
-def write_batch_to_csv(file: TextIO, pairs: List[Tuple[float, float]]) -> None:
+def write_batch_to_csv(
+    file: TextIO, pairs: List[Tuple[np.ndarray, np.ndarray]]
+) -> None:
     """
     Write a batch of long/lat pairs to a CSV file.
 
@@ -54,7 +65,7 @@ def write_batch_to_csv(file: TextIO, pairs: List[Tuple[float, float]]) -> None:
     ----------
     file : TextIO
         A file-like object open for writing in text mode.
-    pairs : List[Tuple[float, float]]
+    pairs : List[Tuple[np.ndarray, np.ndarray]]
         A list of long/lat pairs represented as tuples of floats.
     """
     writer = csv.writer(file)
@@ -94,7 +105,7 @@ def write_pairs_to_file_threaded(
         # Use a thread pool to manage a fixed number of threads
         with mpp.ThreadPool(num_threads) as pool:
             # Generate the long/lat pairs in parallel using the thread pool
-            pairs = pool.map(
+            pairs: List[Tuple[float, float]] = pool.map(
                 generate_random_pairs,
                 [pairs_per_batch] * (num_pairs // pairs_per_batch),
             )
@@ -116,15 +127,6 @@ def write_pairs_to_file_threaded(
 
 
 def main() -> int:
-    # Root logger
-    logger = logging.getLogger(__name__)
-    logging.basicConfig(
-        format="%(asctime)s %(levelname)s %(name)s: %(message)s",
-        level=logging.INFO,
-        handlers=[logging.StreamHandler(sys.stdout)],
-    )
-    logger.setLevel(logging.INFO)
-
     write_pairs_to_file_threaded(
         "random_long_lat.csv",
         pairs_per_batch=100_000,

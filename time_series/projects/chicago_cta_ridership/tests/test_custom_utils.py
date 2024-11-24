@@ -6,7 +6,7 @@ import pandas as pd
 import pytest
 from moto import mock_s3
 from sktime.forecasting.compose import ColumnEnsembleForecaster
-from src.custom_utils import S3Helper
+from src.model_utils import S3Helper
 
 
 @pytest.fixture(scope="class")

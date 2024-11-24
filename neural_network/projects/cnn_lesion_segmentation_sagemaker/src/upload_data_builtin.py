@@ -5,9 +5,10 @@ from random import Random
 from shutil import copyfile
 
 import sagemaker
-from custom_utils import get_logger
+from model_utils import get_logger
 
-if __name__ == "__main__":
+
+def main() -> int:
     random_seed = 1227
     s3_bucket = "yang-ml-sagemaker"
     s3_key = "lesion-segmentation"
@@ -52,7 +53,7 @@ if __name__ == "__main__":
     for i in range(5):
         Random(random_seed).shuffle(image_mask_pairs)
     # Separate the pairs back into separate lists
-    image_paths, mask_paths = zip(*image_mask_pairs)
+    image_paths, mask_paths = map(list, zip(*image_mask_pairs))
 
     dir_dict = {}
     dir_name_sets = [
@@ -75,7 +76,7 @@ if __name__ == "__main__":
     for i in range(5):
         Random(random_seed).shuffle(image_mask_pairs)
     # Separate the pairs back into separate lists
-    image_paths, mask_paths = zip(*image_mask_pairs)
+    image_paths, mask_paths = map(list, zip(*image_mask_pairs))
 
     # Compute number of files for each set
     num_files = len(image_paths)
@@ -144,3 +145,9 @@ if __name__ == "__main__":
     subprocess.run(f"rm -rf {raw_data_dir}", shell=True)
 
     del sm_session, s3_uploader
+
+    return 0
+
+
+if __name__ == "__main__":
+    main()

@@ -16,11 +16,10 @@ def get_data() -> Tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
 
     # Check if directory containing preprocessed data exists
     if not os.path.exists(data_prefix):
-        print(
+        raise FileNotFoundError(
             f"""Expected the following folder {data_prefix} to contain the preprocessed data. 
                  Run data processing first in main notebook before running baselines comparisons"""
         )
-        return None
 
     # Read in data
     features = pd.read_csv(data_prefix + "features_xgboost.csv", header=None)
@@ -58,7 +57,7 @@ def get_data() -> Tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
     return train_data, valid_data, test_data
 
 
-def print_metrics(y_true: np.ndarray, y_predicted: np.ndarray) -> List[np.float]:
+def print_metrics(y_true: np.ndarray, y_predicted: np.ndarray) -> List[float]:
     """
     Print model performance metrics.
 
@@ -69,7 +68,7 @@ def print_metrics(y_true: np.ndarray, y_predicted: np.ndarray) -> List[np.float]
 
     Returns
     -------
-    List[np.float]
+    List[float]
         Performance metrics--- f1, precision, recall, accuracy.
     """
     cm = confusion_matrix(y_true, y_predicted)

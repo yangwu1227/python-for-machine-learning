@@ -3,7 +3,7 @@ import glob
 import logging
 import os
 import sys
-from typing import Dict, List, Tuple
+from typing import Dict, List, Tuple, Any, cast
 
 import numpy as np
 import polars as pl
@@ -111,7 +111,7 @@ def density_adjustment(train_data: pl.DataFrame, census_data_dir: str) -> pl.Dat
     # Second loop to adjust microbusiness density for each year (2019 - 2022)
     train_data = train_data.with_columns(
         # Create a new column for 2021 population estimates
-        pl.col("cfips").map_dict(cfips_pop_map_2021).alias("est_pop_2021")
+        pl.col("cfips").replace_strict(cfips_pop_map_2021).alias("est_pop_2021")
     )
     # Census years go from 2017 - 2021, so add 2 to get the correct training data year
     for census_data, census_year in zip(census_data_frames, census_years):
@@ -121,7 +121,7 @@ def density_adjustment(train_data: pl.DataFrame, census_data_dir: str) -> pl.Dat
 
         # For each training data year (2019 - 2022), multiply microbusiness density by (train_data_year - 2)_est_pop / est_pop_2021
         train_data = train_data.with_columns(
-            pl.col("cfips").map_dict(cfips_pop_map).alias("est_pop")
+            pl.col("cfips").replace_strict(cfips_pop_map).alias("est_pop")
         ).with_columns(
             pl.when(pl.col("year") == train_data_year)
             .then(
@@ -165,7 +165,7 @@ def split_counties(
     """
     # Max density for each cfips
     train_data = (
-        train_data.groupby("cfips")
+        train_data.group_by("cfips")
         .agg(pl.col("microbusiness_density").max().alias("max_density_by_cfips"))
         .join(train_data, on="cfips", how="left")
     )
@@ -364,12 +364,13 @@ def compute_ratios(
 # ------------------------------ Main function ------------------------------- #
 
 
-def main():
-    # ---------------------------------- Set up ---------------------------------- #
-
+def main() -> int:
     core.global_hydra.GlobalHydra.instance().clear()
     initialize(version_base="1.2", config_path="config", job_name="processing_job")
-    config = OmegaConf.to_container(compose(config_name="main"), resolve=True)
+    config: Dict[str, Any] = cast(
+        Dict[str, Any],
+        OmegaConf.to_container(compose(config_name="main"), resolve=True),
+    )
 
     logger = logging.getLogger(__name__)
     logger.addHandler(logging.StreamHandler(sys.stdout))

@@ -10,12 +10,13 @@ from plotly.subplots import make_subplots
 from scipy.stats import shapiro
 from sktime.forecasting.base import ForecastingHorizon
 from sktime.performance_metrics.forecasting import (
+    BaseForecastingErrorMetric,
     MeanAbsoluteError,
     MeanAbsolutePercentageError,
     MeanSquaredError,
 )
 from sktime.split import SlidingWindowSplitter
-from src.custom_utils import S3Helper, SetUp
+from src.model_utils import S3Helper, SetUp
 from statsmodels.stats.diagnostic import acorr_ljungbox
 
 
@@ -31,7 +32,7 @@ class BaseTrainer(object):
         Logger object.
     config: Dict[str, Any]
         Config dictionary.
-    metric: str
+    metric: BaseForecastingErrorMetric
         Metric to use for evaluation.
     model: Any
         Model object from sktime.
@@ -61,7 +62,7 @@ class BaseTrainer(object):
         config_path: str,
         logger_name: str,
         config_name: str,
-        s3_helper: S3Helper = None,
+        s3_helper: Optional[S3Helper] = None,
     ) -> None:
         """
         Initialize the trainer object.
@@ -85,11 +86,11 @@ class BaseTrainer(object):
         ).setup()
 
         if s3_helper is None:
-            self.s3_helper = S3Helper()
+            self.s3_helper: S3Helper = S3Helper()
         else:
             self.s3_helper = s3_helper
 
-        self.metric = {
+        self.metric: BaseForecastingErrorMetric = {
             "mse": MeanSquaredError(square_root=False),
             "rmse": MeanSquaredError(square_root=True),
             "mae": MeanAbsoluteError(),
@@ -97,15 +98,15 @@ class BaseTrainer(object):
             "smape": MeanAbsolutePercentageError(symmetric=True),
         }[self.config[self.horizon]["metric"]]
 
-        self.model = None
-        self.y_train = None
-        self.X_train = None
-        self.y_test = None
-        self.X_test = None
-        self.y_full = None
-        self.X_full = None
-        self.test_fh = None
-        self.cv = None
+        self.model: Optional[Any] = None
+        self.y_train: Optional[pd.DataFrame] = None
+        self.X_train: Optional[pd.DataFrame] = None
+        self.y_test: Optional[pd.DataFrame] = None
+        self.X_test: Optional[pd.DataFrame] = None
+        self.y_full: Optional[pd.DataFrame] = None
+        self.X_full: Optional[pd.DataFrame] = None
+        self.test_fh: Optional[ForecastingHorizon] = None
+        self.cv: Optional[SlidingWindowSplitter] = None
 
     @property
     def horizon(self) -> str:
@@ -142,7 +143,7 @@ class BaseTrainer(object):
         Returns
         -------
         bool
-            True if the attribute is not None, False otherwise.
+            True if the attribute is None, False otherwise.
         """
         return getattr(self, attribute) is None
 
@@ -249,18 +250,9 @@ class BaseTrainer(object):
         """
         Time series cross-validation with either a sliding window splitter (short term horizon) or
         expanding window splitter (long term horizons).
-
-        Parameters
-        ----------
-        verbose: int
-            Verbosity level.
-        n_jobs: int, optional
-            Number of jobs to run in parallel, by default -1 (all processors are used).
-        refit: bool, optional
-            Refit the model on the entire data using the best params, by default True.
         """
         raise NotImplementedError(
-            "Must implement cross_validation() method in child class"
+            "Must implement cross_validate() method in child class"
         )
 
     def forecast(
@@ -307,8 +299,8 @@ class BaseTrainer(object):
         )
 
     def diagnostics(
-        self, full_model: bool, lags: int = None, auto_lag: bool = None
-    ) -> pd.DataFrame:
+        self, full_model: bool, lags: Optional[int] = None
+    ) -> Dict[str, pd.DataFrame]:
         """
         Perform diagnostics tests on residuals.
 
@@ -318,8 +310,6 @@ class BaseTrainer(object):
             Whether to use the full model or the best model from cross-validation.
         lags : int, optional
             Number of lags to use for Ljung-Box test, by default None.
-        auto_lag : bool, optional
-            Whether to automatically determine the number of lags to use for Ljung-Box test, by default None.
 
         Returns
         -------
@@ -341,7 +331,7 @@ class BaseTrainer(object):
         """
         state = self.__dict__.copy()
 
-        # Don't pickle the S3Helper object, which is stateless and be re-created
+        # Don't pickle the S3Helper object, which is stateless and can be re-created
         state.pop("s3_helper", None)
 
         return state
@@ -362,8 +352,6 @@ class BaseTrainer(object):
         # Re-create the S3Helper object
         self.s3_helper = S3Helper()
 
-        return None
-
     def upload_trainer(self, obj_key: str) -> None:
         """
         This method uploads the trainer object to S3 using joblib, except for the S3Helper object.
@@ -377,8 +365,6 @@ class BaseTrainer(object):
         s3_helper.upload_joblib(obj=self, obj_key=obj_key)
 
         self.logger.info(f"Uploaded trainer object to {obj_key}")
-
-        return None
 
     def download_trainer(self, obj_key: str) -> None:
         """
@@ -395,8 +381,6 @@ class BaseTrainer(object):
         # No need to manually reattach s3_helper, __setstate__ will handle it
         self.logger.info(f"Downloaded trainer object from {obj_key}")
 
-        return None
-
     @staticmethod
     def extract_prediction_intervals(
         pi: pd.DataFrame, level: float
@@ -404,7 +388,7 @@ class BaseTrainer(object):
         """
         Extract the prediction intervals from the results returned from a forecaster's `predict_interval()` method.
         The intervals returned by any sktime forecaster has multi-level column names, so we need to index into the
-        columns to get the (lower, upper) columns. THe first level is the target names, the second level is the
+        columns to get the (lower, upper) columns. The first level is the target names, the second level is the
         prediction interval levels, and the third level is the (lower, upper) columns.
 
         Parameters
@@ -428,7 +412,7 @@ class BaseTrainer(object):
 
     @staticmethod
     def _diagnostic_tests(
-        residuals: pd.DataFrame, lags: int = None, auto_lag: bool = None
+        residuals: pd.DataFrame, lags: Optional[int] = None
     ) -> Dict[str, pd.DataFrame]:
         """
         Perform diagnostic tests on residuals.
@@ -439,8 +423,6 @@ class BaseTrainer(object):
             Dataframe of residuals for each target.
         lags : int, optional
             Number of lags to use for Ljung-Box test, by default None.
-        auto_lag : bool, optional
-            Whether to automatically determine the number of lags to use for Ljung-Box test, by default None.
 
         Returns
         -------
@@ -501,12 +483,12 @@ class BaseTrainer(object):
         pi: Dict[str, pd.DataFrame],
         y_train: pd.DataFrame,
         y_pred: pd.DataFrame,
-        y_test: pd.DataFrame = None,
+        y_test: Optional[pd.DataFrame] = None,
         static: bool = True,
-        title: str = None,
+        title: Optional[str] = None,
         height: int = 450,
         width: int = 1200,
-    ) -> Union[None, Image]:
+    ) -> Union[Image, Figure]:
         """
         Plot the forecast.
 
@@ -518,7 +500,7 @@ class BaseTrainer(object):
             Dictionary of prediction intervals.
         y_train: pd.DataFrame
             Training set targets.
-        y_test: pd.DataFrame
+        y_test: pd.DataFrame, optional
             Testing set targets.
         y_pred: pd.DataFrame
             Predictions.
@@ -533,8 +515,8 @@ class BaseTrainer(object):
 
         Returns
         -------
-        Union[None, Image]
-            None if static is False, otherwise an Image object of the plot.
+        Union[Image, Figure]
+            An Image object if `static` is True, otherwise a Plotly Figure object.
         """
         return ForecastVisualizer.plot_forecast(
             start_date=start_date,
@@ -558,13 +540,12 @@ class BaseTrainer(object):
         y_train_counterfactual: pd.DataFrame,
         y_pred_counterfactual: pd.DataFrame,
         static: bool = True,
-        title: str = None,
+        title: Optional[str] = None,
         height: int = 450,
         width: int = 1200,
-    ) -> Union[None, Image]:
+    ) -> Union[Image, Figure]:
         """
-        Plot the forecast for both bus and rail boardings. This method combines
-        the forecast plots for both the counterfactual and original data.
+        Plot the forecast comparison between original and counterfactual data.
 
         Parameters
         ----------
@@ -593,8 +574,8 @@ class BaseTrainer(object):
 
         Returns
         -------
-        Union[None, Image]
-            None if static is False, otherwise an Image object of the plot.
+        Union[Image, Figure]
+            An Image object if `static` is True, otherwise a Plotly Figure object.
         """
         return ForecastVisualizer.plot_forecast_comparison(
             start_date=start_date,
@@ -619,20 +600,9 @@ class ForecastVisualizer(object):
     @staticmethod
     def _prepare_data_for_plotting(
         start_date: str, **data_objs: Union[pd.DataFrame, Dict[str, pd.DataFrame]]
-    ) -> Dict[str, pd.DataFrame]:
+    ) -> Dict[str, Union[pd.DataFrame, Dict[str, pd.DataFrame]]]:
         """
-        This method takes the dataframes and prepares them for plotting. It does the following:
-
-            - Converts the index to a datetime index if it is a PeriodIndex using `to_timestamp()`
-            - Slices the training data `y_train` from the start date
-            - Makes a copy of the (mutable) dataframes to avoid modifying the original dataframes
-
-        The expected keys for the `data` dictionary are:
-
-            - `y_train` (original or counterfactual)
-            - `y_test` (optional)
-            - `y_pred` (original or counterfactual)
-            - `pi` (a dictionary of prediction intervals for each target for the original or counterfactual data)
+        This method takes the dataframes and prepares them for plotting.
 
         Parameters
         ----------
@@ -643,7 +613,7 @@ class ForecastVisualizer(object):
 
         Returns
         -------
-        Dict[str, pd.DataFrame]
+        Dict[str, Union[pd.DataFrame, Dict[str, pd.DataFrame]]]
             Dictionary of dataframes for plotting.
         """
         data_dict = {}
@@ -665,7 +635,7 @@ class ForecastVisualizer(object):
     @staticmethod
     def _update_layout_and_return_figure(
         fig: Figure, title: str, static: bool, height: int, width: int
-    ) -> Optional[Image]:
+    ) -> Union[Image, Figure]:
         """
         Update the layout of the provided figure and return as a static image if requested.
 
@@ -684,11 +654,10 @@ class ForecastVisualizer(object):
 
         Returns
         -------
-        Image or Figure
-            A static image of the figure if `static` is True, otherwise the figure is displayed interactively.
+        Union[Image, Figure]
+            An Image object if `static` is True, otherwise a Plotly Figure object.
         """
         fig.update_layout(title_text=title, height=height, width=width)
-        print(type(fig))
         if static:
             fig_bytes = fig.to_image(format="png")
             return Image(fig_bytes)
@@ -701,18 +670,18 @@ class ForecastVisualizer(object):
         pi: Dict[str, pd.DataFrame],
         y_train: pd.DataFrame,
         y_pred: pd.DataFrame,
-        y_test: pd.DataFrame = None,
+        y_test: Optional[pd.DataFrame] = None,
         static: bool = True,
-        title: str = None,
+        title: Optional[str] = None,
         height: int = 450,
         width: int = 1200,
-    ) -> Union[None, Image]:
+    ) -> Union[Image, Figure]:
         data_dict = ForecastVisualizer._prepare_data_for_plotting(
             start_date=start_date, y_train=y_train, y_test=y_test, y_pred=y_pred, pi=pi
         )
         y_train, y_test, y_pred, pi = (
             data_dict["y_train"],
-            data_dict["y_test"],
+            data_dict.get("y_test"),
             data_dict["y_pred"],
             data_dict["pi"],
         )
@@ -816,10 +785,10 @@ class ForecastVisualizer(object):
         y_train_counterfactual: pd.DataFrame,
         y_pred_counterfactual: pd.DataFrame,
         static: bool = True,
-        title: str = None,
+        title: Optional[str] = None,
         height: int = 450,
         width: int = 1200,
-    ) -> Union[None, Image]:
+    ) -> Union[Image, Figure]:
         data_dict = ForecastVisualizer._prepare_data_for_plotting(
             start_date=start_date,
             y_train_original=y_train_original,
@@ -952,7 +921,7 @@ class ForecastVisualizer(object):
                     y=y_pred_counterfactual[var_name],
                     mode="lines",
                     name="Forecast (Counterfactual)",
-                    line=dict(color="orange"),
+                    line=dict(color="red"),
                     showlegend=showlegend,
                 ),
                 row=1,

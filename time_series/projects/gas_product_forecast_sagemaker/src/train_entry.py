@@ -2,7 +2,7 @@ import argparse
 import logging
 import os
 import warnings
-from typing import Any, Dict, Tuple, Union
+from typing import Any, Dict, Tuple, Optional, Union, cast
 
 import joblib
 import matplotlib.pyplot as plt
@@ -21,6 +21,8 @@ from sktime.transformations.series.boxcox import LogTransformer
 from sktime.transformations.series.detrend import Deseasonalizer, Detrender
 from sktime.transformations.series.fourier import FourierFeatures
 from statsmodels.stats.diagnostic import acorr_ljungbox
+
+from model_utils import get_logger
 
 # ---------------------------------- Trainer --------------------------------- #
 
@@ -60,7 +62,7 @@ class TSTrainer(object):
         self.y_train = y_train
         self.logger = logger
 
-    def _check_data(self, data: Union[pd.DataFrame, pd.Series], data_name: str):
+    def _check_data(self, data: Union[pd.DataFrame, pd.Series], data_name: str) -> None:
         """
         Check that input data is a dataframe or Series, has a DatetimeIndex, and has a frequency.
 
@@ -116,6 +118,8 @@ class TSTrainer(object):
                 raise ValueError(f"{component_name} is not fitted yet")
             elif not should_be_fitted and is_fitted:
                 raise ValueError(f"{component_name} is already fitted")
+
+        return True
 
     @property
     def y_train(self) -> pd.DataFrame:
@@ -555,7 +559,7 @@ class TSTrainer(object):
         y_pred.index = y_pred.index.to_timestamp(freq=y_pred.index.freq)
 
         # Use the start date to zoom in on the forecasted values
-        y_train = y_train.loc[start_date:]
+        y_train = y_train.loc[pd.to_datetime(start_date) :]
 
         fig, ax = plt.subplots(figsize=(12, 6))
         ax.plot(y_train, label="Train", color="#1f77b4")  # Blue
@@ -583,8 +587,8 @@ class TSTrainer(object):
         fourier_transformer: FourierFeatures,
         fh: int,
         y_full: Union[pd.DataFrame, pd.Series],
-        lags: int = None,
-        auto_lag: bool = None,
+        lags: Optional[int] = None,
+        auto_lag: Optional[bool] = None,
     ) -> pd.DataFrame:
         """
         Perform diagnostics tests on the model. The tests performed are:
@@ -654,7 +658,7 @@ class TSTrainer(object):
         )
 
 
-def main():
+def main() -> int:
     # ---------------------------------- Set up ---------------------------------- #
 
     logger = get_logger(__name__)
@@ -672,7 +676,10 @@ def main():
 
     core.global_hydra.GlobalHydra.instance().clear()
     initialize(version_base="1.2", config_path="config", job_name="train")
-    config = OmegaConf.to_container(compose(config_name="main"), resolve=True)
+    config: Dict[str, Any] = cast(
+        Dict[str, Any],
+        OmegaConf.to_container(compose(config_name="main"), resolve=True),
+    )
 
     # ----------------------------- Cross-validation ----------------------------- #
 
@@ -754,6 +761,4 @@ def main():
 
 
 if __name__ == "__main__":
-    from custom_utils import get_logger
-
     main()

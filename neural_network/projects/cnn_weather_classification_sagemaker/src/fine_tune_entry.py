@@ -1,27 +1,27 @@
 import logging
 import os
 from functools import partial
-from typing import Any, Dict, List, Tuple
+from typing import Any, Dict, Tuple
 
 import numpy as np
 
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"  # Nopep8
 import tensorflow as tf
-from custom_utils import get_logger, load_data, parser
+from model_utils import get_logger, load_data, parser
 
 # ------------------------- Function for fine tuning ------------------------- #
 
 
 def fine_tune_cnn(
     logger: logging.Logger,
-    train_data: List[np.ndarray],
-    val_data: List[np.ndarray],
+    train_data: Tuple[np.ndarray, np.ndarray],
+    val_data: Tuple[np.ndarray, np.ndarray],
     dense_params: Dict[str, Any],
     aug_params: Dict[str, Any],
     opt_params: Dict[str, Any],
     fit_params: Dict[str, Any],
     dropout_rate: float = 0.5,
-    input_shape: Tuple[int] = (256, 256, 3),
+    input_shape: Tuple[int, int, int] = (256, 256, 3),
     verbose: int = 2,
 ) -> Tuple[tf.keras.models.Sequential, tf.keras.callbacks.EarlyStopping]:
     """
@@ -32,9 +32,9 @@ def fine_tune_cnn(
     ----------
     logger: logging.Logger
         Logger to log information to CloudWatch.
-    train_data : List[np.ndarray]
+    train_data : Tuple[np.ndarray, np.ndarray]
         Training data.
-    val_data : List[np.ndarray]
+    val_data : Tuple[np.ndarray, np.ndarray]
         Validation data.
     dense_params : Dict[str, Any]
         Hyperparameters for dense layers.
@@ -46,7 +46,7 @@ def fine_tune_cnn(
         Hyperparameters for training.
     dropout_rate : float, optional
         Dropout rate, by default 0.5.
-    input_shape : Tuple[int], optional
+    input_shape : Tuple[int, int, int], optional
         Dimension of the input feature vector, by default (256, 256, 3).
     verbose : int, optional
         Verbosity mode, by default 2.
@@ -167,8 +167,8 @@ if __name__ == "__main__":
 
     cnn_model, early_stopper = fine_tune_cnn(
         logger=logger,
-        train_data=[X_train, y_train],
-        val_data=[X_val, y_val],
+        train_data=(X_train, y_train),
+        val_data=(X_val, y_val),
         dense_params={
             "dense_units": args.dense_units,
             "dense_weight_decay": args.dense_weight_decay,

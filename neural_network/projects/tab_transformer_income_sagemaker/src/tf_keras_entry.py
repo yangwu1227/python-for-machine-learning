@@ -678,21 +678,20 @@ def main() -> int:
 
         # In distributed mode, need the number of replicas to scale the batch size
         num_replicas_in_sync = strategy.num_replicas_in_sync if strategy else 1
+        global_batch_size = config["tf_keras"]["batch_size"] * num_replicas_in_sync
 
         train_num_batches, train_dataset = dataset_from_csv(
             file_path=os.path.join(args.train, "train.csv"),
             config=config,
             train=True,
-            batch_size=config["tf_keras"]["batch_size"]
-            * num_replicas_in_sync,  # Global batch size
+            batch_size=global_batch_size,
         )
 
         val_num_batches, val_dataset = dataset_from_csv(
             file_path=os.path.join(args.val, "val.csv"),
             config=config,
             train=False,
-            batch_size=config["tf_keras"]["batch_size"]
-            * num_replicas_in_sync,  # Global batch size
+            batch_size=global_batch_size,
         )
 
     # --------------------------------- HPO setup -------------------------------- #

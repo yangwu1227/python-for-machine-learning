@@ -100,9 +100,19 @@ def DtypeTransformer(data: pd.DataFrame, copy=False) -> pd.DataFrame:
 # ---------------------- Restore column order and names ---------------------- #
 
 
-def RestoreTransformer(data: np.array) -> pd.DataFrame:
+def RestoreTransformer(data: np.ndarray) -> pd.DataFrame:
     """
     Take numpy array returned by upstream transformer and restore to DataFrame with correct column order and names.
+
+    Parameters
+    ----------
+    data : np.ndarray
+        Numpy array returned by upstream transformer.
+
+    Returns
+    -------
+    pd.DataFrame
+        DataFrame with correct column order and names.
     """
     # Assuming the numpy array is returned by a ColumnTransformer (must be the case to get correct column order)
     # The first 23 columns are the medication columns since ColumnTransformer appends the 'pass through' columns on the left

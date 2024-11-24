@@ -94,7 +94,7 @@ def compute_average_accuracy(seq_data: List[Dict[str, Any]]) -> float:
         )
 
     # Compute average accuracy
-    avg_accuracy = np.mean(accuracy)
+    avg_accuracy = float(np.mean(accuracy))
     return avg_accuracy
 
 

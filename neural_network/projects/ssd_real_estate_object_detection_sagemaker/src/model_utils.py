@@ -3,7 +3,8 @@ import json
 import logging
 import os
 import sys
-from typing import Callable, Dict, List, Tuple, Union
+from typing import Dict, List, Tuple, Union
+from collections.abc import Callable
 
 import matplotlib.patches as patches
 import numpy as np
@@ -168,7 +169,9 @@ class InferenceHandler(object):
 
         return None
 
-    def __init__(self, model_predictor: Predictor, class_label_map: Dict[str, str]):
+    def __init__(
+        self, model_predictor: Predictor, class_label_map: Dict[str, str]
+    ) -> None:
         """
         Constructor method.
 
@@ -181,7 +184,7 @@ class InferenceHandler(object):
 
         Returns
         -------
-        self
+        None
         """
         self.model_predictor = model_predictor
         self.class_label_map = class_label_map
@@ -243,6 +246,7 @@ class InferenceHandler(object):
         # This is a dictionary with the bounding boxes, class names, scores, and tensorflow_model_output
         model_predictions = json.loads(response)
 
+        # The expected types are List[List[float]], List[str], and List[float]
         normalized_boxes, classes, scores, labels = (
             model_predictions["normalized_boxes"],
             model_predictions["classes"],
@@ -255,4 +259,4 @@ class InferenceHandler(object):
         # Then, map the integer labels to the class names
         class_label_str = [self.class_label_map[str(idx)] for idx in class_label_int]
 
-        return normalized_boxes, class_label_str, scores
+        return normalized_boxes, class_label_str, scores  # type: ignore[return-value]

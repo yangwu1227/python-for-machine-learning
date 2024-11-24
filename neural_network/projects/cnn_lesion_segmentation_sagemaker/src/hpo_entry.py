@@ -2,7 +2,7 @@ import os
 
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"  # Nopep8
 import tensorflow as tf
-from custom_utils import dice_loss, get_logger, load_data, parser, unet_model
+from model_utils import dice_loss, get_logger, load_data, parser, unet_model
 
 if __name__ == "__main__":
     logger = get_logger(name=__name__)

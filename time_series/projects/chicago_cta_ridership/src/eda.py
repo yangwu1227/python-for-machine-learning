@@ -29,13 +29,13 @@ class ExploratoryDataAnalyzer(object):
         """
         self.data = data.copy()
 
-    def _check_freq(self, freq: int) -> None:
+    def _check_freq(self, freq: str) -> None:
         """
         Type and value check for the frequency parameter.
 
         Parameters
         ----------
-        freq : int
+        freq : str
             The frequency of the time series--- 'M' for month end, 'Q' for quarter end, 'Y' for year end.
         """
         if not (isinstance(freq, str) and (freq in ["M", "Q", "Y"])):
@@ -60,7 +60,7 @@ class ExploratoryDataAnalyzer(object):
         series: pd.Series,
         lags: int,
         suptitle: str,
-        fig_size: Tuple[int],
+        fig_size: Tuple[float, float],
         zero_lag: bool = False,
     ) -> None:
         """
@@ -74,7 +74,7 @@ class ExploratoryDataAnalyzer(object):
             The number of lags to plot.
         suptitle : str
             The title of the plot.
-        fig_size : Tuple[int]
+        fig_size : Tuple[float, float]
             The size of the figure.
         zero_lag : bool, optional
             Whether to include the zero lag, by default False.
@@ -97,7 +97,7 @@ class ExploratoryDataAnalyzer(object):
         y: Union[pd.Series, np.ndarray],
         maxlags: int,
         title: str,
-        fig_size: Tuple[int],
+        fig_size: Tuple[float, float],
         ci: float = 0.95,
     ) -> None:
         """
@@ -114,7 +114,7 @@ class ExploratoryDataAnalyzer(object):
             The maximum number of lags to plot.
         title : str
             The title of the plot.
-        fig_size : Tuple[int]
+        fig_size : Tuple[float, float]
             The size of the figure.
         ci : float, optional
             The confidence interval, by default 0.95.
@@ -141,7 +141,7 @@ class ExploratoryDataAnalyzer(object):
 
     @staticmethod
     def plot_granger_causality(
-        data: pd.DataFrame, maxlags: int, fig_size: Tuple[int]
+        data: pd.DataFrame, maxlags: int, fig_size: Tuple[float, float]
     ) -> None:
         """
         Plot the p-values of the Granger Causality tests for different lags.
@@ -152,7 +152,7 @@ class ExploratoryDataAnalyzer(object):
             The data to test for Granger Causality.
         maxlags : int
             The maximum number of lags to plot.
-        fig_size : Tuple[int]
+        fig_size : Tuple[float, float]
             The size of the figure.
         """
         # Suppress the standard output (temporary hack before statsmodels fixes the issue of printing to stdout)
@@ -203,7 +203,7 @@ class ExploratoryDataAnalyzer(object):
         var: str,
         lags: int,
         suptitle: str,
-        fig_size: Tuple[int],
+        fig_size: Tuple[float, float],
         zero_lag: bool = False,
     ) -> None:
         """
@@ -220,7 +220,7 @@ class ExploratoryDataAnalyzer(object):
             The number of lags to plot.
         suptitle : str
             The title of the plot.
-        fig_size : Tuple[int]
+        fig_size : Tuple[float, float]
             The size of the figure.
         zero_lag : bool, optional
             Whether to include the zero lag, by default False.
@@ -246,14 +246,14 @@ class ExploratoryDataAnalyzer(object):
         )
 
         def on_dropdown_change(change) -> None:
-            clear_output(wait=True)
-            display(dropdown)
+            clear_output(wait=True)  # type: ignore[no-untyped-call]
+            display(dropdown)  # type: ignore[no-untyped-call]
             display_plot(change["new"])
 
         display_plot(dropdown.value)
 
         dropdown.observe(on_dropdown_change, names="value")
-        display(dropdown)
+        display(dropdown)  # type: ignore[no-untyped-call]
 
     def plot_correlations_between_years(
         self,
@@ -262,7 +262,7 @@ class ExploratoryDataAnalyzer(object):
         agg_func: str,
         freq: str,
         suptitle: str,
-        fig_size: Tuple[int],
+        fig_size: Tuple[float, float],
         zero_lag: bool = False,
     ) -> None:
         """
@@ -282,7 +282,7 @@ class ExploratoryDataAnalyzer(object):
             The frequency of the series.-- M for month end, Q for quarter end, Y for year end.
         suptitle : str
             The title of the plot.
-        fig_size : Tuple[int]
+        fig_size : Tuple[float, float]
             The size of the figure.
         zero_lag : bool, optional
             Whether to include the zero lag, by default False.
@@ -310,7 +310,12 @@ class ExploratoryDataAnalyzer(object):
         )
 
     def plot_series_between_years(
-        self, var: str, agg_func: str, freq: str, title: str, fig_size: Tuple[int]
+        self,
+        var: str,
+        agg_func: str,
+        freq: str,
+        title: str,
+        fig_size: Tuple[float, float],
     ) -> None:
         """
         Plot a time series for a given variable between years. The user can choose to aggregate the series using different
@@ -327,7 +332,7 @@ class ExploratoryDataAnalyzer(object):
             The frequency of the series.-- M for month end, Q for quarter end, Y for year end.
         title : str
             The title of the plot.
-        fig_size : Tuple[int]
+        fig_size : Tuple[float, float]
             The size of the figure.
         """
         self._check_agg_func(agg_func)
@@ -348,7 +353,7 @@ class ExploratoryDataAnalyzer(object):
         plt.show()
 
     def plot_conditional_distribution_and_timeplot(
-        self, selections: List[int], var: str, fig_size: Tuple[int]
+        self, selections: List[int], var: str, fig_size: Tuple[float, float]
     ) -> None:
         """
         Display an interactive plot based on user selections using ipywidgets. The plot
@@ -360,7 +365,7 @@ class ExploratoryDataAnalyzer(object):
             The list of years to choose from.
         var : str
             The variable to plot.
-        fig_size : Tuple[int]
+        fig_size : Tuple[float, float]
             The size of the figure.
 
         Returns
@@ -391,14 +396,14 @@ class ExploratoryDataAnalyzer(object):
         )
 
         def on_dropdown_change(change) -> None:
-            clear_output(wait=True)
-            display(dropdown)
+            clear_output(wait=True)  # type: ignore[no-untyped-call]
+            display(dropdown)  # type: ignore[no-untyped-call]
             display_plot(change["new"])
 
         display_plot(dropdown.value)
 
         dropdown.observe(on_dropdown_change, names="value")
-        display(dropdown)
+        display(dropdown)  # type: ignore[no-untyped-call]
 
     def plot_monthly_distribution_by_year(
         self, selections: List[int], fig_size: Tuple[int, int]
@@ -461,11 +466,11 @@ class ExploratoryDataAnalyzer(object):
 
         # Handler for dropdown value change
         def on_dropdown_change(change) -> None:
-            clear_output(wait=True)
-            display(dropdown)
+            clear_output(wait=True)  # type: ignore[no-untyped-call]
+            display(dropdown)  # type: ignore[no-untyped-call]
             display_plot(change["new"])
 
         display_plot(dropdown.value)
 
         dropdown.observe(on_dropdown_change, names="value")
-        display(dropdown)
+        display(dropdown)  # type: ignore[no-untyped-call]

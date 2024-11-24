@@ -3,9 +3,17 @@ import json
 import zipfile
 from typing import Dict, Optional, Tuple, Union
 
-from boto3.resources.base import ServiceResource
+from mypy_boto3_iam import IAMServiceResource
+from mypy_boto3_iam.service_resource import Role
+from mypy_boto3_lambda import LambdaClient
+from mypy_boto3_lambda.literals import RuntimeType
+from mypy_boto3_lambda.type_defs import (
+    GetFunctionResponseTypeDef,
+    InvocationResponseTypeDef,
+    FunctionConfigurationResponseTypeDef,
+)
 from botocore.exceptions import ClientError
-from src.custom_utils import get_logger
+from src.model_utils import get_logger
 
 
 class LambdaManager(object):
@@ -16,23 +24,23 @@ class LambdaManager(object):
 
     Attributes
     ----------
-    lambda_client : boto3.type_annotations.lambda_.Client
+    lambda_client : LambdaClient
         The AWS Lambda client instance.
-    iam_resource : boto3.resources.base.ServiceResource
+    iam_resource : IAMServiceResource
         The AWS IAM resource instance.
     logger : logging.Logger
         The logger used by this class.
     """
 
-    def __init__(self, lambda_client: "Client", iam_resource: ServiceResource):
+    def __init__(self, lambda_client: LambdaClient, iam_resource: IAMServiceResource):
         """
         Constructor for LambdaManager class.
 
         Parameters
         ----------
-        lambda_client : Client
+        lambda_client : LambdaClient
             The AWS Lambda client instance.
-        iam_resource : boto3.resources.base.ServiceResource
+        iam_resource : IAMServiceResource
             The AWS IAM resource instance.
 
         Returns
@@ -67,7 +75,7 @@ class LambdaManager(object):
         buffer.seek(0)
         return buffer.read()
 
-    def get_iam_role(self, iam_role_name: str) -> Optional[ServiceResource]:
+    def get_iam_role(self, iam_role_name: str) -> Optional[Role]:
         """
         Get an AWS Identity and Access Management (IAM) role, which should be
         the execution role we created for SageMaker. This role gives SageMaker
@@ -81,10 +89,10 @@ class LambdaManager(object):
 
         Returns
         -------
-        Optional[boto3.resources.base.ServiceResource]
+        Optional[Role]
             The IAM role if found, otherwise None.
         """
-        role = None
+        role: Optional[Role] = None
         try:
             temp_role = self.iam_resource.Role(iam_role_name)
             temp_role.load()
@@ -94,15 +102,13 @@ class LambdaManager(object):
             if error.response["Error"]["Code"] == "NoSuchEntity":
                 self.logger.info(f"IAM role {iam_role_name} does not exist")
             else:
-                self.logger.error(
+                self.logger.exception(
                     f'Cannot find IAM role {iam_role_name} due to {error.response["Error"]["Message"]}'
                 )
-                raise
+                raise error
         return role
 
-    def create_iam_role_for_lambda(
-        self, iam_role_name: str
-    ) -> Tuple[ServiceResource, bool]:
+    def create_iam_role_for_lambda(self, iam_role_name: str) -> Tuple[Role, bool]:
         """
         Creates an IAM role for Lambda function. If the role already exists, it is
         returned. In this project, we created the `forecast-lambda-execution-role`
@@ -116,7 +122,7 @@ class LambdaManager(object):
 
         Returns
         -------
-        Tuple[boto3.resources.base.ServiceResource, bool]
+        Tuple[Role, bool]
             The role and a boolean indicating if the role was newly created.
         """
         # If the role already exists, return it, and indicate that it wasn't newly created.
@@ -148,6 +154,7 @@ class LambdaManager(object):
         except ClientError as error:
             if error.response["Error"]["Code"] == "EntityAlreadyExists":
                 role = self.iam_resource.Role(iam_role_name)
+                role.load()
                 self.logger.warning(
                     f"The role {iam_role_name} already exists, using it"
                 )
@@ -155,11 +162,11 @@ class LambdaManager(object):
                 self.logger.exception(
                     f'Cannot create IAM role {iam_role_name} due to {error.response["Error"]["Message"]}'
                 )
-                raise
+                raise error
 
         return role, True
 
-    def get_function(self, function_name: str) -> Optional[Dict[str, Union[str, int]]]:
+    def get_function(self, function_name: str) -> Optional[GetFunctionResponseTypeDef]:
         """
         Gets meta-data about a Lambda function.
 
@@ -170,20 +177,20 @@ class LambdaManager(object):
 
         Returns
         -------
-        Optional[Dict[str, Union[str, int]]]
+        Optional[GetFunctionResponseTypeDef]
             The function data if found, otherwise None.
         """
-        response = None
+        response: Optional[GetFunctionResponseTypeDef] = None
         try:
             response = self.lambda_client.get_function(FunctionName=function_name)
         except ClientError as error:
             if error.response["Error"]["Code"] == "ResourceNotFoundException":
                 self.logger.info(f"Function {function_name} does not exist")
             else:
-                self.logger.error(
+                self.logger.exception(
                     f'Cannot get function {function_name} due to {error.response["Error"]["Message"]}'
                 )
-                raise
+                raise error
         return response
 
     def create_function(
@@ -191,8 +198,8 @@ class LambdaManager(object):
         function_name: str,
         function_description: str,
         time_out: int,
-        python_runtime: str,
-        iam_role: ServiceResource,
+        python_runtime: RuntimeType,
+        iam_role: Role,
         handler_name: str,
         deployment_package: bytes,
         publish: bool,
@@ -209,9 +216,9 @@ class LambdaManager(object):
             The description of the Lambda function.
         time_out : int
             The amount of time (in seconds) that Lambda allows a function to run before stopping it.
-        python_runtime : str
+        python_runtime : RuntimeType
             The Python runtime to use for the function.
-        iam_role : boto3.resources.base.ServiceResource
+        iam_role : Role
             The IAM (execution) role to use for the function.
         handler_name : str
             The fully qualified name of the handler function.
@@ -249,10 +256,10 @@ class LambdaManager(object):
                 f"Function {function_name} is active with ARN {function_arn}"
             )
         except ClientError as error:
-            self.logger.error(
+            self.logger.exception(
                 f'Cannot create function due to {error.response["Error"]["Message"]}'
             )
-            raise
+            raise error
         else:
             return function_arn
 
@@ -272,14 +279,14 @@ class LambdaManager(object):
             self.logger.exception(
                 f'Cannot delete function {function_name} due to {error.response["Error"]["Message"]}'
             )
-            raise
+            raise error
 
     def invoke_function(
         self,
         function_name: str,
         payload: Dict[str, Union[str, int]],
         include_log: bool = False,
-    ) -> Dict[str, Union[str, bytes]]:
+    ) -> InvocationResponseTypeDef:
         """
         Invokes a Lambda function based on the function name and parameters. This
         method is useful for testing a Lambda function.
@@ -295,7 +302,7 @@ class LambdaManager(object):
 
         Returns
         -------
-        Dict[str, Union[str, bytes]]
+        InvocationResponseTypeDef
             The response from the function invocation.
         """
         try:
@@ -311,12 +318,12 @@ class LambdaManager(object):
             self.logger.exception(
                 f'Cannot invoke function {function_name} due to {error.response["Error"]["Message"]}'
             )
-            raise
+            raise error
         return response
 
     def update_function_code(
         self, function_name: str, deployment_package: bytes
-    ) -> Dict[str, Union[str, int]]:
+    ) -> FunctionConfigurationResponseTypeDef:
         """
         Updates the code for a Lambda function by submitting a .zip archive that contains
         the refactored or updated code for the function. This is useful for interactive
@@ -331,7 +338,7 @@ class LambdaManager(object):
 
         Returns
         -------
-        Dict[str, Union[str, int]]
+        FunctionConfigurationResponseTypeDef
             Data about the update, including the status.
         """
         try:
@@ -339,16 +346,16 @@ class LambdaManager(object):
                 FunctionName=function_name, ZipFile=deployment_package
             )
         except ClientError as error:
-            self.logger.error(
+            self.logger.exception(
                 f'Cannot update function {function_name} due to {error.response["Error"]["Message"]}'
             )
-            raise
+            raise error
         else:
             return response
 
     def update_function_configuration(
         self, function_name: str, env_vars: Dict[str, str]
-    ) -> Dict[str, Union[str, int]]:
+    ) -> FunctionConfigurationResponseTypeDef:
         """
         Updates the environment variables for a Lambda function.
 
@@ -361,7 +368,7 @@ class LambdaManager(object):
 
         Returns
         -------
-        Dict[str, Union[str, int]]
+        FunctionConfigurationResponseTypeDef
             Data about the update, including the status.
         """
         try:
@@ -369,14 +376,14 @@ class LambdaManager(object):
                 FunctionName=function_name, Environment={"Variables": env_vars}
             )
         except ClientError as error:
-            self.logger.error(
+            self.logger.exception(
                 f'Cannot update function {function_name} configurations due to {error.response["Error"]["Message"]}'
             )
-            raise
+            raise error
         else:
             return response
 
-    def list_functions(self):
+    def list_functions(self) -> None:
         """
         Lists the Lambda functions for the current account.
         """
@@ -390,6 +397,7 @@ class LambdaManager(object):
                         print(f"\t{desc}")
                     print(f'\t{func["Runtime"]}: {func["Handler"]}')
         except ClientError as error:
-            self.logger.error(
+            self.logger.exception(
                 f'Cannot list functions due to {error.response["Error"]["Message"]}'
             )
+            raise error

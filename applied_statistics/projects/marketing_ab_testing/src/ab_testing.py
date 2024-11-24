@@ -139,11 +139,11 @@ def analyze_campaigns(campaign_data: Dict[str, Dict[str, np.ndarray]]) -> GT:
     )
 
     # Style the DataFrame: green for significant p-values, red for non-significant
-    result = result.style.tab_style(
+    result_gt: GT = result.style.tab_style(
         style.fill("#90EE90"),  # Fill green for significant p-values (< 0.05)
         loc.body(rows=pl.col("p_value") < 0.05),
     ).tab_style(
         style.fill("#FF6666"),  # Fill red for non-significant p-values (>= 0.05)
         loc.body(rows=pl.col("p_value") >= 0.05),
     )
-    return result
+    return result_gt

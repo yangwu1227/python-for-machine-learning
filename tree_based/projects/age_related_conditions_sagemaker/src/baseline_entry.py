@@ -144,6 +144,9 @@ def baseline_objective(
     float
         The mean balanced log loss from cross-validation.
     """
+    X_train: pd.DataFrame = train_data[0]
+    y_train: np.ndarray = train_data[1]
+
     # Hyperparameters space
     model_hyperparameter = {
         "n_estimators": trial.suggest_int("n_estimators", 100, 1000),
@@ -180,47 +183,46 @@ def baseline_objective(
     log_loss_scores = {}
     feature_importances = {}
 
-    X, y = train_data
-    for fold, (train_idx, val_idx) in enumerate(
-        skf.split(train_data[0], train_data[1])
-    ):
-        X_train, X_val = X.iloc[train_idx], X.iloc[val_idx]
-        y_train, y_val = y[train_idx], y[val_idx]
+    for fold, (train_index, val_index) in enumerate(skf.split(X_train, y_train), 1):
+        fold_X_train, fold_X_val = X_train.iloc[train_index], X_train.iloc[val_index]
+        fold_y_train, fold_y_val = y_train[train_index], y_train[val_index]
 
         logger.info(
-            f"Training set trial {trial.number} target distribution: {{0: {np.round(np.mean(y_train == 0), 2)}, 1: {np.round(np.mean(y_train == 1), 2)}}}"
+            f"Training set trial {trial.number} target distribution: {{0: {np.round(np.mean(fold_y_train == 0), 2)}, 1: {np.round(np.mean(fold_y_train == 1), 2)}}}"
         )
         logger.info(
-            f"Validation set trial {trial.number} target distribution: {{0: {np.round(np.mean(y_val == 0), 2)}, 1: {np.round(np.mean(y_val == 1), 2)}}}"
+            f"Validation set trial {trial.number} target distribution: {{0: {np.round(np.mean(fold_y_val == 0), 2)}, 1: {np.round(np.mean(fold_y_val == 1), 2)}}}"
         )
 
         # Compute sample weights
-        sample_weights = compute_sample_weight(class_weight="balanced", y=y_train)
+        sample_weights = compute_sample_weight(class_weight="balanced", y=fold_y_train)
 
         # Train model on training set
-        logger.info(f"Training model for trial {trial.number} fold {fold + 1}...")
+        logger.info(f"Training model for trial {trial.number} fold {fold}...")
         model_pipeline = pipeline_func(
             model_hyperparameter, num_feat, cat_feat, scaling
         )
-        model_pipeline.fit(X_train, y_train, rf_clf__sample_weight=sample_weights)
+        model_pipeline.fit(
+            fold_X_train, fold_y_train, rf_clf__sample_weight=sample_weights
+        )
 
         # Compute log loss on validation set
-        logger.info(f"Computing log loss for trial {trial.number} fold {fold + 1}...")
+        logger.info(f"Computing log loss for trial {trial.number} fold {fold}...")
         # Obtain the 1-D positive class probabilities
-        y_pred = model_pipeline.predict_proba(X_val)[:, 1]
-        log_loss_scores[f"fold_{fold + 1}"] = custom_log_loss(y_val, y_pred)
+        fold_y_pred = model_pipeline.predict_proba(fold_X_val)[:, 1]
+        log_loss_scores[f"fold_{fold + 1}"] = custom_log_loss(fold_y_val, fold_y_pred)
 
         # Feature importances
         logger.info(
-            f"Computing feature importances trial {trial.number} fold {fold + 1}..."
+            f"Computing feature importances trial {trial.number} fold {fold}..."
         )
         feat_imp = FeatureImportanceHandler.impure_feat_imp(
             model_pipeline=model_pipeline
         )
-        feature_importances[f"fold_{fold + 1}"] = feat_imp
+        feature_importances[f"fold_{fold}"] = feat_imp
 
     logger.info(
-        f"Uploading feature importances for trial {trial.number} fold {fold + 1}..."
+        f"Uploading feature importances for trial {trial.number} fold {fold}..."
     )
     feat_imp_handler.upload(dictionary=feature_importances)
 

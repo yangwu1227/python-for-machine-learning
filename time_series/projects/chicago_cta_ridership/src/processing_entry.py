@@ -6,7 +6,7 @@ from typing import Any, Dict
 
 import numpy as np
 import pandas as pd
-from custom_utils import S3Helper, SetUp
+from model_utils import S3Helper, SetUp
 from sktime.forecasting.base import ForecastingHorizon
 from sktime.forecasting.compose import (
     BaggingForecaster,
@@ -349,7 +349,7 @@ class Processor(object):
         return None
 
 
-def main():
+def main() -> int:
     parser = argparse.ArgumentParser(description="Process data for forecasting tasks")
     parser.add_argument(
         "--config",

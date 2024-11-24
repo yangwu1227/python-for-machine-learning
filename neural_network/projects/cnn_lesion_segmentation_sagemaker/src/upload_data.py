@@ -3,11 +3,11 @@ import random
 import subprocess
 from concurrent import futures
 from queue import Queue
-from typing import Tuple
+from typing import Tuple, List
 
 import numpy as np
 import sagemaker
-from custom_utils import get_logger
+from model_utils import get_logger
 from sklearn.model_selection import train_test_split
 from tensorflow.keras.utils import img_to_array, load_img
 
@@ -56,8 +56,8 @@ def ingest_mask(path: str, image_size: Tuple[int, int]) -> np.ndarray:
 
 def ingest_images_and_masks(
     path_queue: Queue,
-    image_paths: list,
-    mask_paths: str,
+    image_paths: List[str],
+    mask_paths: List[str],
     images: np.ndarray,
     masks: np.ndarray,
     image_size: Tuple[int, int],
@@ -89,7 +89,7 @@ def ingest_images_and_masks(
         path_queue.task_done()
 
 
-if __name__ == "__main__":
+def main() -> int:
     random_seed = 1227
     image_size = (256, 256)
     num_channels = 1
@@ -134,7 +134,7 @@ if __name__ == "__main__":
     for i in range(5):
         random.Random(random_seed).shuffle(image_mask_pairs)
     # Separate the pairs back into separate lists
-    image_paths, mask_paths = zip(*image_mask_pairs)
+    image_paths, mask_paths = map(list, zip(*image_mask_pairs))
 
     # -------------------- Ingest images and masks in parallel ------------------- #
 
@@ -145,14 +145,15 @@ if __name__ == "__main__":
     masks = np.zeros((num_images,) + image_size + (num_channels,), dtype="float32")
 
     # Create a thread-safe queue to store the paths
-    path_queue = Queue()
+    path_queue: Queue = Queue()
 
     # Enqueue image and mask paths in the desired order
     for image_path, mask_path in zip(image_paths, mask_paths):
         path_queue.put((image_path, mask_path))
 
     # Number of worker threads
-    num_threads = min(os.cpu_count(), num_images)
+    num_cpus = os.cpu_count()
+    num_threads = min(num_cpus, num_images) if num_cpus else 1
 
     with futures.ThreadPoolExecutor(max_workers=num_threads) as executor:
         # Submit ingestion tasks for execution
@@ -240,3 +241,9 @@ if __name__ == "__main__":
     subprocess.run(f"rm -rf {raw_data_dir}", shell=True)
 
     del sm_session, s3_uploader
+
+    return 0
+
+
+if __name__ == "__main__":
+    main()

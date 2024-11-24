@@ -175,7 +175,8 @@ def lambda_handler(
                 "AssembleWith": "Line",
             },
             TransformResources={
-                "InstanceType": instance_type,
+                # Let the client error handle any invalid instance types
+                "InstanceType": instance_type,  # type: ignore[typeddict-item]
                 "InstanceCount": instance_count,
             },
         )

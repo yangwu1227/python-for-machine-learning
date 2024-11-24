@@ -1,14 +1,17 @@
 import logging
 import os
-from typing import Any, Dict, List, Tuple
+from typing import Any, Dict, Tuple
 
 import numpy as np
 
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"  # Nopep8
 import tensorflow as tf
-from custom_utils import get_logger, load_data, parser
 from segmentation_models import Unet
 from segmentation_models.losses import DiceLoss
+
+from model_utils import get_logger, load_data, parser
+
+logger = get_logger(name=__name__)
 
 # ------------------------- Function for fine tuning ------------------------- #
 
@@ -16,12 +19,12 @@ from segmentation_models.losses import DiceLoss
 def fine_tune_unet(
     logger: logging.Logger,
     back_bone: str,
-    train_data: List[np.ndarray],
-    val_data: List[np.ndarray],
+    train_data: Tuple[np.ndarray, np.ndarray],
+    val_data: Tuple[np.ndarray, np.ndarray],
     aug_params: Dict[str, Any],
     opt_params: Dict[str, Any],
     fit_params: Dict[str, Any],
-    input_shape: Tuple[int] = (256, 256, 1),
+    input_shape: Tuple[int, int, int] = (256, 256, 1),
     verbose: int = 2,
 ) -> tf.keras.Model:
     """
@@ -33,9 +36,9 @@ def fine_tune_unet(
         Logger to log information to CloudWatch.
     back_bone : str
         Backbone of the Unet model.
-    train_data : List[np.ndarray]
+    train_data : Tuple[np.ndarray, np.ndarray]
         Training data.
-    val_data : List[np.ndarray]
+    val_data : Tuple[np.ndarray, np.ndarray]
         Validation data.
     aug_params : Dict[str, Any]
         Hyperparameters for data augmentation.
@@ -43,7 +46,7 @@ def fine_tune_unet(
         Hyperparameters for optimizer.
     fit_params: Dict[str, Any]
         Hyperparameters for training.
-    input_shape : Tuple[int], optional
+    input_shape : Tuple[int, int, int], optional
         Dimension of the input feature vector, by default (256, 256, 1).
     verbose : int, optional
         Verbosity mode, by default 2.
@@ -174,10 +177,8 @@ def fine_tune_unet(
     return model
 
 
-if __name__ == "__main__":
+def main() -> int:
     args = parser()
-
-    logger = get_logger(name=__name__)
 
     train_images, train_masks, val_images, val_masks = load_data(
         {"train": args.train, "val": args.val}, test_mode=False
@@ -202,3 +203,9 @@ if __name__ == "__main__":
 
     # Save model, a version number is needed for the TF serving container to load the model
     unet_model.save(os.path.join(args.model_dir, "00000000"))
+
+    return 0
+
+
+if __name__ == "__main__":
+    main()

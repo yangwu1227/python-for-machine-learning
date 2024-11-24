@@ -2,6 +2,7 @@ import argparse
 import logging
 import os
 import sys
+from typing import Any, Dict, cast
 
 import polars as pl
 from hydra import compose, core, initialize
@@ -9,7 +10,7 @@ from omegaconf import OmegaConf
 from sklearn.model_selection import StratifiedShuffleSplit
 
 
-def main():
+def main() -> int:
     # ---------------------------------- Set up ---------------------------------- #
 
     logger = logging.getLogger(__name__)
@@ -26,7 +27,10 @@ def main():
 
     core.global_hydra.GlobalHydra.instance().clear()
     initialize(version_base="1.2", config_path="config", job_name="preprocess")
-    config = OmegaConf.to_container(compose(config_name="main"), resolve=True)
+    config: Dict[str, Any] = cast(
+        Dict[str, Any],
+        OmegaConf.to_container(compose(config_name="main"), resolve=True),
+    )
 
     # ---------------------------------- Load data ---------------------------------- #
 
@@ -41,7 +45,7 @@ def main():
     # --------------------------- Ad-hoc data cleaning --------------------------- #
 
     logger.info("Remove trailing dots in the target column of the test set...")
-    test = test.with_columns(pl.col(config["target"]).str.replace_all("\.", ""))
+    test = test.with_columns(pl.col(config["target"]).str.replace_all(r"\.", ""))
 
     # ----------------------------- Validation split ----------------------------- #
 
@@ -81,13 +85,15 @@ def main():
         # Only save if not in test mode
         if not args.test_mode:
             data.write_csv(
-                os.path.join(config["processing_job_output"], f"{name}/{name}.csv"),
-                has_header=config["header"],
+                file=os.path.join(
+                    config["processing_job_output"], f"{name}/{name}.csv"
+                ),
+                include_header=config["header"],
             )
 
     logger.info("Preprocessing completed successfully!")
 
-    sys.exit(0)
+    return 0
 
 
 if __name__ == "__main__":

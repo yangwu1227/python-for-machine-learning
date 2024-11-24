@@ -3,7 +3,7 @@ from __future__ import annotations
 import logging
 import os
 from functools import partial
-from typing import Any, Dict, List, Tuple
+from typing import Any, Dict, List, Tuple, cast
 
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"  # Nopep8
 import numpy as np
@@ -12,6 +12,8 @@ import tensorflow as tf
 from hydra import compose, core, initialize
 from omegaconf import OmegaConf
 from sklearn.model_selection import GroupKFold
+
+from model_utils import add_additional_args, get_logger, parser
 
 # --------------------------- Custom loss function --------------------------- #
 
@@ -30,7 +32,7 @@ class SymmetricMeanAbsolutePercentageError(tf.keras.losses.Loss):
     where epsilon is a small value to avoid division by zero. This formulation is used in the TorchMetrics library.
     """
 
-    def __init__(self, **kwargs):
+    def __init__(self, **kwargs) -> None:
         """
         Constructor for the SymmetricMeanAbsolutePercentageError class.
         """
@@ -530,7 +532,7 @@ class GRUTrainer(object):
         None
         """
         # If not running in SageMaker mode, set the number of folds to 2 (smallest possible for Scikit-Learn)
-        num_folds = 2 if not distributed else self.config["num_folds"]
+        num_folds = 2 if not self.distributed else self.config["num_folds"]
         # Out-of-fold predictions container (num_training_examples, num_predictions)
         oof_preds = np.zeros(
             shape=(self.train_data.shape[0], self.config["gru"]["num_predictions"])
@@ -608,9 +610,7 @@ class GRUTrainer(object):
         return None
 
 
-if __name__ == "__main__":
-    from custom_utils import add_additional_args, get_logger, parser
-
+def main() -> int:
     # ---------------------------------- Set up ---------------------------------- #
 
     logger = get_logger("gru_hpo")
@@ -618,7 +618,10 @@ if __name__ == "__main__":
     # Hydra
     core.global_hydra.GlobalHydra.instance().clear()
     initialize(version_base="1.2", config_path="config", job_name="processing_job")
-    config = OmegaConf.to_container(compose(config_name="main"), resolve=True)
+    config: Dict[str, Any] = cast(
+        Dict[str, Any],
+        OmegaConf.to_container(compose(config_name="main"), resolve=True),
+    )
 
     additional_args = {
         # Architecture hyperparameters
@@ -681,11 +684,9 @@ if __name__ == "__main__":
 
     # --------------------------------- Train model --------------------------------- #
 
-    # Handle batch size for distributed training
-    if distributed:
-        batch_size = args.fit_batch_size * strategy.num_replicas_in_sync
-    else:
-        batch_size = args.fit_batch_size
+    # In distributed mode, need the number of replicas to scale the batch size
+    num_replicas_in_sync = strategy.num_replicas_in_sync if strategy else 1
+    global_batch_size = args.fit_batch_size * num_replicas_in_sync
 
     trainer = GRUTrainer(
         hyperparameters={
@@ -705,7 +706,7 @@ if __name__ == "__main__":
             "adam_beta_2": args.adam_beta_2,
             "adam_epsilon": args.adam_epsilon,
             "adam_clipnorm": args.adam_clipnorm,
-            "fit_batch_size": batch_size,
+            "fit_batch_size": global_batch_size,
             "fit_epochs": args.fit_epochs,
             "fit_sample_weights_window_size": args.fit_sample_weights_window_size,
         },
@@ -720,3 +721,9 @@ if __name__ == "__main__":
     )
 
     trainer.cross_validate()
+
+    return 0
+
+
+if __name__ == "__main__":
+    main()

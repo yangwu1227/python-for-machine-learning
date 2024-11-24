@@ -1,4 +1,4 @@
-from typing import Any, Dict, MutableSequence, Self, Union
+from typing import Any, Dict, MutableSequence, Self, Union, Optional
 
 import numpy as np
 import pandas as pd
@@ -8,6 +8,7 @@ from sklearn.metrics.pairwise import cosine_similarity, euclidean_distances
 from sklearn.preprocessing import LabelEncoder
 from sklearn.utils.multiclass import check_classification_targets
 from sklearn.utils.validation import check_array, check_is_fitted, check_X_y
+from sklearn.utils.estimator_checks import check_estimator
 from tqdm import tqdm
 
 
@@ -84,7 +85,7 @@ class KNNClassifier(BaseEstimator, ClassifierMixin):
         n_neighbors: int = 5,
         weights: str = "distance",
         metric: str = "cosine",
-        metric_params: Dict[str, Any] = None,
+        metric_params: Optional[Dict[str, Any]] = None,
     ) -> None:
         """
         Initialize the KNN classifier instance.
@@ -253,15 +254,19 @@ class KNNClassifier(BaseEstimator, ClassifierMixin):
         else:
             raise ValueError(f"Unsupported weight function '{self.weights}'")
 
-        return np.argmax(weighted_votes)
+        return int(np.argmax(weighted_votes))
 
 
-if __name__ == "__main__":
-    from sklearn.utils.estimator_checks import check_estimator
-
+def main() -> int:
     knn_classifier = KNNClassifier()
     check_estimator(knn_classifier)
 
     print(
         "\nKNNClassifier class is a valid estimator compatible with scikit-learn API!"
     )
+
+    return 0
+
+
+if __name__ == "__main__":
+    main()

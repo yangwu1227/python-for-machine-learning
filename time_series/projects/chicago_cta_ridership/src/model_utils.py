@@ -2,7 +2,8 @@ import io
 import logging
 import os
 import sys
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple, cast
+from mypy_boto3_s3.type_defs import ListObjectsV2OutputTypeDef
 
 import boto3
 import joblib
@@ -87,7 +88,10 @@ class SetUp(object):
         """
         core.global_hydra.GlobalHydra.instance().clear()
         initialize(version_base="1.2", config_path=config_path, job_name=job_name)
-        config = OmegaConf.to_container(compose(config_name="main"), resolve=True)
+        config: Dict[str, Any] = cast(
+            Dict[str, Any],
+            OmegaConf.to_container(compose(config_name="main"), resolve=True),
+        )
 
         return config
 
@@ -116,10 +120,10 @@ class S3Helper(object):
 
     def __init__(
         self,
-        s3_bucket: Optional[str] = "yang-ml-sagemaker",
-        s3_key: Optional[str] = "chicago_cta_ridership",
+        s3_bucket: str = "yang-ml-sagemaker",
+        s3_key: str = "chicago_cta_ridership",
         credentials: Optional[Dict[str, str]] = None,
-    ):
+    ) -> None:
         """
         Constructor for the S3Helper class.
 
@@ -294,22 +298,24 @@ class S3Helper(object):
             # Recurse into the subdirectory
             self._add_to_tree(base[parts[0]], parts[1:], obj_info)
 
-    def _parse_s3_response_to_tree(self, response: Dict) -> Dict:
+    def _parse_s3_response_to_tree(
+        self, response: ListObjectsV2OutputTypeDef
+    ) -> Dict[str, str]:
         """
         Parses the S3 `list_objects_v2` response to a nested dictionary structure representing
         the S3 bucket's folder and file hierarchy.
 
         Parameters
         ----------
-        response : Dict
+        response : ListObjectsV2OutputTypeDef
             The response from the S3 list_objects_v2 call.
 
         Returns
         -------
-        Dict
+        Dict[str, str]
             A nested dictionary representing the folder and file structure of the S3 bucket.
         """
-        directory_tree = {}
+        directory_tree: Dict[str, str] = {}
 
         # Add files to the directory tree with their metadata
         for obj in response.get("Contents", []):
@@ -442,7 +448,7 @@ class CVHelper(object):
         cv: SlidingWindowSplitter,
         y: pd.Series,
         title: str = "CV Splits",
-        ax: Axes = None,
+        ax: Optional[Axes] = None,
     ) -> Axes:
         """
         Plot training and test windows for each split in a time series cross-validation.
@@ -464,9 +470,9 @@ class CVHelper(object):
             The axes on which the plot is drawn.
         """
         if ax is None:
-            fig, ax = plt.subplots(1, figsize=plt.figaspect(0.25))
+            _, ax = plt.subplots(1, figsize=plt.figaspect(0.25))
         else:
-            fig = ax.figure
+            _ = ax.figure
 
         train_windows = []
         test_windows = []
@@ -523,7 +529,7 @@ class CVHelper(object):
 
         # remove duplicate labels/handles
         handles, labels = ((leg[:2]) for leg in ax.get_legend_handles_labels())
-        ax.legend(handles, labels)
+        ax.legend(handles, labels)  # type: ignore[arg-type]
 
         return ax
 

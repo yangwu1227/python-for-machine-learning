@@ -630,7 +630,7 @@ def objective(
 
 
 if __name__ == "__main__":
-    from custom_utils import create_study, get_logger, plot_2d_surfaces, study_report
+    from model_utils import create_study, get_logger, plot_2d_surfaces, study_report
 
     logger = get_logger(name="tf_monkey_saddle_approximator")
 

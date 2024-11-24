@@ -1,7 +1,7 @@
 import json
 import logging
 import os
-from typing import Any, Dict
+from typing import Any, Dict, cast
 
 import numpy as np
 import s3fs
@@ -11,6 +11,16 @@ from omegaconf import OmegaConf
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"  # Nopep8
 import tensorflow as tf
 from base_trainer import BaseTrainer
+
+from model_utils import (
+    AugmentationModel,
+    add_additional_args,
+    get_logger,
+    load_datasets,
+    parser,
+)
+
+logger = get_logger(name="fine_tune_resnet50v2")
 
 # ------------------------------- Trainer class ------------------------------ #
 
@@ -293,25 +303,18 @@ class FineTuneTrainer(BaseTrainer):
         return None
 
 
-if __name__ == "__main__":
-    from custom_utils import (
-        AugmentationModel,
-        add_additional_args,
-        get_logger,
-        load_datasets,
-        parser,
-    )
-
+def main() -> int:
     # ---------------------------------- Set up ---------------------------------- #
-
-    logger = get_logger(name="fine_tune_resnet50v2")
 
     # Hyra
     core.global_hydra.GlobalHydra.instance().clear()
     initialize(
         version_base="1.2", config_path="config", job_name="fine_tune_resnet50v2"
     )
-    config = OmegaConf.to_container(compose(config_name="main"), resolve=True)
+    config: Dict[str, Any] = cast(
+        Dict[str, Any],
+        OmegaConf.to_container(compose(config_name="main"), resolve=True),
+    )
 
     # Parser hyperparameters specified by the SageMaker
     additional_args = {
@@ -409,3 +412,9 @@ if __name__ == "__main__":
     trainer.fit()
 
     del trainer
+
+    return 0
+
+
+if __name__ == "__main__":
+    main()

@@ -6,6 +6,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import torch
 import torch.nn as nn
+from torch.nn import Module
 
 # ---------------------------------- Logger ---------------------------------- #
 
@@ -213,6 +214,7 @@ def trainer(
     np.ndarray
         The predictions of the trained model, reshaped to match the original shape of the data.
     """
+    model: Module
     # Initialize the model
     if model_type.lower() == "lstm":
         model = LSTM(**hyperparameters)
@@ -284,17 +286,17 @@ def plot_predictions(
 
     # Plot the original data
     ax1 = fig.add_subplot(131, projection="3d")
-    ax1.plot_surface(xv, yv, original_data, cmap="viridis")
+    ax1.plot_surface(xv, yv, original_data, cmap="viridis")  # type: ignore[attr-defined]
     ax1.set_title("Original Data")
 
     # Plot the LSTM prediction
     ax2 = fig.add_subplot(132, projection="3d")
-    ax2.plot_surface(xv, yv, lstm_prediction, cmap="viridis")
+    ax2.plot_surface(xv, yv, lstm_prediction, cmap="viridis")  # type: ignore[attr-defined]
     ax2.set_title("LSTM Prediction")
 
     # Plot the GRU prediction
     ax3 = fig.add_subplot(133, projection="3d")
-    ax3.plot_surface(xv, yv, gru_prediction, cmap="viridis")
+    ax3.plot_surface(xv, yv, gru_prediction, cmap="viridis")  # type: ignore[attr-defined]
     ax3.set_title("GRU Prediction")
 
     # Show the plots

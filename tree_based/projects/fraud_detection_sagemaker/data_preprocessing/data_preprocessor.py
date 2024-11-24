@@ -2,14 +2,11 @@ import argparse
 import logging
 import os
 from typing import Tuple
+import sys
 
 import numpy as np
 import pandas as pd
 from sklearn.model_selection import StratifiedShuffleSplit
-
-# ---------------------------------------------------------------------------- #
-#                   Function to parse command line arguments                   #
-# ---------------------------------------------------------------------------- #
 
 
 def parse_args() -> argparse.Namespace:
@@ -108,8 +105,8 @@ def load_data(
     data_dir: str,
     transaction_data: str,
     identity_data: str,
-    train_data_ratio: str,
-    valid_data_ratio: str,
+    train_data_ratio: float,
+    valid_data_ratio: float,
     output_dir: str,
 ) -> Tuple[pd.DataFrame, pd.DataFrame, np.ndarray, np.ndarray]:
     """
@@ -123,12 +120,12 @@ def load_data(
         Path to the transaction data.
     identity_data : str
         Path to the identity data.
-    train_data_ratio : str
-
-    valid_data_ratio : str
-        _description_
+    train_data_ratio : float
+        Ratio allocated to training data.
+    valid_data_ratio : float
+        Ratio allocated to validation data.
     output_dir : str
-        _description_
+        Path to the output directory.
 
     Returns
     -------
@@ -188,7 +185,7 @@ def load_data(
     test_ids = transaction_df.TransactionID.values[test_indices]
 
     # Ensure that the ratio of fraud and non-fraud transactions are the same in train, validation, and test data
-    def get_fraud_frac(series):
+    def get_fraud_frac(series) -> float:
         return 100 * sum(series) / len(series)
 
     logging.info(
