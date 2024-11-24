@@ -1,4 +1,3 @@
-# mypy: ignore-errors
 import csv
 import logging
 import multiprocessing.pool as mpp
@@ -16,7 +15,7 @@ logging.basicConfig(
 logger.setLevel(logging.INFO)
 
 
-def generate_random_pairs(num_pairs: int) -> Tuple[np.ndarray, np.ndarray]:
+def generate_random_pairs(num_pairs: int) -> List[Tuple[float, float]]:
     """
     Generate a list of `num_pairs` random long/lat pairs.
 
@@ -27,12 +26,12 @@ def generate_random_pairs(num_pairs: int) -> Tuple[np.ndarray, np.ndarray]:
 
     Returns
     -------
-    Tuple[np.ndarray, np.ndarray]
-        Two NumPy arrays: one for longitudes and one for latitudes.
+    List[Tuple[float, float]]
+        A list of (longitude, latitude) tuples.
 
     Examples
     --------
-    >>> longitudes, latitudes = generate_random_pairs(5)
+    >>> pairs = generate_random_pairs(5)
     """
     # Bounding box of the United States.
     us_bounds = {
@@ -50,14 +49,15 @@ def generate_random_pairs(num_pairs: int) -> Tuple[np.ndarray, np.ndarray]:
         us_bounds["min_lat"], us_bounds["max_lat"], size=num_pairs
     )
 
+    # Combine longitudes and latitudes into a list of tuples of (longitude, latitude)
+    pairs = list(zip(longitudes, latitudes))
+
     logger.info(f"Generated {num_pairs} random long/lat pairs")
 
-    return longitudes, latitudes
+    return pairs
 
 
-def write_batch_to_csv(
-    file: TextIO, pairs: List[Tuple[np.ndarray, np.ndarray]]
-) -> None:
+def write_batch_to_csv(file: TextIO, pairs: List[Tuple[float, float]]) -> None:
     """
     Write a batch of long/lat pairs to a CSV file.
 
@@ -65,17 +65,12 @@ def write_batch_to_csv(
     ----------
     file : TextIO
         A file-like object open for writing in text mode.
-    pairs : List[Tuple[np.ndarray, np.ndarray]]
+    pairs : List[Tuple[float, float]]
         A list of long/lat pairs represented as tuples of floats.
     """
     writer = csv.writer(file)
-    # Write the headers for longitude and latitude
-    writer.writerow(["longitude", "latitude"])
-    # Write the long/lat pairs
-    for pair in pairs:
-        writer.writerow(pair)
-
-    return None
+    # Headers are assumed to be written once before calling this function
+    writer.writerows(pairs)
 
 
 def write_pairs_to_file_threaded(
@@ -101,29 +96,33 @@ def write_pairs_to_file_threaded(
     logger : logging.Logger
         A logger object to log messages to.
     """
+    total_batches = num_pairs // pairs_per_batch
+    if num_pairs % pairs_per_batch != 0:
+        # Add one more batch to account for any remainder
+        total_batches += 1
     with open(file_path, mode="w", newline="") as file:
+        # Write the headers once
+        writer = csv.writer(file)
+        writer.writerow(["longitude", "latitude"])
         # Use a thread pool to manage a fixed number of threads
         with mpp.ThreadPool(num_threads) as pool:
-            # Generate the long/lat pairs in parallel using the thread pool
-            pairs: List[Tuple[float, float]] = pool.map(
-                generate_random_pairs,
-                [pairs_per_batch] * (num_pairs // pairs_per_batch),
+            logger.info(
+                f"Starting generation of {num_pairs} random long/lat pairs in {total_batches} batches"
             )
-            logger.info(f"Generated {num_pairs} random long/lat pairs")
+            # Generate the long/lat pairs in parallel using the thread pool
+            batches: List[List[Tuple[float, float]]] = pool.map(
+                generate_random_pairs,
+                [pairs_per_batch] * total_batches,
+            )
+            logger.info(f"Finished generation of {num_pairs} random long/lat pairs")
 
-            # Flatten the list of pairs into a single list
-            pairs = [pair for sublist in pairs for pair in sublist]
+        for batch_num, batch in enumerate(batches, start=1):
+            logger.info(
+                f"Writing batch {batch_num}/{total_batches} with {len(batch)} pairs to file"
+            )
+            write_batch_to_csv(file, batch)
 
-            # Write the pairs to the CSV file in batches using the thread pool
-            for i in range(0, len(pairs), pairs_per_batch):
-                batch = pairs[i : i + pairs_per_batch]
-                pool.apply_async(write_batch_to_csv, (file, batch))
-
-            logger.info(f"Wrote {num_pairs} long/lat pairs to file")
-
-            # Wait for all the threads to finish
-            pool.close()
-            pool.join()
+        logger.info(f"Wrote {num_pairs} long/lat pairs to file")
 
 
 def main() -> int:
@@ -134,7 +133,6 @@ def main() -> int:
         num_pairs=1_000_000,
         logger=logger,
     )
-
     return 0
 
 
