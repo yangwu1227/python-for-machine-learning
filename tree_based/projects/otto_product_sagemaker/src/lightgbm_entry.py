@@ -1,6 +1,7 @@
 import logging
 import os
-from typing import Any, Callable, Dict, List, Tuple, Union
+from typing import Any, Dict, List, Tuple, Union
+from collections.abc import Callable
 
 import boto3
 import joblib

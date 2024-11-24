@@ -5,7 +5,8 @@ import operator
 import os
 import sys
 from itertools import combinations
-from typing import Callable, Dict, List, Union
+from typing import Dict, List, Union
+from collections.abc import Callable
 
 import cudf
 import cupy as cp

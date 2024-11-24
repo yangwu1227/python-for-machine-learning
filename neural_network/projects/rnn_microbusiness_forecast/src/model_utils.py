@@ -3,7 +3,8 @@ import json
 import logging
 import os
 import sys
-from typing import Callable, Dict, Tuple
+from typing import Dict, Tuple
+from collections.abc import Callable
 
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"  # Nopep8
 import numpy as np

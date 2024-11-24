@@ -1,6 +1,7 @@
 # type: ignore
 import warnings
-from typing import Any, Callable, List, Optional
+from typing import Any, List, Optional
+from collections.abc import Callable
 
 import matplotlib as mpl
 import matplotlib.colors as colors

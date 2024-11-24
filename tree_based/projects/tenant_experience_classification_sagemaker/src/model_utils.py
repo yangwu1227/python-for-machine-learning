@@ -4,11 +4,14 @@ import json
 import logging
 import os
 import sys
-from typing import Callable, Dict, Optional
+from typing import Dict
+from collections.abc import Callable
 
 import boto3
-import optuna
+from mypy_boto3_secretsmanager.type_defs import GetSecretValueResponseTypeDef
 from botocore.exceptions import ClientError
+
+import optuna
 from optuna.trial import TrialState
 
 # ---------------------------------- Logger ---------------------------------- #
@@ -118,7 +121,7 @@ def add_additional_args(
 # ----------------------- Function for database secret ----------------------- #
 
 
-def get_secret(secret_name: str, region_name: str = "us-east-1") -> Optional[Dict]:
+def get_secret(secret_name: str, region_name: str = "us-east-1") -> Dict[str, str]:
     """
     Get secret from AWS Secrets Manager.
 
@@ -131,40 +134,48 @@ def get_secret(secret_name: str, region_name: str = "us-east-1") -> Optional[Dic
 
     Returns
     -------
-    Optional[Dict]
+    Dict[str, str]
         Secret retrieved from AWS Secrets Manager.
+
+    Raises
+    ------
+    ClientError
+        If an error occurs on the client side.
+    Exception
+        If an unknown error occurs.
     """
     # Create a secrets manager client
     session = boto3.session.Session()
     client = session.client(service_name="secretsmanager", region_name=region_name)
     try:
-        get_secret_value_response = client.get_secret_value(SecretId=secret_name)
-    except ClientError as e:
-        if e.response["Error"]["Code"] == "DecryptionFailureException":
-            # Secrets Manager can't decrypt the protected secret text using the provided KMS key
-            raise e
-        elif e.response["Error"]["Code"] == "InternalServiceErrorException":
-            # An error occurred on the server side
-            raise e
-        elif e.response["Error"]["Code"] == "InvalidParameterException":
-            # We provided an invalid value for a parameter
-            raise e
-        elif e.response["Error"]["Code"] == "InvalidRequestException":
-            # We provided a parameter value that is not valid for the current state of the resource
-            raise e
-        elif e.response["Error"]["Code"] == "ResourceNotFoundException":
-            # Can't find the resource that we asked for
-            raise e
-        else:
-            raise e
-    else:
+        get_secret_value_response: GetSecretValueResponseTypeDef = (
+            client.get_secret_value(SecretId=secret_name)
+        )
         # If the secret was a JSON-encoded dictionary string, convert it to dictionary
         if "SecretString" in get_secret_value_response:
             secret = get_secret_value_response["SecretString"]
-            secret = ast.literal_eval(secret)  # Convert string to dictionary
-            return secret
-
-    return None
+            secret_dict = ast.literal_eval(secret)  # Convert string to dictionary
+            return secret_dict
+    except ClientError as error:
+        if error.response["Error"]["Code"] == "DecryptionFailureException":
+            # Secrets Manager can't decrypt the protected secret text using the provided KMS key
+            raise error
+        elif error.response["Error"]["Code"] == "InternalServiceErrorException":
+            # An error occurred on the server side
+            raise error
+        elif error.response["Error"]["Code"] == "InvalidParameterException":
+            # We provided an invalid value for a parameter
+            raise error
+        elif error.response["Error"]["Code"] == "InvalidRequestException":
+            # We provided a parameter value that is not valid for the current state of the resource
+            raise error
+        elif error.response["Error"]["Code"] == "ResourceNotFoundException":
+            # Can't find the resource that we asked for
+            raise error
+        else:
+            raise error
+    except Exception as error:
+        raise error
 
 
 # --------------------- Function for setting up database --------------------- #
@@ -193,10 +204,6 @@ def get_db_url(
         Database URL.
     """
     secret = get_secret(db_secret, region_name)
-    if secret is None:
-        raise ValueError(
-            f"Failed to retrieve '{db_secret}' from AWS Secrets Manager in '{region_name}'"
-        )
     connector = "pymysql"
     user_name = secret["username"]
     password = secret["password"]

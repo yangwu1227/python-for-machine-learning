@@ -1,6 +1,7 @@
 import logging
 import os
-from typing import Any, Callable, Dict, Tuple
+from typing import Any, Dict, Tuple
+from collections.abc import Callable
 
 import joblib
 import numpy as np
