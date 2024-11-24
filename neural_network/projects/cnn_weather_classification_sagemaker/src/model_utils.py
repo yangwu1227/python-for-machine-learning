@@ -8,9 +8,9 @@ from functools import partial
 from typing import Any, Dict, List, Tuple, Union
 
 import boto3
-from mypy_boto3_secretsmanager.type_defs import GetSecretValueResponseTypeDef
 import numpy as np
 from botocore.exceptions import ClientError
+from mypy_boto3_secretsmanager.type_defs import GetSecretValueResponseTypeDef
 
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"  # Nopep8
 import tensorflow as tf

@@ -1,8 +1,8 @@
 import logging
 import pickle
-from re import sub
 import sys
-from typing import Any, Tuple, List, Optional
+from re import sub
+from typing import Any, List, Optional, Tuple
 
 import boto3
 import numpy as np

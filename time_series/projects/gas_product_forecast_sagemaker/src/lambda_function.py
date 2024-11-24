@@ -1,12 +1,12 @@
 import json
 import os
+from logging import StreamHandler, getLogger
 from sys import stdout
-from logging import getLogger, StreamHandler
 from typing import Any, Dict, Union
 
 import boto3
-from mypy_boto3_sagemaker_runtime import SageMakerRuntimeClient
 from botocore.exceptions import ClientError, ParamValidationError
+from mypy_boto3_sagemaker_runtime import SageMakerRuntimeClient
 
 runtime: SageMakerRuntimeClient = boto3.client("runtime.sagemaker")  # type: ignore
 logger = getLogger("invoke_endpoint")

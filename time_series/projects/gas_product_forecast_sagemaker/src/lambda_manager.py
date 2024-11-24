@@ -3,16 +3,17 @@ import json
 import zipfile
 from typing import Dict, Optional, Tuple, Union
 
+from botocore.exceptions import ClientError
 from mypy_boto3_iam import IAMServiceResource
 from mypy_boto3_iam.service_resource import Role
 from mypy_boto3_lambda import LambdaClient
 from mypy_boto3_lambda.literals import RuntimeType
 from mypy_boto3_lambda.type_defs import (
+    FunctionConfigurationResponseTypeDef,
     GetFunctionResponseTypeDef,
     InvocationResponseTypeDef,
-    FunctionConfigurationResponseTypeDef,
 )
-from botocore.exceptions import ClientError
+
 from src.model_utils import get_logger
 
 

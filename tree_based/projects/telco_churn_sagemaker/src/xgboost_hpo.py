@@ -6,14 +6,15 @@ from typing import Tuple
 
 import boto3
 import numpy as np
-import pandas as pd
 import optuna
+import pandas as pd
 import xgboost as xgb
 from model_utils import create_pipeline, get_logger
 from optuna.trial import TrialState
 from sklearn.metrics import average_precision_score
 from sklearn.model_selection import StratifiedKFold
 from sklearn.utils.class_weight import compute_sample_weight
+
 from src.model_utils import load_data
 
 # --------------------- Parse argument from command line --------------------- #

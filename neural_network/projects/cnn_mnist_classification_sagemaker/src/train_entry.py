@@ -3,7 +3,7 @@ from functools import partial
 from typing import List, Tuple
 
 import tensorflow as tf
-from model_utils import parser, get_logger, DataHandler
+from model_utils import DataHandler, get_logger, parser
 
 logger = get_logger(__name__)
 

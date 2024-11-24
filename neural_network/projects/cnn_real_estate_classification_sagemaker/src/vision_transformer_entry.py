@@ -4,7 +4,7 @@ import json
 import logging
 import os
 from math import sqrt
-from typing import Any, Dict, List, Tuple, Optional, cast
+from typing import Any, Dict, List, Optional, Tuple, cast
 
 import numpy as np
 import s3fs
@@ -13,8 +13,6 @@ os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"  # Nopep8
 import tensorflow as tf
 from base_trainer import BaseTrainer
 from hydra import compose, core, initialize
-from omegaconf import OmegaConf
-
 from model_utils import (
     AugmentationModel,
     add_additional_args,
@@ -22,6 +20,7 @@ from model_utils import (
     load_dataset,
     parser,
 )
+from omegaconf import OmegaConf
 
 logger = get_logger(name="vision_transformer")
 

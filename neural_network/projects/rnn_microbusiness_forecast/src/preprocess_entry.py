@@ -3,7 +3,7 @@ import glob
 import logging
 import os
 import sys
-from typing import Dict, List, Tuple, Any, cast
+from typing import Any, Dict, List, Tuple, cast
 
 import numpy as np
 import polars as pl

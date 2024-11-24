@@ -6,17 +6,16 @@ import operator
 import os
 import pickle
 import sys
+from collections.abc import Callable
 from itertools import combinations
 from typing import Any, Dict, List, Tuple, Union
-from collections.abc import Callable
 
 import boto3
-from mypy_boto3_secretsmanager.type_defs import GetSecretValueResponseTypeDef
-
 import numpy as np
 import optuna
 import pandas as pd
 from botocore.exceptions import ClientError
+from mypy_boto3_secretsmanager.type_defs import GetSecretValueResponseTypeDef
 from optuna.trial import TrialState
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.compose import ColumnTransformer

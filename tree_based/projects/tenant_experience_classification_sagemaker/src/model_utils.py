@@ -4,14 +4,13 @@ import json
 import logging
 import os
 import sys
-from typing import Dict
 from collections.abc import Callable
+from typing import Dict
 
 import boto3
-from mypy_boto3_secretsmanager.type_defs import GetSecretValueResponseTypeDef
-from botocore.exceptions import ClientError
-
 import optuna
+from botocore.exceptions import ClientError
+from mypy_boto3_secretsmanager.type_defs import GetSecretValueResponseTypeDef
 from optuna.trial import TrialState
 
 # ---------------------------------- Logger ---------------------------------- #

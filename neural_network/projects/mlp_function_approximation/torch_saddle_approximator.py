@@ -2,14 +2,14 @@ import argparse
 import logging
 import os
 from copy import deepcopy
-from typing import Any, MutableMapping, List, Tuple
+from typing import Any, List, MutableMapping, Tuple
 
 import numpy as np
 import optuna
 import torch
-from torch.optim import Optimizer
-from torch.nn.modules.loss import _Loss
 from IPython.display import display
+from torch.nn.modules.loss import _Loss
+from torch.optim import Optimizer
 from torch.utils.data import DataLoader, TensorDataset
 
 # --------------------------- Monkey saddle surface -------------------------- #

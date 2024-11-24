@@ -3,8 +3,8 @@ import json
 import logging
 import os
 import sys
-from typing import Dict, List, Tuple, Union
 from collections.abc import Callable
+from typing import Dict, List, Tuple, Union
 
 import matplotlib.patches as patches
 import numpy as np

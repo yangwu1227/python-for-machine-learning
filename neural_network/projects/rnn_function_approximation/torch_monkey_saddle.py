@@ -1,7 +1,8 @@
 import argparse
 from multiprocessing import Pool
-from model_utils import get_logger, grid_to_seq, plot_predictions, trainer
+
 import numpy as np
+from model_utils import get_logger, grid_to_seq, plot_predictions, trainer
 
 # ------------------------------- Generate data ------------------------------ #
 

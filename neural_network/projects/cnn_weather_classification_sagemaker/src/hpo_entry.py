@@ -1,5 +1,5 @@
 import os
-from typing import Tuple, MutableMapping, Any, Union
+from typing import Any, MutableMapping, Tuple, Union
 
 import numpy as np
 

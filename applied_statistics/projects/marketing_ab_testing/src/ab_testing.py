@@ -2,9 +2,8 @@ from typing import Dict, List, Tuple
 
 import numpy as np
 import polars as pl
-from great_tables import loc, style
+from great_tables import GT, loc, style
 from scipy.stats import brunnermunzel, rankdata
-from great_tables import GT
 
 
 def rankdata_2samp(x1: np.ndarray, x2: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:

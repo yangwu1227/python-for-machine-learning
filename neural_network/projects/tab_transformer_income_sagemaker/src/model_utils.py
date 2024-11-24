@@ -8,8 +8,8 @@ from collections import OrderedDict
 from collections.abc import Callable
 from typing import Any, Dict, List, Tuple
 
-import s3fs
 import boto3
+import s3fs
 from mypy_boto3_secretsmanager.type_defs import GetSecretValueResponseTypeDef
 
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"  # Nopep8

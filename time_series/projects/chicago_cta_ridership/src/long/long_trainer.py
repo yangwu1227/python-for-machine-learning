@@ -1,11 +1,15 @@
+from typing import Optional, Union
+
 import numpy as np
 import pandas as pd
-from typing import Optional, Union
-from sktime.forecasting.model_selection import ForecastingGridSearchCV
-from sktime.forecasting.compose import ColumnEnsembleForecaster
-from sktime.forecasting.compose import TransformedTargetForecaster
 from sktime.forecasting.base import ForecastingHorizon
+from sktime.forecasting.compose import (
+    ColumnEnsembleForecaster,
+    TransformedTargetForecaster,
+)
+from sktime.forecasting.model_selection import ForecastingGridSearchCV
 from sktime.split import SlidingWindowSplitter
+
 from src.base_trainer import BaseTrainer
 from src.model_utils import S3Helper
 

@@ -2,6 +2,7 @@ from io import BytesIO
 
 import polars as pl
 from fastapi import APIRouter, HTTPException, Request, Response, status
+
 from server.utils import get_logger
 
 router = APIRouter()

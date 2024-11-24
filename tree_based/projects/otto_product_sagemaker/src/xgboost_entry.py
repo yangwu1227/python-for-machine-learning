@@ -1,7 +1,7 @@
 import logging
 import os
-from typing import Any, Dict, List, Union
 from collections.abc import Callable
+from typing import Any, Dict, List, Union
 
 import boto3
 import joblib
@@ -11,6 +11,7 @@ import xgboost as xgb
 from sklearn.model_selection import StratifiedKFold
 from sklearn.pipeline import Pipeline
 from sklearn.utils.class_weight import compute_sample_weight
+
 from src.model_utils import add_additional_args, create_pipeline, get_logger, parser
 
 # ------------------ Function for creating xgboost estimator ----------------- #

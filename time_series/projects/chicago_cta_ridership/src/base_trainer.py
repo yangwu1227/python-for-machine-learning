@@ -16,8 +16,9 @@ from sktime.performance_metrics.forecasting import (
     MeanSquaredError,
 )
 from sktime.split import SlidingWindowSplitter
-from src.model_utils import S3Helper, SetUp
 from statsmodels.stats.diagnostic import acorr_ljungbox
+
+from src.model_utils import S3Helper, SetUp
 
 
 class BaseTrainer(object):

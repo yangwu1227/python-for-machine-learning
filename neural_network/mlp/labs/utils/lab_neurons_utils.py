@@ -2,6 +2,7 @@ import matplotlib.colors as colors
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib import cm
+
 from utils.lab_utils_common import dlc
 
 plt.style.use("utils/deeplearning.mplstyle")

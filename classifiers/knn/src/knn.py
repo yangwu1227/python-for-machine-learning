@@ -1,4 +1,4 @@
-from typing import Any, Dict, MutableSequence, Self, Union, Optional
+from typing import Any, Dict, MutableSequence, Optional, Self, Union
 
 import numpy as np
 import pandas as pd
@@ -6,9 +6,9 @@ from scipy.sparse import csr_matrix
 from sklearn.base import BaseEstimator, ClassifierMixin
 from sklearn.metrics.pairwise import cosine_similarity, euclidean_distances
 from sklearn.preprocessing import LabelEncoder
+from sklearn.utils.estimator_checks import check_estimator
 from sklearn.utils.multiclass import check_classification_targets
 from sklearn.utils.validation import check_array, check_is_fitted, check_X_y
-from sklearn.utils.estimator_checks import check_estimator
 from tqdm import tqdm
 
 

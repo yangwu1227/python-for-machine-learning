@@ -1,15 +1,14 @@
 import os
 from contextlib import asynccontextmanager
-from typing import Dict, Any, cast
+from typing import Any, Dict, cast
 
 import joblib
 import pandas as pd
 import uvicorn
 from fastapi import FastAPI, HTTPException, Request, Response, status
 from hydra import compose, core, initialize
-from omegaconf import OmegaConf
-
 from model_utils import get_logger
+from omegaconf import OmegaConf
 
 
 def main() -> int:

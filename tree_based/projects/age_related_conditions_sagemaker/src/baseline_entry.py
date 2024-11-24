@@ -1,7 +1,7 @@
 import logging
 import os
-from typing import Any, Dict, List, Tuple, cast
 from collections.abc import Callable
+from typing import Any, Dict, List, Tuple, cast
 
 import numpy as np
 import optuna
@@ -15,6 +15,7 @@ from sklearn.model_selection import StratifiedKFold
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import OneHotEncoder, RobustScaler
 from sklearn.utils.class_weight import compute_sample_weight
+
 from src.model_utils import (
     FeatureImportanceHandler,
     add_additional_args,

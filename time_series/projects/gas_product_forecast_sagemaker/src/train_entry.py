@@ -2,7 +2,7 @@ import argparse
 import logging
 import os
 import warnings
-from typing import Any, Dict, Tuple, Optional, Union, cast
+from typing import Any, Dict, Optional, Tuple, Union, cast
 
 import joblib
 import matplotlib.pyplot as plt
@@ -10,6 +10,7 @@ import numpy as np
 import pandas as pd
 from hydra import compose, core, initialize
 from matplotlib.ticker import MaxNLocator
+from model_utils import get_logger
 from omegaconf import OmegaConf
 from scipy.stats import shapiro
 from sktime.forecasting.base import ForecastingHorizon
@@ -21,8 +22,6 @@ from sktime.transformations.series.boxcox import LogTransformer
 from sktime.transformations.series.detrend import Deseasonalizer, Detrender
 from sktime.transformations.series.fourier import FourierFeatures
 from statsmodels.stats.diagnostic import acorr_ljungbox
-
-from model_utils import get_logger
 
 # ---------------------------------- Trainer --------------------------------- #
 

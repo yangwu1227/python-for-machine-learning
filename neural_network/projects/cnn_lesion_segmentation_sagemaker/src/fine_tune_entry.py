@@ -6,10 +6,9 @@ import numpy as np
 
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"  # Nopep8
 import tensorflow as tf
+from model_utils import get_logger, load_data, parser
 from segmentation_models import Unet
 from segmentation_models.losses import DiceLoss
-
-from model_utils import get_logger, load_data, parser
 
 logger = get_logger(name=__name__)
 

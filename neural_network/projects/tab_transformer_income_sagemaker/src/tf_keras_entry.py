@@ -7,8 +7,6 @@ os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"  # Nopep8
 import optuna
 import tensorflow as tf
 from hydra import compose, core, initialize
-from omegaconf import OmegaConf
-
 from model_utils import (
     add_additional_args,
     create_study,
@@ -19,6 +17,7 @@ from model_utils import (
     study_report,
     test_sample,
 )
+from omegaconf import OmegaConf
 
 # ------------------------------- Trainer class ------------------------------ #
 

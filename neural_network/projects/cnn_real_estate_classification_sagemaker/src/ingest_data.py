@@ -2,14 +2,14 @@ import json
 import os
 import shutil
 import subprocess
-from typing import Dict, Any, cast
+from typing import Any, Dict, cast
 
 import s3fs
 
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"  # NoPep8
 import tensorflow as tf
-from model_utils import get_logger
 from hydra import compose, core, initialize
+from model_utils import get_logger
 from omegaconf import OmegaConf
 
 

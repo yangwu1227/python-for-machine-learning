@@ -4,9 +4,9 @@ import logging
 import operator
 import os
 import sys
+from collections.abc import Callable
 from itertools import combinations
 from typing import Dict, List, Union
-from collections.abc import Callable
 
 import cudf
 import cupy as cp

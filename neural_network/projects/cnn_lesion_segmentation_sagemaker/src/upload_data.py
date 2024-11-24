@@ -3,7 +3,7 @@ import random
 import subprocess
 from concurrent import futures
 from queue import Queue
-from typing import Tuple, List
+from typing import List, Tuple
 
 import numpy as np
 import sagemaker

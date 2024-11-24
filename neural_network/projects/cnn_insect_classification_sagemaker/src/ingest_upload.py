@@ -3,7 +3,7 @@ import os
 import random
 import subprocess
 from multiprocessing import Pool
-from typing import Dict, Tuple, Any, cast
+from typing import Any, Dict, Tuple, cast
 
 import numpy as np
 import s3fs
@@ -12,8 +12,8 @@ from omegaconf import OmegaConf
 
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"  # Nopep8
 import matplotlib.pyplot as plt
-from tensorflow.keras.utils import image_dataset_from_directory
 from model_utils import get_logger
+from tensorflow.keras.utils import image_dataset_from_directory
 
 # ------------------------- Downsample a single class ------------------------ #
 

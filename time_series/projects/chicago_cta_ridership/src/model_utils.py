@@ -3,7 +3,6 @@ import logging
 import os
 import sys
 from typing import Any, Dict, List, Optional, Tuple, cast
-from mypy_boto3_s3.type_defs import ListObjectsV2OutputTypeDef
 
 import boto3
 import joblib
@@ -14,6 +13,7 @@ import seaborn as sns
 from hydra import compose, core, initialize
 from matplotlib.axes import Axes
 from matplotlib.ticker import MaxNLocator
+from mypy_boto3_s3.type_defs import ListObjectsV2OutputTypeDef
 from omegaconf import OmegaConf
 from sktime.split import SlidingWindowSplitter
 

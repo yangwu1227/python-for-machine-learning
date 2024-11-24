@@ -9,6 +9,7 @@ import xgboost as xgb
 from module_utils import create_pipeline
 from sklearn.pipeline import Pipeline
 from sklearn.utils.class_weight import compute_sample_weight
+
 from src.model_utils import load_data
 
 # --------------------- Parse argument from command line --------------------- #

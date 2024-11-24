@@ -3,6 +3,7 @@ from typing import Dict, Optional
 import boto3
 import requests
 from botocore.exceptions import ClientError
+
 from src.model_utils import get_logger
 
 

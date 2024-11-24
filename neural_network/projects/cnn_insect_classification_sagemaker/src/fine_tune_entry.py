@@ -11,7 +11,6 @@ from omegaconf import OmegaConf
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"  # Nopep8
 import tensorflow as tf
 from base_trainer import BaseTrainer
-
 from model_utils import (
     AugmentationModel,
     add_additional_args,

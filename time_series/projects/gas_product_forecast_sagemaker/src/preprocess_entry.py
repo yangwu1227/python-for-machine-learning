@@ -7,6 +7,7 @@ from typing import Any, Dict, cast
 import numpy as np
 import pandas as pd
 from hydra import compose, core, initialize
+from model_utils import get_logger
 from omegaconf import OmegaConf
 from sktime.forecasting.base import ForecastingHorizon
 from sktime.forecasting.compose import TransformedTargetForecaster
@@ -14,8 +15,6 @@ from sktime.forecasting.model_selection import temporal_train_test_split
 from sktime.forecasting.naive import NaiveForecaster
 from sktime.forecasting.trend import STLForecaster
 from sktime.transformations.series.boxcox import LogTransformer
-
-from model_utils import get_logger
 
 logger = get_logger(__name__)
 

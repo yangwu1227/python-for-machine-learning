@@ -4,6 +4,7 @@ from typing import AsyncGenerator
 
 import joblib
 from fastapi import FastAPI
+
 from server.api import endpoints, ping
 from server.utils import get_logger
 

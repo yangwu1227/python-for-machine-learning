@@ -1,13 +1,14 @@
 # type: ignore
 import warnings
-from typing import Any, List, Optional
 from collections.abc import Callable
+from typing import Any, List, Optional
 
 import matplotlib as mpl
 import matplotlib.colors as colors
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib import cm
+
 from utils.lab_utils_common import dlc
 
 # Define color dictionary

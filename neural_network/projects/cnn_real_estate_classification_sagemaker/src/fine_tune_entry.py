@@ -11,8 +11,6 @@ os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"  # Nopep8
 import tensorflow as tf
 from base_trainer import BaseTrainer
 from hydra import compose, core, initialize
-from omegaconf import OmegaConf
-
 from model_utils import (
     AugmentationModel,
     add_additional_args,
@@ -20,6 +18,7 @@ from model_utils import (
     load_dataset,
     parser,
 )
+from omegaconf import OmegaConf
 
 logger = get_logger(name="fine_tune")
 

@@ -3,8 +3,9 @@ import json
 import logging
 import os
 import sys
-from typing import Dict, List, Tuple, Any
 from collections.abc import Callable
+from typing import Any, Dict, List, Tuple
+
 from IPython.display import Image
 
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"  # Nopep8

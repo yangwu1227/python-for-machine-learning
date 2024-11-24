@@ -10,10 +10,9 @@ import numpy as np
 import polars as pl
 import tensorflow as tf
 from hydra import compose, core, initialize
+from model_utils import add_additional_args, get_logger, parser
 from omegaconf import OmegaConf
 from sklearn.model_selection import GroupKFold
-
-from model_utils import add_additional_args, get_logger, parser
 
 # --------------------------- Custom loss function --------------------------- #
 

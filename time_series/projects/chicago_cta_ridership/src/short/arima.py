@@ -1,21 +1,22 @@
 # mypy: disable-error-code="union-attr"
 import warnings
-from typing import Dict, Union, Optional
+from typing import Dict, Optional, Union
 
 import numpy as np
 import pandas as pd
+from sktime.forecasting.base import ForecastingHorizon
 from sktime.forecasting.compose import (
     ColumnEnsembleForecaster,
     ForecastingPipeline,
     TransformedTargetForecaster,
 )
-from sktime.forecasting.base import ForecastingHorizon
 from sktime.forecasting.model_selection import ForecastingGridSearchCV
 from sktime.forecasting.statsforecast import StatsForecastAutoARIMA
 from sktime.transformations.compose import OptionalPassthrough
 from sktime.transformations.series.boxcox import LogTransformer
 from sktime.transformations.series.date import DateTimeFeatures
 from sktime.transformations.series.detrend import Deseasonalizer, Detrender
+
 from src.base_trainer import BaseTrainer
 from src.model_utils import S3Helper
 
