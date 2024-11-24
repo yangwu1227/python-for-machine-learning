@@ -425,6 +425,7 @@ Resources:
   NotebookExecutionRole:
     Type: AWS::IAM::Role
     Properties:
+      RoleName: !Sub ${AWS::StackName}-sagemaker-execution-role
       AssumeRolePolicyDocument:
         Version: '2012-10-17'
         Statement:
@@ -446,6 +447,7 @@ Resources:
                   - !Sub arn:aws:s3:::${S3BucketName}/*
       ManagedPolicyArns:
         - arn:aws:iam::aws:policy/AmazonSageMakerFullAccess
+        - arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryFullAccess
 
   NotebookLifecycleConfig:
     Type: AWS::SageMaker::NotebookInstanceLifecycleConfig
