@@ -181,7 +181,7 @@ def model_fn(model_dir: str) -> tf.keras.models.Sequential:
     tf.keras.models.Sequential
         The loaded model.
     """
-    cnn_model = tf.keras.models.load_model(os.path.join(args.model_dir, "00000000"))
+    cnn_model = tf.keras.models.load_model(os.path.join(model_dir, "00000000"))
 
     return cnn_model
 
