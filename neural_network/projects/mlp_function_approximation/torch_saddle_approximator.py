@@ -8,9 +8,12 @@ import numpy as np
 import optuna
 import torch
 from IPython.display import display
+from model_utils import create_study, get_logger, plot_2d_surfaces, study_report
 from torch.nn.modules.loss import _Loss
 from torch.optim import Optimizer
 from torch.utils.data import DataLoader, TensorDataset
+
+logger = get_logger(name="tf_monkey_saddle_approximator")
 
 # --------------------------- Monkey saddle surface -------------------------- #
 
@@ -629,11 +632,7 @@ def objective(
     return best_val_loss
 
 
-if __name__ == "__main__":
-    from model_utils import create_study, get_logger, plot_2d_surfaces, study_report
-
-    logger = get_logger(name="tf_monkey_saddle_approximator")
-
+def main() -> int:
     # Create a directory to store optuna study results
     output_dir = os.path.join(__file__, "outputs/saddle_function_approximator_hpo")
     if not os.path.exists(output_dir):
@@ -828,3 +827,9 @@ if __name__ == "__main__":
     )
 
     display(image)  # type: ignore[no-untyped-call]
+
+    return 0
+
+
+if __name__ == "__main__":
+    main()

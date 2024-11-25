@@ -7,6 +7,9 @@ os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"  # Nopep8
 import keras_tuner as kt
 import numpy as np
 import tensorflow as tf
+from model_utils import get_logger, plot_1d_curve, report_keras_hpo
+
+logger = get_logger("tf_sine_apprixmator")
 
 # ------------------------------ Data generator ------------------------------ #
 
@@ -136,11 +139,7 @@ class SineHyperModel(kt.HyperModel):
         return history
 
 
-if __name__ == "__main__":
-    from model_utils import get_logger, plot_1d_curve, report_keras_hpo
-
-    logger = get_logger("tf_sine_apprixmator")
-
+def main() -> int:
     # Suppress TensorFlow warnings and info, only show errors
     tf.get_logger().setLevel("ERROR")
 
@@ -274,3 +273,9 @@ if __name__ == "__main__":
     y_pred = best_model(X).numpy().flatten()
 
     plot_1d_curve(y_true=y, y_pred=y_pred, X=X, name=args.plot_name)
+
+    return 0
+
+
+if __name__ == "__main__":
+    main()

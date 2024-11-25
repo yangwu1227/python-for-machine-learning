@@ -9,6 +9,8 @@ os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"  # Nopep8
 import tensorflow as tf
 from model_utils import get_logger, load_data, parser
 
+logger = get_logger(name=__name__)
+
 # ------------------------- Function for fine tuning ------------------------- #
 
 
@@ -154,10 +156,8 @@ def fine_tune_cnn(
     return cnn_model, early_stopper_fine_tune
 
 
-if __name__ == "__main__":
+def main() -> int:
     args = parser()
-
-    logger = get_logger(name=__name__)
 
     X_train, y_train, X_val, y_val = load_data(
         paths={"train": args.train, "val": args.val}, test_mode=False
@@ -188,3 +188,9 @@ if __name__ == "__main__":
 
     # Save model, a version number is needed for the TF serving container to load the model
     cnn_model.save(os.path.join(args.model_dir, "00000000"))
+
+    return 0
+
+
+if __name__ == "__main__":
+    main()

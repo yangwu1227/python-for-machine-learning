@@ -10,6 +10,8 @@ from model_utils import baseline_cnn, get_logger, get_secret, load_data, parser
 from optuna.trial import TrialState
 from tensorflow.errors import InvalidArgumentError
 
+logger = get_logger(name=__name__)
+
 # -------------------------- Optimization objective -------------------------- #
 
 
@@ -184,10 +186,8 @@ def model_fn(model_dir: str) -> tf.keras.models.Sequential:
     return cnn_model
 
 
-if __name__ == "__main__":
+def main() -> int:
     args = parser()
-
-    logger = get_logger(name=__name__)
 
     X_train, y_train, X_val, y_val = load_data(
         paths={"train": args.train, "val": args.val}, test_mode=False
@@ -238,3 +238,9 @@ if __name__ == "__main__":
 
     # Save to model_dir for persistent storage
     best_model.save(os.path.join(args.model_dir, "00000000"))
+
+    return 0
+
+
+if __name__ == "__main__":
+    main()
