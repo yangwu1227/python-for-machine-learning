@@ -1,0 +1,88 @@
+[project]
+name = "rcnn-object-detection-video-sagemaker"
+version = "0.1.0"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "boto3-stubs[application-autoscaling,cloudwatch,s3,sagemaker,sagemaker-runtime,sns]>=1.35.69",
+    "boto3>=1.35.69",
+    "opencv-python>=4.10.0.84",
+    "sagemaker>=2.235.2",
+    "torch>=2.5.1",
+    "torchvision>=0.20.1",
+    "numpy>=1.26.4",
+    "matplotlib>=3.9.2",
+    "pillow>=11.0.0",
+    "pandas>=2.2.3",
+]
+
+[dependency-groups]
+notebook = [
+    "ipykernel>=6.29.5",
+    "ipywidgets>=8.1.5",
+]
+lint-fmt = [
+    "mypy>=1.13.0",
+    "ruff>=0.8.0",
+]
+
+[tool.ruff]
+exclude = [
+    ".bzr",
+    ".direnv",
+    ".eggs",
+    ".git",
+    ".git-rewrite",
+    ".hg",
+    ".ipynb_checkpoints",
+    ".mypy_cache",
+    ".nox",
+    ".pants.d",
+    ".pyenv",
+    ".pytest_cache",
+    ".pytype",
+    ".ruff_cache",
+    ".svn",
+    ".tox",
+    ".venv",
+    ".vscode",
+    "__pypackages__",
+    "_build",
+    "buck-out",
+    "build",
+    "dist",
+    "node_modules",
+    "site-packages",
+    "venv",
+]
+line-length = 88
+indent-width = 4
+target-version = "py311"
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+line-ending = "auto"
+
+[tool.ruff.lint]
+select = [
+    "I",
+    "F401",
+]
+
+[tool.mypy]
+python_version = 3.11
+warn_unused_ignores = true
+warn_no_return = true
+warn_unreachable = true
+disallow_untyped_calls = true
+
+[[tool.mypy.overrides]]
+module = [
+    "torchvision.*",
+    "torch.*",
+    "model_utils.*",
+    "sagemaker.session.*",
+    "pandas.*",
+]
+ignore_missing_imports = true
