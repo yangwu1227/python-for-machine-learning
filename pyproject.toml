@@ -6,7 +6,7 @@ readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
     "boto3>=1.35.68",
-    "boto3-stubs[athena,cloudformation,cloudwatch,ec2,ecr,ecs,iam,lambda,rds,redshift,s3,sagemaker,sagemaker-runtime,secretsmanager,ses,sns]>=1.35.68",
+    "boto3-stubs[application-autoscaling,athena,autoscaling,cloudformation,cloudwatch,ec2,ecr,ecs,iam,lambda,rds,redshift,s3,sagemaker,sagemaker-runtime,secretsmanager,ses,sns]>=1.35.68",
     "catboost>=1.2.5",
     "dvc>=3.56.0",
     "fastparquet>=2024.11.0",

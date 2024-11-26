@@ -322,8 +322,14 @@ wheels = [
 ]
 
 [package.optional-dependencies]
+application-autoscaling = [
+    { name = "mypy-boto3-application-autoscaling" },
+]
 athena = [
     { name = "mypy-boto3-athena" },
+]
+autoscaling = [
+    { name = "mypy-boto3-autoscaling" },
 ]
 cloudformation = [
     { name = "mypy-boto3-cloudformation" },
@@ -2350,7 +2356,7 @@ name = "ml-dtypes"
 version = "0.4.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "numpy", marker = "python_full_version >= '3.12'" },
+    { name = "numpy" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/fd/15/76f86faa0902836cc133939732f7611ace68cf54148487a99c539c272dc8/ml_dtypes-0.4.1.tar.gz", hash = "sha256:fad5f2de464fd09127e49b7fd1252b9006fb43d2edc1ff112d390c324af5ca7a", size = 692594 }
 wheels = [
@@ -2501,12 +2507,30 @@ wheels = [
 ]
 
 [[package]]
+name = "mypy-boto3-application-autoscaling"
+version = "1.35.67"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/98/11/65d527b6de49eef61e16bdd5e674a22336c0a0b838dfc8338e276530d29d/mypy_boto3_application_autoscaling-1.35.67.tar.gz", hash = "sha256:bc884491491e2345b1d7afcc2d5ca50ee00f57ada0c188ed4e9f61a8976a143e", size = 20262 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/88/b7/0c01da3aa38d96679139b57a7b6ee84face525eb0d3001a83b8913f3ea99/mypy_boto3_application_autoscaling-1.35.67-py3-none-any.whl", hash = "sha256:e8fdb0ac2aef7946400bb2e47c3d5034f7acb1a175893a45f276a3f28102c5be", size = 29108 },
+]
+
+[[package]]
 name = "mypy-boto3-athena"
 version = "1.35.44"
 source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/1c/d7/07e39fdf66bd291bbbfb7141ca2f2d1a733f91c8d20c1aba3413b4327682/mypy_boto3_athena-1.35.44.tar.gz", hash = "sha256:d9e0cf7f20f7826fa43b25543a7f376800043cef88cd36a1ab708f91a202a892", size = 35800 }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/86/eb/78f599b762837fc1d53f46d615de3b303b6370b3180b206bc22d75fe2cf5/mypy_boto3_athena-1.35.44-py3-none-any.whl", hash = "sha256:29cf8a552163b0b417dd5104ca98f36ad6ec2b7d11bac1637db593902fe046ae", size = 40338 },
+]
+
+[[package]]
+name = "mypy-boto3-autoscaling"
+version = "1.35.68"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/4c/8a/757ca589f4034f9ae1a27039eb93cac2ae11538c9d0a07a6207669a25dd0/mypy_boto3_autoscaling-1.35.68.tar.gz", hash = "sha256:d50844b0fc694347a4c66f647991322798fe05f65a75b4cdd205911c9788c72b", size = 39382 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/e5/58/ba5a353a3c58f48a5c280627ab8bb7d2152252eeb6739ea89a6be60c5f6f/mypy_boto3_autoscaling-1.35.68-py3-none-any.whl", hash = "sha256:f8b41f9338ef5d5ba61a61dcf4b7969417d830a92abc68102813d5390decc866", size = 45370 },
 ]
 
 [[package]]
@@ -3581,7 +3605,7 @@ version = "0.1.0"
 source = { virtual = "." }
 dependencies = [
     { name = "boto3" },
-    { name = "boto3-stubs", extra = ["athena", "cloudformation", "cloudwatch", "ec2", "ecr", "ecs", "iam", "lambda", "rds", "redshift", "s3", "sagemaker", "sagemaker-runtime", "secretsmanager", "ses", "sns"] },
+    { name = "boto3-stubs", extra = ["application-autoscaling", "athena", "autoscaling", "cloudformation", "cloudwatch", "ec2", "ecr", "ecs", "iam", "lambda", "rds", "redshift", "s3", "sagemaker", "sagemaker-runtime", "secretsmanager", "ses", "sns"] },
     { name = "catboost" },
     { name = "dvc" },
     { name = "fastparquet" },
@@ -3647,7 +3671,7 @@ web = [
 [package.metadata]
 requires-dist = [
     { name = "boto3", specifier = ">=1.35.68" },
-    { name = "boto3-stubs", extras = ["athena", "cloudformation", "cloudwatch", "ec2", "ecr", "ecs", "iam", "lambda", "rds", "redshift", "s3", "sagemaker", "sagemaker-runtime", "secretsmanager", "ses", "sns"], specifier = ">=1.35.68" },
+    { name = "boto3-stubs", extras = ["application-autoscaling", "athena", "autoscaling", "cloudformation", "cloudwatch", "ec2", "ecr", "ecs", "iam", "lambda", "rds", "redshift", "s3", "sagemaker", "sagemaker-runtime", "secretsmanager", "ses", "sns"], specifier = ">=1.35.68" },
     { name = "catboost", specifier = ">=1.2.5" },
     { name = "dvc", specifier = ">=3.56.0" },
     { name = "fastparquet", specifier = ">=2024.11.0" },
