@@ -202,7 +202,7 @@ class StudyVisualizer(object):
             Optuna study instance.
         """
         self.study = study
-        self.plot_func_dict = plot_functions = {
+        self.plot_func_dict = {
             "plot_optimization_history": optuna.visualization.plot_optimization_history,
             "plot_slice": optuna.visualization.plot_slice,
             "plot_parallel_coordinate": optuna.visualization.plot_parallel_coordinate,
