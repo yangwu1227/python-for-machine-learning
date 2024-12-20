@@ -1,3 +1,23 @@
+# Cost
+
+The cost of running this demo is based on a few factors:
+
+1. **Instance Type**: The most significant cost factor is the instance type used for the SageMaker endpoint. The cost of the instance type is calculated per hour of usage.
+
+    - For this project, I used the [g4dn.xlarge](https://instances.vantage.sh/aws/ec2/g4dn.xlarge), which has an on-demand price of $0.736 per hour of asynchronous inference usage in the US East (N. Virginia) region.
+
+    - If only a single request is made, then the cost is negligible. If the autocaling sections are run exactly as in the notebook, i.e. ~ 100 invocations, the cost would be around $\$6$ Hrs  $\times \$0.736$= $\$4.42$.
+
+2. Other costs including S3, Cloudwatch, and SNS (First 1,000 Amazon SNS Email/Email-JSON Notifications per month are free) are practically negligible.
+
+Mileage may vary depending on the region, instance type, and actualy number of invocations. But if the exact steps in the notebook are followed, the cost should be around $\$3-\$5$.
+
+See the [SageMaker pricing page](https://aws.amazon.com/sagemaker-ai/pricing/) for more details on the instance types and pricing.
+
+Expore the [AWS Pricing Calculator](https://docs.aws.amazon.com/pricing-calculator/latest/userguide/what-is-pricing-calculator.html) for additional cost estimation.
+
+---
+
 # Prerequisites
 
 ## AWS CLI Setup
