@@ -132,6 +132,7 @@ def postprocess_predictions(
         A list of dictionaries `{boxes: List[List[float]], labels: List[float],
         scores: List[float]}`.
     """
+    # See https://stackoverflow.com/questions/63582590/why-do-we-call-detach-before-calling-numpy-on-a-pytorch-tensor
     tensor_to_list: Callable = lambda tensor: tensor.detach().cpu().numpy().tolist()
     postprocessed_predictions: List[PredictionDict] = []
     for prediction in predictions:

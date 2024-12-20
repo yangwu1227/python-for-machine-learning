@@ -1,0 +1,5 @@
+bucket  = "s3-bucket-for-remote-state"
+key     = "s3/key/to/remote-state.tfstate"
+region  = "us-east-1"
+profile = "aws-profile"
+dynamodb_table = "optional-dynamodb-table-name-for-state-locking"

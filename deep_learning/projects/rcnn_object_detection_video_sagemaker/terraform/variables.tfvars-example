@@ -1,0 +1,4 @@
+region         = "us-east-1"
+profile        = "aws-profile"
+project_prefix = "async_inference_od_demo"
+s3_bucket      = "async-inference-od-demo"
