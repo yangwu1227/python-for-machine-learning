@@ -13,13 +13,14 @@ if [ "$#" -eq 3 ]; then
     ecr_repo="$3"
 else
     read -p "Enter the custom image tag name: " image_tag
+    read -p "Enter the mode for which the image is built [train, serve]: " mode
     read -p "Enter the ECR repository name: " ecr_repo
 fi
 
 # Check if the image tag is provided where [-z string]: True if the string is null (an empty string)
-if [ -z "$image_tag" ] || [ -z "$ecr_repo" ]; then
-  echo "Please provide both the custom image tag name and the ECR repository name."
-  exit 1
+if [ -z "$image_tag" ] || [ -z "$mode" ] || [ -z "$ecr_repo" ]; then
+    echo "Please provide the custom image tag name, mode, and the ECR repository name."
+    exit 1
 fi
 
 # Choose Dockerfile based on mode
