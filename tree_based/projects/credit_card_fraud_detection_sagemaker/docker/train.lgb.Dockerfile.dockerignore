@@ -1,0 +1,4 @@
+src/*
+!src/lightgbm_entry.py
+!src/model_utils.py
+!src/config

@@ -1,0 +1,35 @@
+# Backend variables
+region         = "us-east-1"
+profile        = "default"
+project_prefix = "fraud_detection"
+
+# VPC variables
+vpc_cidr             = "10.0.0.0/16"
+public_subnet_cidrs  = ["10.0.1.0/24", "10.0.2.0/24"]
+private_subnet_cidrs = ["10.0.3.0/24", "10.0.4.0/24"]
+availability_zones   = ["us-east-1a", "us-east-1b"]
+
+# Sagemaker
+sagemaker_instance_type = "ml.t3.xlarge"
+sagemaker_volume_size   = 30
+
+# Git
+git_repo_url = "https://github.com/github_username/repo_name.git"
+git_username = "github_username"
+git_pat      = "examples_classic_github_personal_access_token"
+
+# ECR and S3 variables
+s3_bucket                  = "fraud-detection-classification"
+retained_image_count       = 3
+untagged_image_expiry_days = 1
+
+# RDS variables
+database_name                     = "optuna"
+db_engine                         = "aurora-mysql"
+db_engine_version                 = "8.0.mysql_aurora.3.08.0"
+db_port                           = 3306
+db_instance_type                  = "db.t4g.medium"
+db_cluster_parameter_group_family = "aurora-mysql8.0"
+
+# Remote state 
+s3_bucket_remote_state = "remote-state-bucket"
