@@ -1,0 +1,23 @@
+# Backend variables
+region         = "us-east-1"
+profile        = "admin"
+project_prefix = "batch_transform_demo"
+
+# VPC variables
+vpc_cidr            = "10.0.0.0/16"
+public_subnet_cidrs = ["10.0.1.0/24", "10.0.2.0/24"]
+availability_zones  = ["us-east-1a", "us-east-1b"]
+
+# Sagemaker
+sagemaker_instance_type = "ml.t3.xlarge"
+sagemaker_volume_size   = 30
+
+# Git
+git_repo_url = "https://github.com/username/batch-transform-demo.git"
+git_username = "username"
+git_pat      = "github_pat"
+
+# ECR and S3 variables
+s3_bucket                  = "batch-transform-demo-2025"
+retained_image_count       = 3
+untagged_image_expiry_days = 1

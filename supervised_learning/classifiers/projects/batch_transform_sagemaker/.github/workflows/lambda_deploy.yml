@@ -1,0 +1,64 @@
+name: Deploy the Lambda Function From S3 (Reusable Workflow)
+
+on:
+  workflow_call:
+    inputs:
+      environment:
+        required: true
+        type: string
+    secrets:
+      AWS_REGION:
+        required: true
+      AWS_GITHUB_ACTIONS_ROLE_ARN:
+        required: true
+
+permissions:
+  id-token: write # Required for requesting the Json Web Token (JWT)
+  contents: read # Required for actions/checkout
+
+jobs:
+  deploy-lambda:
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: 'terraform/lambda/code' # Set the working directory for all steps
+
+    steps:
+      - name: Checkout repository
+        id: checkout-code
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials from OIDC
+        id: configure-aws-credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          audience: sts.amazonaws.com
+          aws-region: ${{ secrets.AWS_REGION }}
+          role-to-assume: ${{ secrets.AWS_GITHUB_ACTIONS_ROLE_ARN }}
+          role-session-name: deploy-lambda-function-from-s3-session
+
+      - name: Set up Python
+        id: setup-python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip' # Caching pip dependencies
+
+      - name: Package the Lambda function
+        id: package-lambda
+        run: |
+            chmod +x ./package_and_zip.sh
+            ./package_and_zip.sh
+
+      - name: Upload to S3
+        id: upload-lambda
+        run: aws s3 cp lambda_function.zip s3://${{ secrets.S3_BUCKET_PREFIX }}-${{ inputs.environment }}/lambda_function.zip
+
+      - name: Update Lambda function
+        id: update-lambda
+        run: | # S3 uses dash and Lambda uses underscore
+          aws lambda update-function-code \
+            --function-name ${{ secrets.LAMBDA_FUNCTION_PREFIX }}_${{ inputs.environment }} \
+            --s3-bucket ${{ secrets.S3_BUCKET_PREFIX }}-${{ inputs.environment }} \
+            --s3-key lambda_function.zip

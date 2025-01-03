@@ -1,0 +1,1 @@
+boto3-stubs[s3, sagemaker]>=1.35.60

@@ -1,0 +1,25 @@
+name: Deploy the Lambda Function From S3 (Dev)
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'terraform/lambda/code/**'
+      - '.github/workflows/lambda_deploy_dev.yml'
+      - '.github/workflows/lambda_deploy.yml'
+  push:
+    branches:
+      - main
+    paths:
+      - 'terraform/lambda/code/**'
+      - '.github/workflows/lambda_deploy_dev.yml'
+      - '.github/workflows/lambda_deploy.yml'
+  workflow_dispatch:
+
+jobs:
+  deploy-lambda-dev:
+    uses: ./.github/workflows/lambda_deploy.yml
+    with:
+      environment: dev
+    secrets: inherit

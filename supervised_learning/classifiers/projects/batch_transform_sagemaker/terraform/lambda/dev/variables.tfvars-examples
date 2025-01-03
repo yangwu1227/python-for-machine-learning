@@ -1,0 +1,24 @@
+profile          = "admin"
+project_prefix   = "batch_transform_demo"
+region           = "us-east-1"
+account_id       = "123456789012"
+env              = "dev" # Development
+s3_bucket_prefix = "batch-transform-demo"
+s3_filter_prefix = "batch-transform-input/"
+lambda_handler   = "lambda_function.lambda_handler"
+lambda_runtime   = "python3.11"
+lambda_filename  = "../code/lambda_function.zip"
+lambda_timeout   = 180
+lambda_environment_variables = {
+  "MODEL_NAME"                     = "demo-v2235b7"
+  "S3_BUCKET"                      = "batch-transform-demo-dev" # Development
+  "S3_KEY_INPUT"                   = "batch-transform-input/"
+  "S3_KEY_OUTPUT"                  = "batch-transform-output/"
+  "INSTANCE_TYPE"                  = "ml.c5.xlarge"
+  "INSTANCE_COUNT"                 = "1"
+  "INVOCATIONS_TIMEOUT_IN_SECONDS" = "900"
+  "CONTENT_TYPE"                   = "application/x-parquet"
+  "ACCEPTED"                       = "text/csv"
+  "INVOCATIONS_MAX_RETRIES"        = "3"
+  "ENV"                            = "dev" # Development
+}
