@@ -46,7 +46,7 @@ def create_lgb_estimator(
         The untrianed Lightgbm estimator and the early stopping callback.
     """
     lgb_early_stopping = early_stopping(
-        stopping_rounds=10 if test_mode else 100,
+        stopping_rounds=10 if test_mode else 500,
         first_metric_only=True,
         verbose=True,
     )
@@ -58,7 +58,6 @@ def create_lgb_estimator(
         bagging_freq=1,
         # No subsampling for the positive class
         pos_bagging_fraction=1.0,
-        num_iterations=9999,
         learning_rate=1e-3,
         **hyperparameters,
     )
@@ -81,6 +80,7 @@ def lightgbm_objective(
 
     # Hyperparameters space
     model_hyperparameters = {
+        "num_iterations": trial.suggest_int("num_iterations", 1000, 1500, step=100),
         "max_depth": trial.suggest_int("max_depth", 6, 15),
         "min_data_in_leaf": trial.suggest_int("min_data_in_leaf", 50, 2000, step=50),
         "min_sum_hessian_in_leaf": trial.suggest_float(

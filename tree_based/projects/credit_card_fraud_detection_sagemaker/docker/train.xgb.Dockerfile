@@ -13,8 +13,9 @@ RUN ln -sf /usr/bin/python3.11 /usr/bin/python3 && \
     pip install --no-cache-dir --upgrade pip && \
     pip install --no-cache-dir \
     xgboost \
-    scikit-learn \ 
+    scikit-learn==1.5.2 \ 
     optuna \
+    s3fs \ 
     hydra-core \
     pymysql \
     polars \

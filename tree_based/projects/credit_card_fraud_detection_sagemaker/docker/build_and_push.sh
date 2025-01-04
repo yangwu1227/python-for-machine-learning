@@ -36,6 +36,7 @@ aws ecr get-login-password --region "$region" | docker login --username AWS --pa
 
 # Docker buildkit is required to use dockerfile specific ignore files
 DOCKER_BUILDKIT=1 docker build \
+    --platform linux/amd64 \
     -f "$DOCKERFILE_PATH" \
     -t "$image_name" \
     "$BUILD_CONTEXT"
