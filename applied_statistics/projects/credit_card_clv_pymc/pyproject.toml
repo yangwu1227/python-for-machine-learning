@@ -1,0 +1,90 @@
+[project]
+name = "credit-card-clv"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "arviz>=0.20.0",
+    "graphviz>=0.20.3",
+    "lifetimes>=0.11.3",
+    "matplotlib>=3.10.0",
+    "numpy>=1.26.4",
+    "pandas>=2.2.3",
+    "pingouin>=0.5.5",
+    "pyarrow>=19.0.0",
+    "pymc>=5.20.0",
+    "pymc-marketing>=0.11.0",
+    "requests>=2.32.3",
+    "scikit-learn>=1.6.1",
+    "scipy>=1.15.1",
+    "seaborn>=0.13.2",
+    "statsmodels>=0.14.4",
+    "tqdm>=4.67.1",
+]
+
+[dependency-groups]
+lint-fmt = [
+    "mypy>=1.14.1",
+    "ruff>=0.9.4",
+]
+notebook = [
+    "ipykernel>=6.29.5",
+    "ipywidgets>=8.1.5",
+]
+
+[tool.ruff]
+exclude = [
+    ".bzr",
+    ".direnv",
+    ".eggs",
+    ".git",
+    ".git-rewrite",
+    ".hg",
+    ".ipynb_checkpoints",
+    ".mypy_cache",
+    ".nox",
+    ".pants.d",
+    ".pyenv",
+    ".pytest_cache",
+    ".pytype",
+    ".ruff_cache",
+    ".svn",
+    ".tox",
+    ".venv",
+    ".vscode",
+    "__pypackages__",
+    "_build",
+    "buck-out",
+    "build",
+    "dist",
+    "node_modules",
+    "site-packages",
+    "venv",
+]
+line-length = 88
+indent-width = 4
+target-version = "py312"
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+line-ending = "auto"
+
+[tool.ruff.lint]
+select = [
+    "I",
+    "F401",
+]
+
+[tool.mypy]
+python_version = 3.12
+warn_unused_ignores = true
+warn_no_return = true
+warn_unreachable = true
+disallow_untyped_calls = true
+explicit_package_bases = true
+disable_error_code = [
+    "import-untyped",
+    "import-not-found",
+]
