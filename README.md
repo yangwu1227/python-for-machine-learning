@@ -9,5 +9,5 @@ This is a **loosely structured, dump-all** repository that includes notebooks, p
 This project uses [uv](https://docs.astral.sh/uv/getting-started/installation/) to manage its dependencies. The required python version in `pyproject.toml` is `>=3.12`:
 
 ```bash
-$ uv sync --frozen
+$ uv sync --frozen --all-groups
 ````
