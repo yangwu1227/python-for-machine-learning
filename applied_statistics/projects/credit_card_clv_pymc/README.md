@@ -6,33 +6,9 @@ This repository demonstrates how to model **customer lifetime value** by combini
 - **Pareto/NBD** for predicting the *number of future transactions*.
 - **Gamma-Gamma** for estimating *average spend* per transaction.
 
-We then integrate these two models with **discounted cash flow** to produce probabilistic CLV estimates for each customer.
+We then integrate these two models with **discounted cash flow** to produce probabilistic CLV estimates for each credit card account.
 
 ## Repository Structure
-
-```
-.
-├── README.md                # This file
-├── data
-│   ├── processed
-│   │   └── transactions.parquet   # Pre-processed transaction data
-│   └── raw
-│       └── transactions.zip       # Original/untouched transaction data
-├── models
-│   ├── gg_model.nc               # Gamma-Gamma model artifacts
-│   ├── pnbd_model_thin_20.nc     # Pareto/NBD model artifacts (thin=20)
-│   └── pnbd_model_thin_50.nc     # Pareto/NBD model artifacts (thin=50)
-├── notebooks
-│   ├── clv_modeling.ipynb        # Main modeling notebook (Pareto/NBD + Gamma-Gamma)
-│   └── rfm_segments.ipynb        # RFM-based segmentation and EDA
-├── pyproject.toml                # Project configuration (build, dependencies, etc.)
-├── src
-│   ├── __init__.py
-│   └── model_utils.py            # Utility functions/classes for CLV modeling
-└── uv.lock                       
-```
-
-### Highlights
 
 1. **`data/`**  
    - **raw/** contains original transaction data (e.g., zipped CSV or similar).  
