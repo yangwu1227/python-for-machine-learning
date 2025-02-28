@@ -241,7 +241,7 @@ def trainer(
 
         if (epoch + 1) % 10 == 0:
             print(
-                f"{model_type.upper()} | Epoch [{epoch  + 1}/{epochs}], Loss: {loss.item():.4f}"
+                f"{model_type.upper()} | Epoch [{epoch + 1}/{epochs}], Loss: {loss.item():.4f}"
             )
 
     # Flatten the predictions to a 1D array

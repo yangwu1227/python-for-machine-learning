@@ -240,7 +240,7 @@ def display_errors(model, X, y):
             yhat = np.argmax(prediction_p)
 
             # Display the label above the image
-            ax[i].set_title(f"{y[j,0]},{yhat}", fontsize=10)
+            ax[i].set_title(f"{y[j, 0]},{yhat}", fontsize=10)
             ax[i].set_axis_off()
             fig.suptitle("Label, yhat", fontsize=12)
     return len(idxs)

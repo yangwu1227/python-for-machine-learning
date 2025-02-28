@@ -91,7 +91,7 @@ def plot_violin_plots(
                 i, median - offset, f"{median:.2f}", color="red", ha="center", va="top"
             )
 
-        ax.set_title(f'{col.replace("_", " ").title()}')
+        ax.set_title(f"{col.replace('_', ' ').title()}")
         ax.set_xlabel(cluster_label)
         ax.set_ylabel(col)
 

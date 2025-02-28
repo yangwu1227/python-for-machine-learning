@@ -466,7 +466,7 @@ class TabTransformerTrainer(object):
                     "s3",
                     "cp",
                     tensorboard_local_dir,
-                    f's3://{self.config["s3_bucket"]}/{self.config["s3_key"]}/tensorboard_logs/{self.job_name}_{self.trial_number}',
+                    f"s3://{self.config['s3_bucket']}/{self.config['s3_key']}/tensorboard_logs/{self.job_name}_{self.trial_number}",
                     "--recursive",
                 ]
             )
@@ -660,14 +660,14 @@ def main() -> int:
         logger.info("Running in test mode...")
 
         train_num_batches, train_dataset = test_sample(
-            file_path=f's3://{config["s3_bucket"]}/{config["s3_key"]}/input-data/train/train.csv',
+            file_path=f"s3://{config['s3_bucket']}/{config['s3_key']}/input-data/train/train.csv",
             config=config,
             train=True,
             batch_size=config["tf_keras"]["batch_size"],
         )
 
         val_num_batches, val_dataset = test_sample(
-            file_path=f's3://{config["s3_bucket"]}/{config["s3_key"]}/input-data/val/val.csv',
+            file_path=f"s3://{config['s3_bucket']}/{config['s3_key']}/input-data/val/val.csv",
             config=config,
             train=False,
             batch_size=config["tf_keras"]["batch_size"],

@@ -43,7 +43,7 @@ def main() -> int:
 
     # Download the zip file from s3
     subprocess.run(
-        f'aws s3 cp s3://{config["s3_bucket"]}/{config["s3_key"]}/raw-data/data.zip {raw_data_dir}/data.zip',
+        f"aws s3 cp s3://{config['s3_bucket']}/{config['s3_key']}/raw-data/data.zip {raw_data_dir}/data.zip",
         shell=True,
     )
     # Unzip the file
@@ -57,7 +57,7 @@ def main() -> int:
     for dir_key in ["train", "val", "test"]:
         local_dir_key = os.path.join(raw_data_dir, dir_key)
         s3_dir_key = (
-            f's3://{config["s3_bucket"]}/{config["s3_key"]}/input-data/{dir_key}'
+            f"s3://{config['s3_bucket']}/{config['s3_key']}/input-data/{dir_key}"
         )
 
         # Read in and save dataset to s3

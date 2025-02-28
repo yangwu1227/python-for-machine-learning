@@ -205,7 +205,7 @@ class BaselineTrainer(BaseTrainer):
 
         if self.distributed:
             tensorboard = tf.keras.callbacks.TensorBoard(
-                log_dir=f's3://{self.config["s3_bucket"]}/{self.config["s3_key"]}/tensorboard_logs/{self.job_name}'
+                log_dir=f"s3://{self.config['s3_bucket']}/{self.config['s3_key']}/tensorboard_logs/{self.job_name}"
             )
             callbacks.append(tensorboard)
 
@@ -316,7 +316,7 @@ def main() -> int:
     fs = s3fs.S3FileSystem()
 
     with fs.open(
-        f's3://{config["s3_bucket"]}/{config["s3_key"]}/input-data/train_weights.json',
+        f"s3://{config['s3_bucket']}/{config['s3_key']}/input-data/train_weights.json",
         "rb",
     ) as f:
         train_class_weights = json.load(f)

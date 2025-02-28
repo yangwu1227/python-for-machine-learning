@@ -104,7 +104,7 @@ class LambdaManager(object):
                 self.logger.info(f"IAM role {iam_role_name} does not exist")
             else:
                 self.logger.exception(
-                    f'Cannot find IAM role {iam_role_name} due to {error.response["Error"]["Message"]}'
+                    f"Cannot find IAM role {iam_role_name} due to {error.response['Error']['Message']}"
                 )
                 raise error
         return role
@@ -161,7 +161,7 @@ class LambdaManager(object):
                 )
             else:
                 self.logger.exception(
-                    f'Cannot create IAM role {iam_role_name} due to {error.response["Error"]["Message"]}'
+                    f"Cannot create IAM role {iam_role_name} due to {error.response['Error']['Message']}"
                 )
                 raise error
 
@@ -189,7 +189,7 @@ class LambdaManager(object):
                 self.logger.info(f"Function {function_name} does not exist")
             else:
                 self.logger.exception(
-                    f'Cannot get function {function_name} due to {error.response["Error"]["Message"]}'
+                    f"Cannot get function {function_name} due to {error.response['Error']['Message']}"
                 )
                 raise error
         return response
@@ -258,7 +258,7 @@ class LambdaManager(object):
             )
         except ClientError as error:
             self.logger.exception(
-                f'Cannot create function due to {error.response["Error"]["Message"]}'
+                f"Cannot create function due to {error.response['Error']['Message']}"
             )
             raise error
         else:
@@ -278,7 +278,7 @@ class LambdaManager(object):
             self.logger.info(f"Deleted function {function_name}")
         except ClientError as error:
             self.logger.exception(
-                f'Cannot delete function {function_name} due to {error.response["Error"]["Message"]}'
+                f"Cannot delete function {function_name} due to {error.response['Error']['Message']}"
             )
             raise error
 
@@ -317,7 +317,7 @@ class LambdaManager(object):
             self.logger.info(f"Invoked function {function_name}")
         except ClientError as error:
             self.logger.exception(
-                f'Cannot invoke function {function_name} due to {error.response["Error"]["Message"]}'
+                f"Cannot invoke function {function_name} due to {error.response['Error']['Message']}"
             )
             raise error
         return response
@@ -348,7 +348,7 @@ class LambdaManager(object):
             )
         except ClientError as error:
             self.logger.exception(
-                f'Cannot update function {function_name} due to {error.response["Error"]["Message"]}'
+                f"Cannot update function {function_name} due to {error.response['Error']['Message']}"
             )
             raise error
         else:
@@ -378,7 +378,7 @@ class LambdaManager(object):
             )
         except ClientError as error:
             self.logger.exception(
-                f'Cannot update function {function_name} configurations due to {error.response["Error"]["Message"]}'
+                f"Cannot update function {function_name} configurations due to {error.response['Error']['Message']}"
             )
             raise error
         else:
@@ -396,9 +396,9 @@ class LambdaManager(object):
                     desc = func.get("Description")
                     if desc:
                         print(f"\t{desc}")
-                    print(f'\t{func["Runtime"]}: {func["Handler"]}')
+                    print(f"\t{func['Runtime']}: {func['Handler']}")
         except ClientError as error:
             self.logger.exception(
-                f'Cannot list functions due to {error.response["Error"]["Message"]}'
+                f"Cannot list functions due to {error.response['Error']['Message']}"
             )
             raise error

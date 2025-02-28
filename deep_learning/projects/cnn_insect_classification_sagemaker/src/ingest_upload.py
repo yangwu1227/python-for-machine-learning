@@ -213,7 +213,7 @@ def main() -> int:
         os.makedirs(raw_data_dir)
 
     subprocess.run(
-        f'aws s3 cp s3://{config["s3_bucket"]}/{config["s3_key"]}/raw-data/data.zip {raw_data_dir}/data.zip',
+        f"aws s3 cp s3://{config['s3_bucket']}/{config['s3_key']}/raw-data/data.zip {raw_data_dir}/data.zip",
         shell=True,
     )
     subprocess.run(f"unzip -q {raw_data_dir}/data.zip -d {raw_data_dir}", shell=True)
@@ -264,11 +264,11 @@ def main() -> int:
         logger.info(f"Saving {dir_key} data to s3...")
 
         dataset.save(
-            f's3://{config["s3_bucket"]}/{config["s3_key"]}/input-data/{dir_key}'
+            f"s3://{config['s3_bucket']}/{config['s3_key']}/input-data/{dir_key}"
         )
         # Also save the class percentages to s3
         with fs.open(
-            f's3://{config["s3_bucket"]}/{config["s3_key"]}/input-data/{dir_key}_weights.json',
+            f"s3://{config['s3_bucket']}/{config['s3_key']}/input-data/{dir_key}_weights.json",
             "w",
         ) as f:
             json.dump(calculate_class_weights(class_counts), f)
@@ -287,19 +287,19 @@ def main() -> int:
         indices,
         class_percentages["train"].values(),
         width=bar_width,
-        label=f'Train (Total: {total_counts["train"]})',
+        label=f"Train (Total: {total_counts['train']})",
     )
     _ = ax.bar(
         [i + bar_width for i in indices],
         class_percentages["val"].values(),
         width=bar_width,
-        label=f'Validation (Total: {total_counts["val"]})',
+        label=f"Validation (Total: {total_counts['val']})",
     )
     _ = ax.bar(
         [i + 2 * bar_width for i in indices],
         class_percentages["test"].values(),
         width=bar_width,
-        label=f'Test (Total: {total_counts["test"]})',
+        label=f"Test (Total: {total_counts['test']})",
     )
 
     # Show class labels on the X-axis

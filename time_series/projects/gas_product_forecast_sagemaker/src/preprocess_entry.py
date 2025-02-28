@@ -119,10 +119,10 @@ def main() -> int:
         data, test_size=config["forecast_horizon"]
     )
     logger.info(
-        f'Train set period: {y_train.index.min().strftime("%Y-%m-%d")} to {y_train.index.max().strftime("%Y-%m-%d")}'
+        f"Train set period: {y_train.index.min().strftime('%Y-%m-%d')} to {y_train.index.max().strftime('%Y-%m-%d')}"
     )
     logger.info(
-        f'Test set period: {y_test.index.min().strftime("%Y-%m-%d")} to {y_test.index.max().strftime("%Y-%m-%d")}'
+        f"Test set period: {y_test.index.min().strftime('%Y-%m-%d')} to {y_test.index.max().strftime('%Y-%m-%d')}"
     )
 
     logger.info("Forecasting Covid-19 data...")
@@ -136,10 +136,10 @@ def main() -> int:
         y_test_covid = y_test_covid.iloc[:10]
 
     logger.info(
-        f'Covid Train set period: {y_train_covid.index.min().strftime("%Y-%m-%d")} to {y_train_covid.index.max().strftime("%Y-%m-%d")}'
+        f"Covid Train set period: {y_train_covid.index.min().strftime('%Y-%m-%d')} to {y_train_covid.index.max().strftime('%Y-%m-%d')}"
     )
     logger.info(
-        f'Covid Test set period: {y_test_covid.index.min().strftime("%Y-%m-%d")} to {y_test_covid.index.max().strftime("%Y-%m-%d")}'
+        f"Covid Test set period: {y_test_covid.index.min().strftime('%Y-%m-%d')} to {y_test_covid.index.max().strftime('%Y-%m-%d')}"
     )
     logger.info(f"Covid-19 Train set size: {len(y_train_covid)}")
     logger.info(f"Covid-19 Test set size: {len(y_test_covid)}")
@@ -169,7 +169,7 @@ def main() -> int:
                 index=True,
             )
             logger.info(
-                f'Saved {name} data to {os.path.join(config["preprocess_output"], f"{name}/{name}.csv")}'
+                f"Saved {name} data to {os.path.join(config['preprocess_output'], f'{name}/{name}.csv')}"
             )
     logger.info("Preprocessing job completed successfully!")
 

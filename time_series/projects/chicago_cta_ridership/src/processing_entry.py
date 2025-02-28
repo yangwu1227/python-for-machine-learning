@@ -215,7 +215,7 @@ class Processor(object):
 
         # Filter data based on start and end dates
         self.logger.info(
-            f'Filtering data from {start_date.strftime("%Y-%m-%d")} to {end_date.strftime("%Y-%m-%d")}'
+            f"Filtering data from {start_date.strftime('%Y-%m-%d')} to {end_date.strftime('%Y-%m-%d')}"
         )
         data_2023 = data.loc[
             (data[self.config["date_col"]] >= start_date)
@@ -276,7 +276,7 @@ class Processor(object):
 
         # Forecast horizon
         self.logger.info(
-            f'Forecasting horizon: {self.config["long"]["forecast_horizon"]} months ahead'
+            f"Forecasting horizon: {self.config['long']['forecast_horizon']} months ahead"
         )
         forecast_horizon = self.config["long"]["forecast_horizon"]
         # Get test period indices, the date indices are same for both original and counterfactual data, and so we only need to get it once

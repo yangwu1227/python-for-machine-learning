@@ -62,7 +62,7 @@ def train_ensemble(
         )
 
         # Model training
-        logger.info(f"Training fold {fold+1}...")
+        logger.info(f"Training fold {fold + 1}...")
         fold_stack_model = StackingClassifier(
             estimators=base_estimators,
             final_estimator=LogisticRegression(
@@ -79,7 +79,7 @@ def train_ensemble(
         fold_stack_model.fit(X_train, y_train, sample_weight=fold_sample_weights)
 
         # Evaluate on validation set
-        logger.info(f"Evaluating fold {fold+1}...")
+        logger.info(f"Evaluating fold {fold + 1}...")
         y_pred_prob = fold_stack_model.predict_proba(X_val)
 
         # Calculate log loss

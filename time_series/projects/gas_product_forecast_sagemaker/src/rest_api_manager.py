@@ -73,7 +73,7 @@ class RestApiManager(object):
             self.logger.info(f"Created REST API {self.api_name} with ID {self.api_id}")
         except ClientError as error:
             self.logger.exception(
-                f'Cannot create REST API {self.api_name} due to {error.response["Error"]["Message"]}'
+                f"Cannot create REST API {self.api_name} due to {error.response['Error']['Message']}"
             )
             raise error
 
@@ -120,7 +120,7 @@ class RestApiManager(object):
             )
         except ClientError as error:
             self.logger.exception(
-                f'Cannot create resource {self.api_base_path} due to {error.response["Error"]["Message"]}'
+                f"Cannot create resource {self.api_base_path} due to {error.response['Error']['Message']}"
             )
             raise error
 
@@ -148,7 +148,7 @@ class RestApiManager(object):
             self.logger.info(f"Created POST method for resource {self.resource_id}")
         except ClientError as error:
             self.logger.exception(
-                f'Cannot create POST method for resource {self.resource_id} due to {error.response["Error"]["Message"]}'
+                f"Cannot create POST method for resource {self.resource_id} due to {error.response['Error']['Message']}"
             )
             raise error
 
@@ -176,7 +176,7 @@ class RestApiManager(object):
             )
         except ClientError as error:
             self.logger.exception(
-                f'Cannot set up Lambda integration for POST method on resource {self.resource_id} due to {error.response["Error"]["Message"]}'
+                f"Cannot set up Lambda integration for POST method on resource {self.resource_id} due to {error.response['Error']['Message']}"
             )
             raise error
 
@@ -195,7 +195,7 @@ class RestApiManager(object):
             self.logger.info(f"Deployed REST API {self.api_id}")
         except ClientError as error:
             self.logger.exception(
-                f'Cannot deploy REST API {self.api_id} due to {error.response["Error"]["Message"]}'
+                f"Cannot deploy REST API {self.api_id} due to {error.response['Error']['Message']}"
             )
             raise
 
@@ -221,7 +221,7 @@ class RestApiManager(object):
             )
         except ClientError as error:
             self.logger.exception(
-                f'Cannot add permission to let Amazon API Gateway invoke {self.lambda_function_arn} due to {error.response["Error"]["Message"]}'
+                f"Cannot add permission to let Amazon API Gateway invoke {self.lambda_function_arn} due to {error.response['Error']['Message']}"
             )
             raise error
 
@@ -251,7 +251,7 @@ class RestApiManager(object):
             self.logger.info(f"Created API key with ID {self.api_key_id}")
         except ClientError as error:
             self.logger.exception(
-                f'Cannot create API key due to {error.response["Error"]["Message"]}'
+                f"Cannot create API key due to {error.response['Error']['Message']}"
             )
             raise error
 
@@ -305,7 +305,7 @@ class RestApiManager(object):
             self.logger.info(f"Created usage plan with ID {self.usage_plan_id}")
         except ClientError as error:
             self.logger.exception(
-                f'Cannot create usage plan due to {error.response["Error"]["Message"]}'
+                f"Cannot create usage plan due to {error.response['Error']['Message']}"
             )
             raise error
 
@@ -326,7 +326,7 @@ class RestApiManager(object):
             )
         except ClientError as error:
             self.logger.exception(
-                f'Cannot add API key {self.api_key_id} to usage plan {self.usage_plan_id} due to {error.response["Error"]["Message"]}'
+                f"Cannot add API key {self.api_key_id} to usage plan {self.usage_plan_id} due to {error.response['Error']['Message']}"
             )
             raise error
 
@@ -356,7 +356,7 @@ class RestApiManager(object):
             self.logger.info(f"Deleted REST API {self.api_id}")
         except ClientError as error:
             self.logger.exception(
-                f'Cannot delete REST API {self.api_id} due to {error.response["Error"]["Message"]}'
+                f"Cannot delete REST API {self.api_id} due to {error.response['Error']['Message']}"
             )
             raise
 
@@ -390,7 +390,7 @@ class RestApiManager(object):
                 )
             else:
                 self.logger.error(
-                    f'Failed to remove permission from Lambda function due to {error.response["Error"]["Message"]}'
+                    f"Failed to remove permission from Lambda function due to {error.response['Error']['Message']}"
                 )
 
         if self.usage_plan_id and self.api_key_id:

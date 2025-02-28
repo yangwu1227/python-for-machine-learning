@@ -43,7 +43,7 @@ def map_one_feature(X1, degree):
     k = 0
     for i in range(1, degree + 1):
         out.append((X1**i))
-        string = string + f'w_{{{k}}}{munge("x_0",i)} + '
+        string = string + f"w_{{{k}}}{munge('x_0', i)} + "
         k += 1
     string = string + " b"  # Add b to text equation, not to data
     return np.stack(out, axis=1), string
@@ -78,7 +78,7 @@ def map_feature(X1, X2, degree):
     for i in range(1, degree + 1):
         for j in range(i + 1):
             out.append((X1 ** (i - j) * (X2**j)))
-            string = string + f'w_{{{k}}}{munge("x_0",i-j)}{munge("x_1",j)} + '
+            string = string + f"w_{{{k}}}{munge('x_0', i - j)}{munge('x_1', j)} + "
             k += 1
     return np.stack(out, axis=1), string + " b"
 

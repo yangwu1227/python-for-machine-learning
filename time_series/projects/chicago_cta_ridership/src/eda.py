@@ -131,7 +131,7 @@ class ExploratoryDataAnalyzer(object):
             ci_lim,
             color="blue",
             linestyle="--",
-            label=f"{ci*100}% Significance Level (White Noise)",
+            label=f"{ci * 100}% Significance Level (White Noise)",
         )
         ax.axhline(-ci_lim, color="blue", linestyle="--")
         ax.set_title(title)

@@ -147,13 +147,13 @@ def load_data(
 
     # Extract out transactions for train, validation, and test data
     logging.info(
-        f"Training, validation, and test data fraction are {train_data_ratio}, {valid_data_ratio}, and {1-train_data_ratio-valid_data_ratio}, respectively"
+        f"Training, validation, and test data fraction are {train_data_ratio}, {valid_data_ratio}, and {1 - train_data_ratio - valid_data_ratio}, respectively"
     )
 
     # Ensure that the sum of training and validation ratio is less than 1
-    assert (
-        train_data_ratio + valid_data_ratio < 1
-    ), "The sum of training and validation ratio is found more than or equal to 1."
+    assert train_data_ratio + valid_data_ratio < 1, (
+        "The sum of training and validation ratio is found more than or equal to 1."
+    )
 
     # Stratified splitter to ensure that the ratio of fraud and non-fraud transactions are the same in train, validation, and test data
     stratified_splitter_train_test = StratifiedShuffleSplit(
