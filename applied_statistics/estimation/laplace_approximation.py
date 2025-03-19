@@ -48,11 +48,11 @@ def main() -> int:
     mode_num = float(mode_val)
     sigma_num = float(sigma_val)
 
-    def laplace_pdf(x_val):
+    def laplace_pdf(x_vals: np.ndarray) -> np.ndarray:
         return (
             1
             / np.sqrt(2 * np.pi * sigma_num**2)
-            * np.exp(-0.5 * ((x_val - mode_num) / sigma_num) ** 2)
+            * np.exp(-0.5 * ((x_vals - mode_num) / sigma_num) ** 2)
         )
 
     x_vals = np.linspace(0, 1, 400)

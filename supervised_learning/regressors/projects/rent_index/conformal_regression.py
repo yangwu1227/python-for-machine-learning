@@ -97,7 +97,7 @@ def load_and_preprocess_data(filename: str) -> pl.DataFrame:
 
 
 def split_data(
-    X: pl.DataFrame, y: np.ndarray, random_state: np.random.RandomState
+    X: pl.DataFrame, y: pl.Series, random_state: np.random.RandomState
 ) -> Tuple[
     pl.DataFrame,
     pl.DataFrame,
@@ -115,8 +115,8 @@ def split_data(
     ----------
     X : pl.DataFrame
         The feature DataFrame.
-    y : np.ndarray
-        The target array.
+    y : pl.Series
+        The target Series.
     random_state : np.random.RandomState
         The random state for reproducibility.
 
@@ -257,19 +257,17 @@ def main() -> int:
     # Extract target variable and features
     y = data["monthly_price"] / data["square_feet"]
     X = data.drop(
-        pl.col(
-            [
-                "monthly_price",
-                "square_feet",
-                "address",
-                "state",
-                "cityname",
-                "latitude",
-                "longitude",
-                "id",
-                "has_photo",
-            ]
-        )
+        [
+            "monthly_price",
+            "square_feet",
+            "address",
+            "state",
+            "cityname",
+            "latitude",
+            "longitude",
+            "id",
+            "has_photo",
+        ]
     )
 
     # Split the data into training, validation, calibration, and test sets
