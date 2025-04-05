@@ -1,0 +1,78 @@
+[build-system]
+requires = [
+  "scikit-build-core>=0.10.7",
+  "pybind11>=2.13.6"
+]
+build-backend = "scikit_build_core.build"
+
+[project]
+name = "decision_tree_classifier"
+version = "0.1.0"
+description = "A decision tree classifier in C++ with pybind11"
+readme = "README.md"
+license = { text = "MIT" }
+requires-python = ">=3.11"
+dependencies = [
+    "numpy>=2.2.4",
+]
+
+[project.optional-dependencies]
+dev = [
+    "scikit-learn>=1.6.1",
+    "ruff>=0.11.4",
+]
+
+[tool.scikit-build.cmake]
+source-dir = "."
+build-type = "Release"
+
+[tool.scikit-build.wheel]
+packages = ["src/decision_tree_classifier"]
+
+[tool.scikit-build]
+sdist.exclude = [".venv", ".git", ".vscode", "__pycache__", "*.pyc"]
+
+
+[tool.ruff]
+exclude = [
+    ".bzr",
+    ".direnv",
+    ".eggs",
+    ".git",
+    ".git-rewrite",
+    ".hg",
+    ".ipynb_checkpoints",
+    ".mypy_cache",
+    ".nox",
+    ".pants.d",
+    ".pyenv",
+    ".pytest_cache",
+    ".pytype",
+    ".ruff_cache",
+    ".svn",
+    ".tox",
+    ".venv",
+    ".vscode",
+    "__pypackages__",
+    "_build",
+    "buck-out",
+    "build",
+    "dist",
+    "node_modules",
+    "site-packages",
+    "venv",
+]
+line-length = 88
+indent-width = 4
+target-version = "py311"
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+line-ending = "auto"
+
+[tool.ruff.lint]
+select = [
+    "I",
+    "F401",
+]
