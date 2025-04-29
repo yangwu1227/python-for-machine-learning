@@ -1,32 +1,71 @@
 import argparse
+from typing import Any, Dict, List
 
-import numpy as np
-import pandas as pd
+import polars as pl
 from statsmodels.stats.proportion import proportion_effectsize, proportions_ztest
 
 
-def test_and_effect_size(data: pd.DataFrame, alpha: float) -> pd.DataFrame:
+def apply_statsmodels(row: Dict[str, Any], alpha: float) -> Dict[str, Any]:
     """
-    Compute statistical metrics for A/B test proportion data.
-
-    This function performs a two-sample proportions z-test and calculates the
-    cohen'h.
+    Apply statsmodels tests to a single row of data.
 
     Parameters
     ----------
-    data : pd.DataFrame
-        Input DataFrame with columns:
-        - metric: Name of the metric being tested
-        - treatment_sample_size: Total observations in treatment group
-        - treatment_success_count: Successful outcomes in treatment group
-        - control_sample_size: Total observations in control group
-        - control_success_count: Successful outcomes in control group
+    row : Dict[str, Any]
+        Row data with treatment and control metrics
     alpha : float
-        Significance level for the statistical test (default: 0.05).
+        Significance level
 
     Returns
     -------
-    pd.DataFrame
+    Dict[str, Any]
+        Dictionary of statistical test results
+    """
+    counts = [row["treatment_success_count"], row["control_success_count"]]
+    nobs = [row["treatment_sample_size"], row["control_sample_size"]]
+    z_stat, p_val = proportions_ztest(counts, nobs)
+    eff = proportion_effectsize(
+        row["treatment_prop"], row["control_prop"], method="normal"
+    )
+
+    # Cohen's h interpretation rule of thumb
+    h = abs(eff)
+    if h < 0.2:
+        interpretation = "small effect"
+    elif h < 0.5:
+        interpretation = "medium effect"
+    else:
+        interpretation = "large effect"
+
+    return {
+        "z_stat": z_stat,
+        "p_value": p_val,
+        "statistically_significant": "Yes" if p_val < alpha else "No",
+        "effect_size": eff,
+        "interpretation_guide": interpretation,
+    }
+
+
+def test_and_effect_size(data: pl.DataFrame, alpha: float) -> pl.DataFrame:
+    """
+    This function performs a two-sample proportions z-test (two-sided `H_0: prop_1 - prop_2 = 0`)
+    and calculates Cohen's h.
+
+    Parameters
+    ----------
+    data : pl.DataFrame
+        Input DataFrame with columns:
+            - metric: Name of the metric being tested
+            - treatment_sample_size: Total observations in treatment group
+            - treatment_success_count: Successful outcomes in treatment group
+            - control_sample_size: Total observations in control group
+            - control_success_count: Successful outcomes in control group
+    alpha : float
+        Significance level for the statistical test.
+
+    Returns
+    -------
+    pl.DataFrame
         Original DataFrame with additional columns:
         - treatment_prop: Success proportion in treatment group
         - control_prop: Success proportion in control group
@@ -41,57 +80,53 @@ def test_and_effect_size(data: pd.DataFrame, alpha: float) -> pd.DataFrame:
     """
 
     # Calculate proportions
-    data["treatment_prop"] = (
-        data["treatment_success_count"] / data["treatment_sample_size"]
-    )
-    data["control_prop"] = data["control_success_count"] / data["control_sample_size"]
-
-    # Intermediary columns
-    data["diff"] = data["treatment_prop"] - data["control_prop"]
-    data["prop_pooled"] = (
-        data["treatment_success_count"] + data["control_success_count"]
-    ) / (data["treatment_sample_size"] + data["control_sample_size"])
-    data["std_diff"] = np.sqrt(
-        data["prop_pooled"]
-        * (1 - data["prop_pooled"])
-        * (1 / data["treatment_sample_size"] + 1 / data["control_sample_size"])
+    data = data.with_columns(
+        [
+            (pl.col("treatment_success_count") / pl.col("treatment_sample_size")).alias(
+                "treatment_prop"
+            ),
+            (pl.col("control_success_count") / pl.col("control_sample_size")).alias(
+                "control_prop"
+            ),
+        ]
     )
 
-    # Compute z-stat, p-value, significance, and effect size
-    z_stats = []
-    p_values = []
-    sig_flags = []
-    effect_sizes = []
-    interpretations = []
+    # Intermediary columns for computing z-stat
+    data = data.with_columns(
+        [
+            (pl.col("treatment_prop") - pl.col("control_prop")).alias("diff"),
+            (
+                (pl.col("treatment_success_count") + pl.col("control_success_count"))
+                / (pl.col("treatment_sample_size") + pl.col("control_sample_size"))
+            ).alias("prop_pooled"),
+        ]
+    )
 
-    for _, row in data.iterrows():
-        counts = [row["treatment_success_count"], row["control_success_count"]]
-        nobs = [row["treatment_sample_size"], row["control_sample_size"]]
-        zstat, pval = proportions_ztest(counts, nobs)
-        eff = proportion_effectsize(
-            row["treatment_prop"], row["control_prop"], method="normal"
-        )
+    data = data.with_columns(
+        [
+            (
+                (
+                    pl.col("prop_pooled")
+                    * (1 - pl.col("prop_pooled"))
+                    * (
+                        1 / pl.col("treatment_sample_size")
+                        + 1 / pl.col("control_sample_size")
+                    )
+                ).sqrt()
+            ).alias("std_diff")
+        ]
+    )
 
-        z_stats.append(zstat)
-        p_values.append(pval)
-        sig_flags.append("Yes" if pval < alpha else "No")
-        effect_sizes.append(eff)
-        # Cohen's h interpretation rule of thumb: small (<0.2), medium (<0.5), large (>=0.5)
-        h = abs(eff)
-        if h < 0.2:
-            interpretations.append("small effect")
-        elif h < 0.5:
-            interpretations.append("medium effect")
-        else:
-            interpretations.append("large effect")
+    # Apply the function to each row and collect results
+    results: List[Dict[str, Any]] = [
+        apply_statsmodels(row, alpha) for row in data.iter_rows(named=True)
+    ]
 
-    data["z_stat"] = z_stats
-    data["p_value"] = p_values
-    data["statistically_significant"] = sig_flags
-    data["effect_size"] = effect_sizes
-    data["interpretation_guide"] = interpretations
+    stats_data = pl.DataFrame(results)
 
-    return data
+    # Column-bind and sort by p-value (most significant first)
+    result = pl.concat([data, stats_data], how="horizontal")
+    return result.sort(by=pl.col("p_value"), descending=False)
 
 
 def main() -> int:
@@ -119,26 +154,40 @@ def main() -> int:
     )
     args = parser.parse_args()
 
-    data = pd.read_csv(args.input)
+    data = pl.read_csv(args.input)
     result_data = test_and_effect_size(data, args.alpha)
 
-    # Format proportions and statistics for output
-    result_data["treatment_prop"] = (result_data["treatment_prop"] * 100).map(
-        "{:.2f}%".format
+    # Format proportions and statistics for output with proper return_dtype
+    result_data = result_data.with_columns(
+        [
+            (pl.col("treatment_prop") * 100)
+            .map_elements(lambda x: f"{x:.2f}%", return_dtype=pl.Utf8)
+            .alias("treatment_prop"),
+            (pl.col("control_prop") * 100)
+            .map_elements(lambda x: f"{x:.2f}%", return_dtype=pl.Utf8)
+            .alias("control_prop"),
+            pl.col("diff")
+            .map_elements(lambda x: f"{x:.5f}", return_dtype=pl.Utf8)
+            .alias("diff"),
+            (pl.col("prop_pooled") * 100)
+            .map_elements(lambda x: f"{x:.2f}%", return_dtype=pl.Utf8)
+            .alias("prop_pooled"),
+            pl.col("std_diff")
+            .map_elements(lambda x: f"{x:.12f}", return_dtype=pl.Utf8)
+            .alias("std_diff"),
+            pl.col("z_stat")
+            .map_elements(lambda x: f"{x:.4f}", return_dtype=pl.Utf8)
+            .alias("z_stat"),
+            pl.col("p_value")
+            .map_elements(lambda x: f"{x:.12f}", return_dtype=pl.Utf8)
+            .alias("p_value"),
+            pl.col("effect_size")
+            .map_elements(lambda x: f"{x:.12f}", return_dtype=pl.Utf8)
+            .alias("effect_size"),
+        ]
     )
-    result_data["control_prop"] = (result_data["control_prop"] * 100).map(
-        "{:.2f}%".format
-    )
-    result_data["diff"] = result_data["diff"].map("{:.5f}".format)
-    result_data["prop_pooled"] = (result_data["prop_pooled"] * 100).map(
-        "{:.2f}%".format
-    )
-    result_data["std_diff"] = result_data["std_diff"].map("{:.12f}".format)
-    result_data["z_stat"] = result_data["z_stat"].map("{:.4f}".format)
-    result_data["p_value"] = result_data["p_value"].map("{:.12f}".format)
-    result_data["effect_size"] = result_data["effect_size"].map("{:.12f}".format)
 
-    result_data.to_csv(args.output, index=False)
+    result_data.write_csv(args.output)
     print(f"Results written to {args.output}")
 
     return 0
