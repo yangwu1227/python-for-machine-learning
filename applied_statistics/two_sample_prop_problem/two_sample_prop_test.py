@@ -40,7 +40,7 @@ def apply_statsmodels(row: Dict[str, Any], alpha: float) -> Dict[str, Any]:
     return {
         "z_stat": z_stat,
         "p_value": p_val,
-        "statistically_significant": "Yes" if p_val < alpha else "No",
+        "statistically_significant": "yes" if p_val < alpha else "no",
         "effect_size": eff,
         "interpretation_guide": interpretation,
     }
@@ -74,7 +74,7 @@ def test_and_effect_size(data: pl.DataFrame, alpha: float) -> pl.DataFrame:
         - std_diff: Standard deviation of the difference
         - z_stat: Z-statistic from the proportion test
         - p_value: P-value from the z-test
-        - statistically_significant: 'Yes' if p_value < alpha, else 'No'
+        - statistically_significant: 'yes' if p_value < alpha, else 'no'
         - effect_size: Cohen's h effect size
         - interpretation_guide: Interpretation of effect size magnitude
     """
