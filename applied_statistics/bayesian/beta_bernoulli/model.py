@@ -60,7 +60,7 @@ def main() -> int:
         "Impact of Different Priors on the Posterior in a Beta-Bernoulli Model",
         fontsize=16,
     )
-    plt.tight_layout(rect=[0, 0, 1, 0.96])
+    plt.tight_layout(rect=(0, 0, 1, 0.96))
     plt.show()
 
     return 0
