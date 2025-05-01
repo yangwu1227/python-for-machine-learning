@@ -346,7 +346,7 @@ class TransactionAmountsFeatures(TransformerMixin, BaseEstimator):
         # Sort once for all the rolling aggregations
         X_sorted = X.sort(
             by=[self.account_id_column, self.transaction_datetime_column],
-            descending=[True, False],
+            descending=[False, False],
         )
 
         aggregated_features: List[pl.DataFrame] = []
