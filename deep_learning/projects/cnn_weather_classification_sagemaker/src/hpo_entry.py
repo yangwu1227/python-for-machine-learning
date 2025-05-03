@@ -6,11 +6,11 @@ import numpy as np
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"  # Nopep8
 import optuna
 import tensorflow as tf
-from model_utils import baseline_cnn, get_logger, get_secret, load_data, parser
+from model_utils import baseline_cnn, get_secret, load_data, parser, setup_logger
 from optuna.trial import TrialState
 from tensorflow.errors import InvalidArgumentError
 
-logger = get_logger(name=__name__)
+logger = setup_logger(name=__name__)
 
 # -------------------------- Optimization objective -------------------------- #
 

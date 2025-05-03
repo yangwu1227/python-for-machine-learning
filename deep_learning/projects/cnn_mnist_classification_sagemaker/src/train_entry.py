@@ -3,9 +3,9 @@ from functools import partial
 from typing import List, Tuple
 
 import tensorflow as tf
-from model_utils import DataHandler, get_logger, parser
+from model_utils import DataHandler, parser, setup_logger
 
-logger = get_logger(__name__)
+logger = setup_logger(__name__)
 
 # ------------------------- Function for building cnn ------------------------ #
 

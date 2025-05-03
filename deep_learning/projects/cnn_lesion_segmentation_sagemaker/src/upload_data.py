@@ -7,7 +7,7 @@ from typing import List, Tuple
 
 import numpy as np
 import sagemaker
-from model_utils import get_logger
+from model_utils import setup_logger
 from sklearn.model_selection import train_test_split
 from tensorflow.keras.utils import img_to_array, load_img
 
@@ -96,7 +96,7 @@ def main() -> int:
     s3_bucket = "yang-ml-sagemaker"
     s3_key = "lesion-segmentation"
 
-    logger = get_logger(__name__)
+    logger = setup_logger(__name__)
 
     # ------------------------- Download zip file from s3 ------------------------ #
 

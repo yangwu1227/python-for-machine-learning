@@ -19,8 +19,8 @@ from model_utils import (
     compute_class_distribution,
     create_study,
     get_db_url,
-    get_logger,
     parser,
+    setup_logger,
     study_report,
 )
 
@@ -275,7 +275,7 @@ def main() -> int:
 
     additional_args = {"study_name": str}
     args = add_additional_args(parser, additional_args)()
-    logger = get_logger(name="training_xgboost")
+    logger = setup_logger(name="training_xgboost")
     job_name = args.training_env["job_name"]
 
     # ---------------------------- Load data ---------------------------- #

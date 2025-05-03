@@ -12,8 +12,8 @@ from model_utils import (
     create_study,
     dataset_from_csv,
     get_db_url,
-    get_logger,
     parser,
+    setup_logger,
     study_report,
     test_sample,
 )
@@ -627,7 +627,7 @@ def tf_objective(
 def main() -> int:
     # ---------------------------------- Set up ---------------------------------- #
 
-    logger = get_logger("tab_transformer_hpo")
+    logger = setup_logger("tab_transformer_hpo")
 
     # Hydra
     core.global_hydra.GlobalHydra.instance().clear()

@@ -7,9 +7,9 @@ import numpy as np
 
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"  # Nopep8
 import tensorflow as tf
-from model_utils import get_logger, load_data, parser
+from model_utils import load_data, parser, setup_logger
 
-logger = get_logger(name=__name__)
+logger = setup_logger(name=__name__)
 
 # ------------------------- Function for fine tuning ------------------------- #
 

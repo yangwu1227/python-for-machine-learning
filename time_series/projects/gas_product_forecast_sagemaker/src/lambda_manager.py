@@ -14,7 +14,7 @@ from mypy_boto3_lambda.type_defs import (
     InvocationResponseTypeDef,
 )
 
-from src.model_utils import get_logger
+from src.model_utils import setup_logger
 
 
 class LambdaManager(object):
@@ -50,7 +50,7 @@ class LambdaManager(object):
         """
         self.lambda_client = lambda_client
         self.iam_resource = iam_resource
-        self.logger = get_logger(__name__)
+        self.logger = setup_logger(__name__)
 
     @staticmethod
     def create_deployment_package(source_file: str, destination_file: str) -> bytes:

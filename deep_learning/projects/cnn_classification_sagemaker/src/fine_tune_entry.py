@@ -14,13 +14,13 @@ from hydra import compose, core, initialize
 from model_utils import (
     AugmentationModel,
     add_additional_args,
-    get_logger,
     load_dataset,
     parser,
+    setup_logger,
 )
 from omegaconf import OmegaConf
 
-logger = get_logger(name="fine_tune")
+logger = setup_logger(name="fine_tune")
 
 # ----------------------- Pretrained model instantiator ---------------------- #
 

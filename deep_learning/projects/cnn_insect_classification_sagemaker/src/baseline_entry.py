@@ -15,12 +15,12 @@ from base_trainer import BaseTrainer
 from model_utils import (
     AugmentationModel,
     add_additional_args,
-    get_logger,
     load_datasets,
     parser,
+    setup_logger,
 )
 
-logger = get_logger(name="baseline_training")
+logger = setup_logger(name="baseline_training")
 
 # ------------------------------- Trainer class ------------------------------ #
 

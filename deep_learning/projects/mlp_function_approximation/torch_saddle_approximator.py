@@ -8,12 +8,12 @@ import numpy as np
 import optuna
 import torch
 from IPython.display import display
-from model_utils import create_study, get_logger, plot_2d_surfaces, study_report
+from model_utils import create_study, plot_2d_surfaces, setup_logger, study_report
 from torch.nn.modules.loss import _Loss
 from torch.optim import Optimizer
 from torch.utils.data import DataLoader, TensorDataset
 
-logger = get_logger(name="tf_monkey_saddle_approximator")
+logger = setup_logger(name="tf_monkey_saddle_approximator")
 
 # --------------------------- Monkey saddle surface -------------------------- #
 

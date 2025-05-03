@@ -5,7 +5,7 @@ from random import Random
 from shutil import copyfile
 
 import sagemaker
-from model_utils import get_logger
+from model_utils import setup_logger
 
 
 def main() -> int:
@@ -13,7 +13,7 @@ def main() -> int:
     s3_bucket = "yang-ml-sagemaker"
     s3_key = "lesion-segmentation"
 
-    logger = get_logger(__name__)
+    logger = setup_logger(__name__)
 
     # ------------------------- Download zip file from s3 ------------------------ #
 

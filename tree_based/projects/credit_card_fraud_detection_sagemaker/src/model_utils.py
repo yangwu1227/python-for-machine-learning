@@ -92,7 +92,7 @@ def save_or_load_permutation_importance(
         return perm_feat_imp_result
 
 
-def get_logger(name: str) -> logging.Logger:
+def setup_logger(name: str) -> logging.Logger:
     """
     Parameters
     ----------

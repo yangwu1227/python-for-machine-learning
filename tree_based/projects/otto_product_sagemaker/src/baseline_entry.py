@@ -13,7 +13,7 @@ from sklearn.model_selection import StratifiedKFold
 from sklearn.pipeline import Pipeline
 from sklearn.utils.class_weight import compute_sample_weight
 
-from src.model_utils import add_additional_args, get_logger, parser
+from src.model_utils import add_additional_args, parser, setup_logger
 
 # ------------------------------ Baseline function --------------------------- #
 
@@ -189,7 +189,7 @@ def main() -> int:
 
     args = add_additional_args(parser, additional_args)()
 
-    logger = get_logger(__name__)
+    logger = setup_logger(__name__)
 
     job_name = args.training_env["job_name"]
 

@@ -15,7 +15,7 @@ from src.model_utils import (
     AugmentationModel,
     ErrorAnalyzer,
     TuningVisualizer,
-    get_logger,
+    setup_logger,
 )
 
 # ------------------------- Tests for logger function ------------------------ #
@@ -26,12 +26,12 @@ class TestGetLogger:
     Tests for the logger function.
     """
 
-    def test_get_logger(self, capsys):
+    def test_setup_logger(self, capsys):
         """
         Tests for name, level, and message
         """
         # Test that the logger has the correct name
-        logger = get_logger("test")
+        logger = setup_logger("test")
         assert logger.name == "test"
 
         # Test that the logger has the correct level

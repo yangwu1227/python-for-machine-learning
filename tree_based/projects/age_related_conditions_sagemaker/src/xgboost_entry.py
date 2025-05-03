@@ -19,8 +19,8 @@ from src.model_utils import (
     create_study,
     custom_log_loss,
     get_db_url,
-    get_logger,
     parser,
+    setup_logger,
     study_report,
 )
 
@@ -254,7 +254,7 @@ def main() -> int:
 
     additional_args = {"study_name": str}
     args = add_additional_args(parser, additional_args)()
-    logger = get_logger(name=__name__)
+    logger = setup_logger(name=__name__)
     job_name = args.training_env["job_name"]
 
     # Hydra

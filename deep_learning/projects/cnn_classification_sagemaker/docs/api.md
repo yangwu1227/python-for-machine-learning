@@ -4,13 +4,13 @@
 
 ---
 
-*  `get_logger`: this is used to log training status updates and information to AWS CloudWatch.
+*  `setup_logger`: this is used to log training status updates and information to AWS CloudWatch.
 
     Example
 
     ```python
-    from custom _utils import get_logger
-    logger = get_logger(name='example')
+    from custom _utils import setup_logger
+    logger = setup_logger(name='example')
     accuracy = 0.98
     logger.info(f'The accuray score {accuracy} will be logged to cloudwatch')
     ```

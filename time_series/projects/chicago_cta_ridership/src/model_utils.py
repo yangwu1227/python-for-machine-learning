@@ -42,7 +42,7 @@ class SetUp(object):
         self.config_name = config_name
         self.config_path = config_path
 
-    def _get_logger(self, name: str) -> logging.Logger:
+    def _setup_logger(self, name: str) -> logging.Logger:
         """
         Parameters
         ----------
@@ -104,7 +104,7 @@ class SetUp(object):
         Tuple[logging.Logger, Dict[str, Any]]
             A tuple containing a logger and a dictionary containing configuration parameters.
         """
-        logger = self._get_logger(self.logger_name)
+        logger = self._setup_logger(self.logger_name)
         config = self._get_config(self.config_name, self.config_path)
 
         return logger, config

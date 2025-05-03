@@ -2,7 +2,7 @@ import argparse
 from multiprocessing import Pool
 
 import numpy as np
-from model_utils import get_logger, grid_to_seq, plot_predictions, trainer
+from model_utils import grid_to_seq, plot_predictions, setup_logger, trainer
 
 # ------------------------------- Generate data ------------------------------ #
 
@@ -114,7 +114,7 @@ def generate_monkey_saddle_data(
 
 
 def main() -> int:
-    logger = get_logger("torch_monkey_saddle")
+    logger = setup_logger("torch_monkey_saddle")
 
     # ------------------- Parse arguments from the command line ------------------ #
 

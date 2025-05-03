@@ -4,7 +4,7 @@ import boto3
 import requests
 from botocore.exceptions import ClientError
 
-from src.model_utils import get_logger
+from src.model_utils import setup_logger
 
 
 class RestApiManager(object):
@@ -57,7 +57,7 @@ class RestApiManager(object):
         self.lambda_function_name = lambda_function_name
         self.lambda_function_arn = f"arn:aws:lambda:{self.lambda_client.meta.region_name}:{self.account_id}:function:{lambda_function_name}"
 
-        self.logger = get_logger(__name__)
+        self.logger = setup_logger(__name__)
 
     def _create_rest_api(self) -> None:
         """

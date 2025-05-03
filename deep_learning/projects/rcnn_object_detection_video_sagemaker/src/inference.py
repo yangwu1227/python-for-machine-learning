@@ -14,13 +14,13 @@ from model_utils import (
     ScoresType,
     batch_generator,
     get_device,
-    get_logger,
     postprocess_predictions,
     predict,
     preprocess_frames,
+    setup_logger,
 )
 
-logger = get_logger("async_inference")
+logger = setup_logger("async_inference")
 
 
 def model_fn(model_dir: str) -> MaskRCNN:

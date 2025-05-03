@@ -14,12 +14,12 @@ from base_trainer import BaseTrainer
 from model_utils import (
     AugmentationModel,
     add_additional_args,
-    get_logger,
     load_datasets,
     parser,
+    setup_logger,
 )
 
-logger = get_logger(name="fine_tune_resnet50v2")
+logger = setup_logger(name="fine_tune_resnet50v2")
 
 # ------------------------------- Trainer class ------------------------------ #
 

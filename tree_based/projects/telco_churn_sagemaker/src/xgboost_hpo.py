@@ -9,7 +9,7 @@ import numpy as np
 import optuna
 import pandas as pd
 import xgboost as xgb
-from model_utils import create_pipeline, get_logger
+from model_utils import create_pipeline, setup_logger
 from optuna.trial import TrialState
 from sklearn.metrics import average_precision_score
 from sklearn.model_selection import StratifiedKFold
@@ -236,7 +236,7 @@ def main() -> int:
         "ignore", category=UserWarning
     )  # Ignore warnings from optuna callback
 
-    logger = get_logger(__name__)
+    logger = setup_logger(__name__)
     optuna.logging.enable_propagation()  # Propagate logs to the root logger
     optuna.logging.disable_default_handler()  # Stop showing logs in sys.stderr
 

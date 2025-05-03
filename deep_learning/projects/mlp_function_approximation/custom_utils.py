@@ -20,7 +20,7 @@ from pygments.lexers import PythonLexer
 # ------------------------------ Logger function ----------------------------- #
 
 
-def get_logger(name: str) -> logging.Logger:
+def setup_logger(name: str) -> logging.Logger:
     """
     Parameters
     ----------

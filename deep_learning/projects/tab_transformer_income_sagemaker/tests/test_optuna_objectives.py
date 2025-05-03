@@ -9,7 +9,7 @@ from omegaconf import OmegaConf
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"  # Nopep8
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from src.model_utils import dataset_from_csv, get_logger
+from src.model_utils import dataset_from_csv, setup_logger
 from src.tf_keras_entry import tf_objective
 
 # --------------------------- Module level fixtures -------------------------- #
@@ -29,7 +29,7 @@ def config():
 
 @pytest.fixture(scope="module")
 def logger():
-    return get_logger(name="test_optuna_objectives")
+    return setup_logger(name="test_optuna_objectives")
 
 
 # ----------------------------------- Tests ---------------------------------- #

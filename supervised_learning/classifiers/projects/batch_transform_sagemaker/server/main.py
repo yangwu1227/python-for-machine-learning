@@ -6,9 +6,9 @@ import joblib
 from fastapi import FastAPI
 
 from server.api import endpoints, ping
-from server.utils import get_logger
+from server.utils import setup_logger
 
-logger = get_logger(__name__)
+logger = setup_logger(__name__)
 
 
 @asynccontextmanager

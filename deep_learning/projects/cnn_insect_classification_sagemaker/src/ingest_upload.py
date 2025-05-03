@@ -12,7 +12,7 @@ from omegaconf import OmegaConf
 
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"  # Nopep8
 import matplotlib.pyplot as plt
-from model_utils import get_logger
+from model_utils import setup_logger
 from tensorflow.keras.utils import image_dataset_from_directory
 
 # ------------------------- Downsample a single class ------------------------ #
@@ -193,7 +193,7 @@ def main() -> int:
     # ---------------------------------- Set up ---------------------------------- #
 
     # Get logger
-    logger = get_logger(name="data_ingest")
+    logger = setup_logger(name="data_ingest")
 
     # Hyra
     core.global_hydra.GlobalHydra.instance().clear()

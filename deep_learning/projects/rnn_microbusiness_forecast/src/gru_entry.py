@@ -10,7 +10,7 @@ import numpy as np
 import polars as pl
 import tensorflow as tf
 from hydra import compose, core, initialize
-from model_utils import add_additional_args, get_logger, parser
+from model_utils import add_additional_args, parser, setup_logger
 from omegaconf import OmegaConf
 from sklearn.model_selection import GroupKFold
 
@@ -612,7 +612,7 @@ class GRUTrainer(object):
 def main() -> int:
     # ---------------------------------- Set up ---------------------------------- #
 
-    logger = get_logger("gru_hpo")
+    logger = setup_logger("gru_hpo")
 
     # Hydra
     core.global_hydra.GlobalHydra.instance().clear()

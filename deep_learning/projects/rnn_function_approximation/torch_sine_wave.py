@@ -2,7 +2,7 @@ import argparse
 from multiprocessing import Pool
 
 import numpy as np
-from model_utils import get_logger, grid_to_seq, plot_predictions, trainer
+from model_utils import grid_to_seq, plot_predictions, setup_logger, trainer
 
 # ------------------------------- Generate data ------------------------------ #
 
@@ -45,7 +45,7 @@ def generate_2d_sine_wave(
 
 
 def main() -> int:
-    logger = get_logger("torch_2d_sine_wave")
+    logger = setup_logger("torch_2d_sine_wave")
 
     # ------------------- Parse arguments from the command line ------------------ #
 

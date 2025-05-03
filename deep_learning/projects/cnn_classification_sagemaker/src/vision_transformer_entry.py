@@ -16,13 +16,13 @@ from hydra import compose, core, initialize
 from model_utils import (
     AugmentationModel,
     add_additional_args,
-    get_logger,
     load_dataset,
     parser,
+    setup_logger,
 )
 from omegaconf import OmegaConf
 
-logger = get_logger(name="vision_transformer")
+logger = setup_logger(name="vision_transformer")
 
 # -------------------------- Shifted patch tokenizer ------------------------- #
 

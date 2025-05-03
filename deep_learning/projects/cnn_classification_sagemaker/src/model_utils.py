@@ -20,7 +20,7 @@ from tensorflow.keras import backend as K
 # ------------------------------ Logger function ----------------------------- #
 
 
-def get_logger(name: str) -> logging.Logger:
+def setup_logger(name: str) -> logging.Logger:
     """
     Parameters
     ----------

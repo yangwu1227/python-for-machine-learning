@@ -10,7 +10,7 @@ import numpy as np
 import pandas as pd
 from hydra import compose, core, initialize
 from matplotlib.ticker import MaxNLocator
-from model_utils import get_logger
+from model_utils import setup_logger
 from omegaconf import OmegaConf
 from scipy.stats import shapiro
 from sktime.forecasting.base import ForecastingHorizon
@@ -660,7 +660,7 @@ class TSTrainer(object):
 def main() -> int:
     # ---------------------------------- Set up ---------------------------------- #
 
-    logger = get_logger(__name__)
+    logger = setup_logger(__name__)
 
     parser = argparse.ArgumentParser()
     parser.add_argument("--model_dir", type=str, default=os.environ["SM_MODEL_DIR"])

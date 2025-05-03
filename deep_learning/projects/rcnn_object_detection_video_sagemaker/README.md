@@ -237,7 +237,7 @@ At a high-level, the following functions are required in the `inference.py` scri
 
 Some logic is abstracted into the `model_utils.py` script:
 
-- **`get_logger(name: str)`:** Sets up and returns a logger with a specified name and standardized format for logging messages.
+- **`setup_logger(name: str)`:** Sets up and returns a logger with a specified name and standardized format for logging messages.
 
 - **`get_device()`:** Dynamically determines and returns the available device (GPU or CPU) for computation.
 

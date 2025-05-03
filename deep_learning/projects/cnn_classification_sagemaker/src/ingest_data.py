@@ -9,7 +9,7 @@ import s3fs
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"  # NoPep8
 import tensorflow as tf
 from hydra import compose, core, initialize
-from model_utils import get_logger
+from model_utils import setup_logger
 from omegaconf import OmegaConf
 
 
@@ -23,7 +23,7 @@ def main() -> int:
         OmegaConf.to_container(compose(config_name="main"), resolve=True),
     )
 
-    logger = get_logger("ingest_data")
+    logger = setup_logger("ingest_data")
 
     # --------------------------- Download zip from s3 --------------------------- #
 

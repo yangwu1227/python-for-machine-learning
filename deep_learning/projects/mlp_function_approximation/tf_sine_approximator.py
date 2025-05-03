@@ -7,9 +7,9 @@ os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"  # Nopep8
 import keras_tuner as kt
 import numpy as np
 import tensorflow as tf
-from model_utils import get_logger, plot_1d_curve, report_keras_hpo
+from model_utils import plot_1d_curve, report_keras_hpo, setup_logger
 
-logger = get_logger("tf_sine_apprixmator")
+logger = setup_logger("tf_sine_apprixmator")
 
 # ------------------------------ Data generator ------------------------------ #
 
@@ -141,7 +141,7 @@ class SineHyperModel(kt.HyperModel):
 
 def main() -> int:
     # Suppress TensorFlow warnings and info, only show errors
-    tf.get_logger().setLevel("ERROR")
+    tf.setup_logger().setLevel("ERROR")
 
     # Create working directory if it does not already exist
     output_dir = os.path.join(__file__, "outputs/sine_approximator_hpo")

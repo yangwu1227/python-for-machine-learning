@@ -3,10 +3,10 @@ from io import BytesIO
 import polars as pl
 from fastapi import APIRouter, HTTPException, Request, Response, status
 
-from server.utils import get_logger
+from server.utils import setup_logger
 
 router = APIRouter()
-logger = get_logger(__name__)
+logger = setup_logger(__name__)
 
 
 @router.post("/invocations")

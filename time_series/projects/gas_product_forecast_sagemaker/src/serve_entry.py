@@ -7,12 +7,12 @@ import pandas as pd
 import uvicorn
 from fastapi import FastAPI, HTTPException, Request, Response, status
 from hydra import compose, core, initialize
-from model_utils import get_logger
+from model_utils import setup_logger
 from omegaconf import OmegaConf
 
 
 def main() -> int:
-    logger = get_logger(__name__)
+    logger = setup_logger(__name__)
 
     # ---------------------- Application lifespan management --------------------- #
 

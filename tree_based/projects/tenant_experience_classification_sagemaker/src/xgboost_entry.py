@@ -12,8 +12,8 @@ from model_utils import (
     add_additional_args,
     create_study,
     get_db_url,
-    get_logger,
     parser,
+    setup_logger,
     study_report,
 )
 from sklearn.calibration import CalibratedClassifierCV
@@ -285,7 +285,7 @@ def main() -> int:
 
     args = add_additional_args(parser, additional_args)()
 
-    logger = get_logger(name="training-job")
+    logger = setup_logger(name="training-job")
 
     job_name = args.training_env["job_name"]
 

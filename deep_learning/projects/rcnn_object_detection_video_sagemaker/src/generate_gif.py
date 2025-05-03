@@ -12,9 +12,9 @@ from torchvision.io import read_image
 from torchvision.transforms.functional import to_pil_image
 from torchvision.utils import draw_bounding_boxes
 
-from model_utils import get_logger
+from model_utils import setup_logger
 
-logger = get_logger("generate_gif")
+logger = setup_logger("generate_gif")
 
 COCO_LABELS: List[str] = [
     "__background__",
