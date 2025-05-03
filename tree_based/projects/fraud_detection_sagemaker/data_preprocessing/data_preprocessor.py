@@ -151,9 +151,7 @@ def load_data(
     )
 
     # Ensure that the sum of training and validation ratio is less than 1
-    assert (
-        train_data_ratio + valid_data_ratio < 1
-    ), "The sum of training and validation ratio is found more than or equal to 1."
+    assert train_data_ratio + valid_data_ratio < 1
 
     # Stratified splitter to ensure that the ratio of fraud and non-fraud transactions are the same in train, validation, and test data
     stratified_splitter_train_test = StratifiedShuffleSplit(
