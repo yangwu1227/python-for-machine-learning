@@ -17,6 +17,7 @@ dependencies = [
     "imblearn>=0.0",
     "keras>=3.6.0",
     "kmodes>=0.12.2",
+    "kneed>=0.8.5",
     "lightgbm>=4.5.0",
     "mapie>=0.9.1",
     "matplotlib>=3.9.2",
