@@ -6,6 +6,18 @@ import polars as pl
 from sklearn.model_selection import KFold, StratifiedGroupKFold, StratifiedKFold
 
 
+class NonUniqueFoldsError(ValueError):
+    """
+    Exception raised when cross-validation folds are not unique.
+
+    This error occurs when validation sets in cross-validation contain
+    the same samples across different folds, which violates the
+    principle of cross-validation.
+    """
+
+    pass
+
+
 def simulate_nested_cv(
     n: int,
     outer_folds: int,
@@ -121,14 +133,14 @@ def simulate_nested_cv(
                 inner_val_sets.append(frozenset(train_indices_outer[val_indices_inner]))
 
             # Check inner-fold uniqueness
-            assert len(inner_val_sets) == len(
-                set(inner_val_sets)
-            ), f"{name} inner folds in outer fold {fold_index_outer} are not unique"
+            if len(inner_val_sets) != len(set(inner_val_sets)):
+                raise NonUniqueFoldsError(
+                    f"{name} inner folds in outer fold {fold_index_outer} are not unique"
+                )
 
         # Check outer-fold uniqueness
-        assert len(outer_val_sets) == len(
-            set(outer_val_sets)
-        ), f"{name} outer folds are not unique"
+        if len(outer_val_sets) != len(set(outer_val_sets)):
+            raise NonUniqueFoldsError(f"{name} outer folds are not unique")
 
         results.append(
             {
