@@ -2,16 +2,16 @@
 
 Let
 
-* $N\_{\mathrm{total}}$ = total number of data samples
-* $n\_{\mathrm{fold\_outer}}$ = number of outer folds
-* $n\_{\mathrm{fold\_inner}}$ = number of inner folds
+* $N_{\text{total}}$ = total number of data samples
+* $n_{\text{fold outer}}$ = number of outer folds
+* $n_{\text{fold inner}}$ = number of inner folds
 
 We denote
 
-* $N\_{\mathrm{outer\_val}}$ = size of each outer **validation** fold
-* $N\_{\mathrm{outer\_train}}$ = size of each outer **training** set
-* $N\_{\mathrm{inner\_val}}$ = size of each inner **validation** fold (within an outer training set)
-* $N\_{\mathrm{inner\_train}}$ = size of each inner **training** set (within an outer training set)
+* $N_{\text{outer val}}$ = size of each outer **validation** fold
+* $N_{\text{outer train}}$ = size of each outer **training** set
+* $N_{\text{inner val}}$ = size of each inner **validation** fold (within an outer training set)
+* $N_{\text{inner train}}$ = size of each inner **training** set (within an outer training set)
 
 ---
 
@@ -19,50 +19,83 @@ We denote
 
 * **Outer validation set size**
 
-  $$
-    N_{\mathrm{outer\_val}} = \frac{N_{\mathrm{total}}}{\,n_{\mathrm{fold\_outer}}\,}
-  $$
+$$
+\begin{align*}
+N_{\text{outer val}} = \frac{N_{\text{total}}}{n_{\text{fold outer}}}
+\end{align*}
+$$
 
 * **Outer training set size**
 
-  $$
-    N_{\mathrm{outer\_train}} = N_{\mathrm{total}} - N_{\mathrm{outer\_val}} = N_{\mathrm{total}}\,\frac{n_{\mathrm{fold\_outer}} - 1}{\,n_{\mathrm{fold\_outer}}\,}
-  $$
+$$
+\begin{align*}
+N_{\text{outer train}} &= N_{\text{total}} - N_{\text{outer val}} \\
+                        &= N_{\text{total}} - \frac{N_{\text{total}}}{n_{\text{fold outer}}} \\
+                        &= N_{\text{total}} (1 - \frac{1}{n_{\text{fold outer}}}) \\
+                        &= N_{\text{total}} (\frac{1}{1} - \frac{1}{n_{\text{fold outer}}}) \\
+                        &= N_{\text{total}} (\frac{n_{\text{fold outer}}}{n_{\text{fold outer}}} - \frac{1}{n_{\text{fold outer}}}) \\
+                        &= N_{\text{total}} \frac{n_{\text{fold outer}} - 1}{n_{\text{fold outer}}}
+\end{align*}
+$$
 
 * **Inner validation set size**
 
-  $$
-    N_{\mathrm{inner\_val}} = \frac{N_{\mathrm{outer\_train}}}{\,n_{\mathrm{fold\_inner}}\,} = N_{\mathrm{total}}\,\frac{n_{\mathrm{fold\_outer}} - 1}{\,n_{\mathrm{fold\_outer}}\,}\,\frac{1}{\,n_{\mathrm{fold\_inner}}\,} = N_{\mathrm{total}}\,\frac{n_{\mathrm{fold\_outer}} - 1}{\,n_{\mathrm{fold\_outer}}\,n_{\mathrm{fold\_inner}}\,}
-  $$
+$$
+\begin{align*}
+N_{\text{inner val}} &= \frac{N_{\text{outer train}}}{n_{\text{fold inner}}} \\
+                      &= \frac{N_{\text{total}} \frac{n_{\text{fold outer}} - 1}{n_{\text{fold outer}}}}{n_{\text{fold inner}}} \\
+                      &= N_{\text{total}}\frac{n_{\text{fold outer}} - 1}{n_{\text{fold outer}}}\frac{1}{n_{\text{fold inner}}} \\
+                      &= N_{\text{total}}\frac{n_{\text{fold outer}} - 1}{n_{\text{fold outer}}n_{\text{fold inner}}}
+\end{align*}
+$$
 
 * **Inner training set size**
 
-  $$
-    N_{\mathrm{inner\_train}} = N_{\mathrm{outer\_train}} - N_{\mathrm{inner\_val}} = N_{\mathrm{total}}\,\frac{n_{\mathrm{fold\_outer}} - 1}{\,n_{\mathrm{fold\_outer}}\,}\,\frac{n_{\mathrm{fold\_inner}} - 1}{\,n_{\mathrm{fold\_inner}}\,} = N_{\mathrm{total}}\,\frac{(n_{\mathrm{fold\_outer}}-1)(n_{\mathrm{fold\_inner}}-1)}{\,n_{\mathrm{fold\_outer}}\,n_{\mathrm{fold\_inner}}\,}
-  $$
-
----
+$$  
+\begin{align*}
+N_{\text{inner train}} &= N_{\text{outer train}} - N_{\text{inner val}} \\
+                        &= \big[N_{\text{total}} \frac{n_{\text{fold outer}} - 1}{n_{\text{fold outer}}}\big] - \big[N_{\text{total}}\frac{n_{\text{fold outer}} - 1}{n_{\text{fold outer}}n_{\text{fold inner}}}\big] \\
+                        &= N_{\text{total}} \big[\frac{n_{\text{fold outer}} - 1}{n_{\text{fold outer}}} - \frac{n_{\text{fold outer}} - 1}{n_{\text{fold outer}}n_{\text{fold inner}}}\big] \\
+                        &= N_{\text{total}} \big[\frac{(n_{\text{fold outer}} - 1)n_{\text{fold inner}} - (n_{\text{fold outer}} - 1)}{n_{\text{fold outer}}n_{\text{fold inner}}}\big] \\
+                        &= N_{\text{total}} \big[\frac{n_{\text{fold outer}}n_{\text{fold inner}} - n_{\text{fold inner}} - n_{\text{fold outer}} + 1}{n_{\text{fold outer}}n_{\text{fold inner}}}\big] \\
+                        &= N_{\text{total}} \big[\frac{(n_{\text{fold outer}} - 1)(n_{\text{fold inner}} - 1)}{n_{\text{fold outer}}n_{\text{fold inner}}}\big] \\
+                        &= N_{\text{total}}\frac{n_{\text{fold outer}} - 1}{n_{\text{fold outer}}}\frac{n_{\text{fold inner}} - 1}{n_{\text{fold inner}}}
+\end{align*}
+$$
 
 ## Example
 
 We simulate a dataset with
 
-* $N\_{\mathrm{total}} = 20000$ observations
+* $N {\text{total}} = 20000$ observations
 * a binary target $y$
 * a grouping variable (for **StratifiedGroupKFold**)
-* nested CV with $n\_{\mathrm{fold\_outer}} = 5$ outer folds and $n\_{\mathrm{fold\_inner}} = 10$ inner folds
+* nested CV with $n {\text{fold outer}} = 5$ outer folds and $n {\text{fold inner}} = 10$ inner folds
 
 ### Plug-in Values
 
 With
 
 $$
-N_{\mathrm{total}} = 20000, \quad n_{\mathrm{fold\_outer}} = 5, \quad n_{\mathrm{fold\_inner}} = 10
+N_{\text{total}} = 20000, \quad n_{\text{fold outer}} = 5, \quad n_{\text{fold inner}} = 10
 $$
 
 we obtain:
 
-1. $N\_{\mathrm{outer\_val}} = 20000 / 5 = 4000$
-2. $N\_{\mathrm{outer\_train}} = 20000 \times \tfrac{4}{5} = 16000$
-3. $N\_{\mathrm{inner\_val}} = 16000 / 10 = 1600$
-4. $N\_{\mathrm{inner\_train}} = 16000 - 1600 = 14400$
+1. $N_{\text{outer val}} = \frac{N {\text{total}}}{n {\text{fold outer}}} = \frac{20000}{5} = 4000$
+
+2. $N_{\text{outer train}} = N {\text{total}} \frac{n_{\text{fold outer}} - 1}{n_{\text{fold outer}}} = 20000 \frac{5 - 1}{5} = 16000$
+
+3. $N_{\text{inner val}} = N_{\text{total}} \frac{n_{\text{fold outer}} - 1}{n_{\text{fold outer}}n_{\text{fold inner}}} = 20000 \frac{5 - 1}{5 \cdot 10} = 1600$
+
+   * Note: $N_{\text{inner val}}$ is the size of each inner validation fold within an outer training set.
+
+4. $N_{\text{inner train}} = N_{\text{total}} \frac{n_{\text{fold outer}} - 1}{n_{\text{fold outer}}} \frac{n_{\text{fold inner}} - 1}{n_{\text{fold inner}}} = 20000 \frac{5 - 1}{5} \frac{10 - 1}{10} = 14400$
+
+   * Note: $N_{\text{inner train}}$ is the size of each inner training set within an outer training set.
+
+## Caveats
+
+1. **Exact Divisibility** – Real-world splitters (e.g. `StratifiedKFold`, `GroupKFold`) may distribute a remainder of $\pm 1$ sample per fold.
+
+2. **Grouping constraints** – With `StratifiedGroupKFold`, group boundaries can make fold sizes uneven even when the arithmetic divides perfectly.
