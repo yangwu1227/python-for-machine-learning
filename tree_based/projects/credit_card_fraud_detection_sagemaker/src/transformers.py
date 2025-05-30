@@ -74,7 +74,7 @@ class TransactionTimesFeatures(TransformerMixin, BaseEstimator):
         """
         return hasattr(self, "_ci_funcs")
 
-    def _transaction_within_ci(self, series: List[pl.Series], level: float) -> bool:
+    def _transaction_within_ci(self, series: List[pl.Series], level: float) -> int:
         """
         Determines whether the last transaction falls within the confidence interval
         of transaction times modeled by the von Mises distribution.
@@ -88,21 +88,21 @@ class TransactionTimesFeatures(TransformerMixin, BaseEstimator):
 
         Returns
         -------
-        bool
-            True if the last transaction falls within the confidence interval, False otherwise.
+        int
+            `1` if the last transaction falls within the confidence interval, `0` otherwise.
         """
         times_in_radians: pl.Series = series[0]
         # If there is only one transaction, i.e., the current transaction, return False
         if len(times_in_radians) == 1:
-            return False
+            return 0
         kappa, theta, _ = vonmises.fit(data=times_in_radians)
-        # Adjust theta to be between [0, 2π]
+        # Adjust theta (mean) to be between [0, 2π]
         theta %= 2 * np.pi
         # Density of the most recent transaction
         density = vonmises.pdf(times_in_radians[-1], kappa, loc=theta)
         quantile = vonmises.ppf((1 - level) / 2, kappa, loc=theta)
         cutoff_density = vonmises.pdf(quantile, kappa, loc=theta)
-        return density >= cutoff_density
+        return int(density >= cutoff_density)
 
     @_fit_context(prefer_skip_nested_validation=True)
     def fit(self, X: pl.DataFrame, y: Optional[np.ndarray] = None) -> Self:
@@ -165,6 +165,7 @@ class TransactionTimesFeatures(TransformerMixin, BaseEstimator):
                     / 3600
                 )
                 * (2 * np.pi / 24.0)
+                % (2 * np.pi)
             ).alias("transactionTimeRadians")
         )
 
@@ -174,10 +175,12 @@ class TransactionTimesFeatures(TransformerMixin, BaseEstimator):
         # Sort once for all rolling aggregations
         X_sorted = X.sort(
             by=[self.account_id_column, self.transaction_datetime_column],
-            descending=[True, False],
+            descending=[False, False],
         )
 
-        binary_features: List[pl.DataFrame] = []
+        # Cheap operation for mental clarity, this is the driver onto which new features will be joined
+        X_transformed = X_sorted.clone()
+
         for period in periods:
             # Build all the map groups expressions for this period
             map_groups_expr: List[pl.Expr] = []
@@ -187,23 +190,30 @@ class TransactionTimesFeatures(TransformerMixin, BaseEstimator):
                     pl.map_groups(
                         [pl.col("transactionTimeRadians")],
                         func,
-                        return_dtype=pl.Boolean,
+                        return_dtype=pl.UInt8,
+                        returns_scalar=True,
                     ).alias(feature_name)
                 )
-            # Perform one rolling aggregation for this period with all the expressions
+
+            # Perform rolling aggregation for this period
             binary_features_period_levels = X_sorted.rolling(
                 index_column=pl.col(self.transaction_datetime_column),
                 period=period,
                 group_by=[self.account_id_column],
             ).agg(map_groups_expr)
-            # Collect just the newly created binary features
-            new_binary_features = [expr.meta.output_name() for expr in map_groups_expr]
-            binary_features.append(binary_features_period_levels[new_binary_features])
 
-        # Column bind all the binary features
-        X_transformed: pl.DataFrame = pl.concat(
-            [X_sorted] + binary_features, how="horizontal"
-        ).drop("transactionTimeRadians")
+            # Join keys are account_id and transaction_datetime
+            join_keys = [self.account_id_column, self.transaction_datetime_column]
+
+            # Join the features back to the driver
+            X_transformed = X_transformed.join(
+                other=binary_features_period_levels,
+                on=join_keys,
+                how="inner",
+            )
+
+        # Drop the temporary radians column
+        X_transformed = X_transformed.drop("transactionTimeRadians")
 
         return X_transformed
 
@@ -341,7 +351,7 @@ class TransactionAmountsFeatures(TransformerMixin, BaseEstimator):
         check_is_fitted(self)
 
         # Windows in hours
-        periods = [f"{i}h" for i in [1, 3, 6, 12, 18, 24, 72, 168]]
+        periods = [f"{i}h" for i in [1, 3, 6, 12, 24, 72, 168]]
 
         # Sort once for all the rolling aggregations
         X_sorted = X.sort(
@@ -349,15 +359,11 @@ class TransactionAmountsFeatures(TransformerMixin, BaseEstimator):
             descending=[False, False],
         )
 
-        aggregated_features: List[pl.DataFrame] = []
-        for period in periods:
-            feature_names_by_account: List[str] = [
-                f"{period}TransactionSum",
-                f"{period}TransactionMedian",
-                f"{period}TransactionCount",
-            ]
+        # Cheap operation for mental clarity, this is the driver onto which new features will be joined
+        X_transformed = X_sorted.clone()
 
-            # Rolling aggregation by account
+        for period in periods:
+            # Rolling aggregation by account only
             agg_features_by_account = X_sorted.rolling(
                 index_column=pl.col(self.transaction_datetime_column),
                 period=period,
@@ -373,18 +379,24 @@ class TransactionAmountsFeatures(TransformerMixin, BaseEstimator):
                     pl.len().cast(pl.UInt16).alias(f"{period}TransactionCount"),
                 ]
             )
-            aggregated_features.append(
-                agg_features_by_account.select(feature_names_by_account)
+
+            # Join keys for account-only aggregation
+            join_keys_account = [
+                self.account_id_column,
+                self.transaction_datetime_column,
+            ]
+
+            # Join the account-level features
+            X_transformed = X_transformed.join(
+                other=agg_features_by_account,
+                on=join_keys_account,
+                how="inner",
             )
 
-            # Rolling aggregation by acount and pairs of columns from group_by_columns
+            # Rolling aggregation by account and pairs of columns from group_by_columns
             for pair in self.group_by_columns_pairs_:
                 pair_name: str = "".join(pair)
-                feature_names_by_account_and_pair: List[str] = [
-                    f"{period}{pair_name}TransactionSum",
-                    f"{period}{pair_name}TransactionMedian",
-                    f"{period}{pair_name}TransactionCount",
-                ]
+
                 agg_features_by_account_and_pair = X_sorted.rolling(
                     index_column=pl.col(self.transaction_datetime_column),
                     period=period,
@@ -402,16 +414,20 @@ class TransactionAmountsFeatures(TransformerMixin, BaseEstimator):
                         .alias(f"{period}{pair_name}TransactionCount"),
                     ]
                 )
-                aggregated_features.append(
-                    agg_features_by_account_and_pair.select(
-                        feature_names_by_account_and_pair
-                    )
+
+                # Join keys include account_id, transaction_datetime, and the pair columns
+                join_keys_pair = [
+                    self.account_id_column,
+                    self.transaction_datetime_column,
+                ] + list(pair)
+
+                # Join the account + group-by features
+                X_transformed = X_transformed.join(
+                    other=agg_features_by_account_and_pair,
+                    on=join_keys_pair,
+                    how="inner",
                 )
 
-        # Column bind all the aggregated features
-        X_transformed: pl.DataFrame = pl.concat(
-            [X_sorted] + aggregated_features, how="horizontal"
-        )
         return X_transformed
 
 
