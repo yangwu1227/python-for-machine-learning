@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import argparse
 from typing import Dict, Optional, Tuple
 
 import matplotlib.pyplot as plt
@@ -9,6 +10,41 @@ import statsmodels.api as sm
 from scipy.special import expit
 from statsmodels.genmod.bayes_mixed_glm import BinomialBayesMixedGLM
 
+rng = np.random.default_rng(seed=12)
+
+
+def compute_lift(p0: float, p1: float, *, lift_type: str = "additive") -> float:
+    """
+    Compute additive or multiplicative lift for scalar inputs.
+
+    Parameters
+    ----------
+    p0, p1 : float
+        Probabilities when treatment is absent (p0) and present (p1). Each
+        must lie in [0, 1].
+    lift_type : {"additive", "multiplicative"}, default "additive"
+        - "additive"   →  L = p1 - p0
+        - "multiplicative" → L = (p1 - p0) / p0
+
+    Returns
+    -------
+    float
+        If lift_type == "additive": returns (p1 - p0).
+        If lift_type == "multiplicative": returns (p1 - p0)/p0, or np.nan if p0 == 0.
+    """
+    p0, p1 = float(p0), float(p1)
+
+    if lift_type == "additive":
+        return p1 - p0
+
+    if lift_type == "multiplicative":
+        # Use np.isclose to guard against floating‐point near‐zero comparisons
+        if np.isclose(p0, 0.0, atol=1e-12):
+            return np.nan
+        return (p1 - p0) / p0
+
+    raise ValueError("lift_type must be 'additive' or 'multiplicative'")
+
 
 def simulate_data(
     class_dist: Dict[int, float],
@@ -17,7 +53,6 @@ def simulate_data(
     group_size_range: Tuple[int, int] = (100, 500),
     beta1: float = np.log(2),
     sigma_u: float = 1.0,
-    random_seed: int = 12,
 ) -> pd.DataFrame:
     """
     Simulate GLMM data with specified class distribution for payment and click rate.
@@ -38,19 +73,15 @@ def simulate_data(
         Fixed effect log-odds ratio for email_click.
     sigma_u : float, default=1.0
         Standard deviation of random intercepts.
-    random_seed : int, default 12
-        Random seed for reproducibility.
 
     Returns
     -------
     pd.DataFrame
         DataFrame with columns:
-        - 'alps_twentil': Group identifier (1 to n_groups)
+        - 'score_band': Group identifier (1 to n_groups)
         - 'email_click': Binary indicator for email click (0 or 1)
         - 'payment': Binary outcome variable (0 or 1)
     """
-    rng = np.random.default_rng(random_seed)
-
     # Determine baseline intercept to match marginal P(payment=1 | click=0, u=0)
     p1_target = class_dist.get(1, 0.5)
     beta0 = np.log(p1_target / (1 - p1_target))
@@ -77,20 +108,39 @@ def simulate_data(
     payment = rng.binomial(1, p, size=N)
 
     return pd.DataFrame(
-        {"alps_twentil": groups, "email_click": email_click, "payment": payment}
+        {"score_band": groups, "email_click": email_click, "payment": payment}
     )
 
 
 def main() -> int:
-    class_dist = {0: 0.97, 1: 0.03}
+    parser = argparse.ArgumentParser(
+        description="Simulate GLMM data and plot lift by score band."
+    )
+    parser.add_argument(
+        "--lift_type",
+        choices=["additive", "multiplicative"],
+        default="additive",
+        help="Whether to compute additive (p1 - p0) or multiplicative ((p1 - p0)/p0) lift.",
+    )
+    parser.add_argument(
+        "--n_groups",
+        type=int,
+        default=10,
+        help="Number of groups (random intercepts) for the GLMM.",
+    )
+    args, _ = parser.parse_known_args()
+
+    class_dist = {0: 0.5, 1: 0.5}
     click_dist = {0: 0.985, 1: 0.015}
 
-    data = simulate_data(class_dist, click_dist)
+    data = simulate_data(
+        class_dist=class_dist, click_dist=click_dist, n_groups=args.n_groups
+    )
 
     endog = data["payment"]
     exog = sm.add_constant(data["email_click"])
-    Z_df = pd.get_dummies(data["alps_twentil"], drop_first=False)
-    exog_vc = sp.csr_matrix(Z_df.values)
+    Z_data = pd.get_dummies(data["score_band"], drop_first=False)
+    exog_vc = sp.csr_matrix(Z_data.values)
     ident = np.zeros(exog_vc.shape[1], dtype=int)
     model = BinomialBayesMixedGLM(endog, exog, exog_vc, ident)
     result = model.fit_map()
@@ -98,48 +148,55 @@ def main() -> int:
     beta0_hat, beta1_hat = result.params[0], result.params[1]
     u_means = result.random_effects()["Mean"].values
 
-    n = u_means.size
     ncols = 4
-    nrows = (n + ncols - 1) // ncols
+    nrows = (args.n_groups + ncols - 1) // ncols
     fig, axes = plt.subplots(
         nrows, ncols, figsize=(12, nrows * 3), sharex=True, sharey=True
     )
 
-    for j in range(1, n + 1):
-        ax = axes[(j - 1) // ncols, (j - 1) % ncols]
-        uj = u_means[j - 1]
-        p0 = expit(beta0_hat + uj)
-        p1 = expit(beta0_hat + beta1_hat + uj)
-        lift = p1 - p0
+    for j in range(args.n_groups):
+        row = j // ncols
+        col = j % ncols
+        ax = axes[row, col]
 
-        ax.plot([0, 1], [p0, p1], marker="o", linewidth=2)
+        uj = u_means[j]
+        p0_hat = expit(beta0_hat + uj)
+        p1_hat = expit(beta0_hat + beta1_hat + uj)
+        lift_val = compute_lift(p0_hat, p1_hat, lift_type=args.lift_type)
+
+        ax.plot([0, 1], [p0_hat, p1_hat], marker="o", linewidth=2)
+
+        txt = (
+            f"{lift_val:.3f}"
+            if args.lift_type == "additive"
+            else f"{lift_val * 100:.1f}%"
+        )
         ax.text(
             0.5,
-            max(p0, p1) + 0.01,
-            f"Lift={lift:.3f}",
+            max(p0_hat, p1_hat) + 0.01,
+            f"Lift = {txt}",
             ha="center",
             va="bottom",
             fontsize=9,
         )
-        ax.set_title(f"alps_twentil={j}")
+        ax.set_title(f"score band = {j + 1}")
         ax.set_xticks([0, 1])
-        ax.set_xticklabels(["click=0", "click=1"])
+        ax.set_xticklabels(["click = 0", "click = 1"])
         ax.set_ylim(0, 1)
 
     # Remove any unused axes
-    for idx in range(n, nrows * ncols):
+    for idx in range(args.n_groups, nrows * ncols):
         fig.delaxes(axes.flatten()[idx])
 
     fig.suptitle(
-        "Predicted Payment Probability: Click Effect by alps_twentil",
-        y=1.02,
-        fontsize=16,
+        "Predicted Payment Probability: Click Effect by Score Band", y=1.02, fontsize=16
     )
-    fig.text(0.5, 0.04, "Email click", ha="center")
-    fig.text(
-        0.04, 0.5, "Predicted probability of payment", va="center", rotation="vertical"
-    )
+    fig.text(0.5, 0.04, "Email click", ha="center")  # shared x-axis
     plt.tight_layout()
+    fig.subplots_adjust(left=0.05)
+    fig.text(
+        0.02, 0.5, "Predicted probability of payment", va="center", rotation="vertical"
+    )
     plt.show()
 
     return 0
