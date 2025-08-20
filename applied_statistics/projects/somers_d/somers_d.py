@@ -68,7 +68,7 @@ def somers_d_auc_reference(
     labels: Union[Sequence[int], npt.NDArray[np.integer]],
 ) -> float:
     """
-    Reference implementation using AUC relationship.
+    Reference implementation using ROC AUC relationship.
 
     This is the ground truth for binary classification Somers' D. Somers' D is
     a measure of the strength and direction of association between two ranked
@@ -94,7 +94,7 @@ def somers_d_auc_reference(
 
     Notes
     -----
-    This implementation uses the relationship between Somers' D and AUC:
+    This implementation uses the relationship between Somers' D and ROC AUC:
 
     D = 2 * AUC - 1
 
