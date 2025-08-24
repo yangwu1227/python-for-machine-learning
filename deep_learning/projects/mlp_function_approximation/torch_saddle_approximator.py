@@ -208,7 +208,7 @@ class MLPRegressor(torch.nn.Module):
         for layer in self.layers:
             # Since the initializers have different signatures, and thus hard to annotate, we ignore the error
             self.initializer(layer.weight)  # type: ignore[operator]
-            torch.nn.init.zeros_(layer.bias)
+            torch.nn.init.zeros_(layer.bias)  # type: ignore[arg-type]
 
     def forward(self, x: torch.Tensor, activation: str) -> torch.Tensor:
         """

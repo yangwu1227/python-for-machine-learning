@@ -15,8 +15,8 @@ handler = logging.StreamHandler(stdout)
 handler.setFormatter(formatter)
 logger.addHandler(handler)
 
-FloatArrayLike: TypeAlias = Union[Sequence[float], npt.NDArray[np.floating]]
-IntegerArrayLike: TypeAlias = Union[Sequence[int], npt.NDArray[np.integer]]
+FloatArrayLike: TypeAlias = npt.NDArray[np.floating]
+IntegerArrayLike: TypeAlias = npt.NDArray[np.integer]
 
 
 @runtime_checkable
@@ -120,9 +120,9 @@ def preprocess_data(
             pl.col(score_column).cast(pl.Float64),
             pl.col(score_column)
             .cast(pl.Float64)
-            .cut(breaks=score_bins)
+            .cut(breaks=score_bins)  # type: ignore[arg-type]
             .to_physical()
-            .alias("bins"),  # type: ignore[arg-type]
+            .alias("bins"),
         ]
     )
     monitoring_intermediate: pl.LazyFrame = monitoring_lazy.drop_nans(
@@ -132,9 +132,9 @@ def preprocess_data(
             pl.col(score_column).cast(pl.Float64),
             pl.col(score_column)
             .cast(pl.Float64)
-            .cut(breaks=score_bins)
+            .cut(breaks=score_bins)  # type: ignore[arg-type]
             .to_physical()
-            .alias("bins"),  # type: ignore[arg-type]
+            .alias("bins"),
         ]
     )
 
@@ -234,13 +234,17 @@ def somers_d_two_pointers(
 
     # The argsort sorts in ascending order, which is what we need for the two-pointer technique
     sorted_indices: npt.NDArray[np.integer] = np.argsort(scores)
-    scores: npt.NDArray[np.floating] = np.ascontiguousarray(scores[sorted_indices])
-    labels: npt.NDArray[np.integer] = np.ascontiguousarray(labels[sorted_indices])
-    weights: npt.NDArray[np.floating] = np.ascontiguousarray(weights[sorted_indices])
+    scores_array: npt.NDArray[np.floating] = np.ascontiguousarray(
+        scores[sorted_indices]
+    )
+    labels_array: npt.NDArray[np.integer] = np.ascontiguousarray(labels[sorted_indices])
+    weights_array: npt.NDArray[np.floating] = np.ascontiguousarray(
+        weights[sorted_indices]
+    )
 
     # Sum of weights for all positive and negative samples
-    n_pos: float = np.sum(weights[labels == 1])
-    n_neg: float = np.sum(weights[labels == 0])
+    n_pos: float = np.sum(weights_array[labels_array == 1])
+    n_neg: float = np.sum(weights_array[labels_array == 0])
 
     if n_pos == 0 or n_neg == 0:
         return 0.0
@@ -255,8 +259,8 @@ def somers_d_two_pointers(
 
     for i in range(n_total):
         # Treat each negative sample as an "anchor" to compare against positives
-        if labels[i] == 0:
-            current_false_score: float = scores[i]
+        if labels_array[i] == 0:
+            current_false_score: float = scores_array[i]
 
             # Move the discordant pointer up until scores are strictly less
             # Every time we encounter a positive with a score < current negative
@@ -264,10 +268,10 @@ def somers_d_two_pointers(
             # Example: negative = 0.7, positive = 0.6 -> model misranks this pair
             while (
                 discordant_index < n_total
-                and scores[discordant_index] < current_false_score
+                and scores_array[discordant_index] < current_false_score
             ):
-                if labels[discordant_index] == 1:
-                    discordant_contrib += weights[discordant_index]
+                if labels_array[discordant_index] == 1:
+                    discordant_contrib += weights_array[discordant_index]
                 discordant_index += 1
 
             # Move the concordant pointer up until scores are <= current negative
@@ -276,15 +280,15 @@ def somers_d_two_pointers(
             # Example: negative = 0.7, positive = 0.7 -> ties count against concordant mass
             while (
                 concordant_index < n_total
-                and scores[concordant_index] <= current_false_score
+                and scores_array[concordant_index] <= current_false_score
             ):
-                if labels[concordant_index] == 1:
-                    concordant_contrib -= weights[concordant_index]
+                if labels_array[concordant_index] == 1:
+                    concordant_contrib -= weights_array[concordant_index]
                 concordant_index += 1
 
             # For the current negative, its weighted contribution is (positives above it - positives below it)
             # Multiplying by weight[i] scales the effect by the current negative's weight
-            numerator += weights[i] * (concordant_contrib - discordant_contrib)
+            numerator += weights_array[i] * (concordant_contrib - discordant_contrib)
 
     # Denominator is total number of positive-negative weighted pairs
     return numerator / (n_neg * n_pos)
