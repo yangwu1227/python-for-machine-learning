@@ -251,7 +251,7 @@ def somers_d_two_pointers(
 
     # This accumulates "discordant mass" -> tracks how many positives ranked lower than a negative
     discordant_contrib: float = 0.0
-    # Initialized as total positives (i.e., assume all positives pairs are concordant), then reduced as we find discordant pairs
+    # Initialized as total positives (i.e., assume all pairs of positive - negative are concordant), then reduced as we find discordant pairs
     concordant_contrib: float = n_pos
     numerator: float = 0.0
     discordant_index: int = 0
@@ -262,10 +262,8 @@ def somers_d_two_pointers(
         if labels_array[i] == 0:
             current_false_score: float = scores_array[i]
 
-            # Move the discordant pointer up until scores are strictly less
-            # Every time we encounter a positive with a score < current negative
-            # we add its weight to discordant_contrib because this is a discordant pair
-            # Example: negative = 0.7, positive = 0.6 -> model misranks this pair
+            # Advance to include all positives with score STRICTLY LESS than `current_false_score`
+            # Each such positive contributes to the discordant mass
             while (
                 discordant_index < n_total
                 and scores_array[discordant_index] < current_false_score
@@ -274,10 +272,8 @@ def somers_d_two_pointers(
                     discordant_contrib += weights_array[discordant_index]
                 discordant_index += 1
 
-            # Move the concordant pointer up until scores are <= current negative
-            # Every time we encounter a positive with a score <= current negative
-            # we subtract its weight from concordant_contrib because it is no longer concordant against the current negative
-            # Example: negative = 0.7, positive = 0.7 -> ties count against concordant mass
+            # Advance to exclude all positives with score LESS THAN OR EQUAL to `current_false_score`
+            # This subtracts from the "still-concordant" mass, which was initially set to `n_pos`
             while (
                 concordant_index < n_total
                 and scores_array[concordant_index] <= current_false_score
@@ -286,11 +282,10 @@ def somers_d_two_pointers(
                     concordant_contrib -= weights_array[concordant_index]
                 concordant_index += 1
 
-            # For the current negative, its weighted contribution is (positives above it - positives below it)
-            # Multiplying by weight[i] scales the effect by the current negative's weight
+            # For anchor i, its weighted contribution to (C − D)
             numerator += weights_array[i] * (concordant_contrib - discordant_contrib)
 
-    # Denominator is total number of positive-negative weighted pairs
+    # Denominator is the total cross-class weight
     return numerator / (n_neg * n_pos)
 
 
