@@ -161,10 +161,10 @@ def psi(
     PSIResult
         Holds the PSI value and metadata.
     """
-    bench_array: FloatArrayLike = np.asarray(benchmark, dtype=float).ravel()
+    benchmark_array: FloatArrayLike = np.asarray(benchmark, dtype=float).ravel()
     monitoring_array: FloatArrayLike = np.asarray(monitoring, dtype=float).ravel()
 
-    if bench_array.size == 0 or monitoring_array.size == 0:
+    if benchmark_array.size == 0 or monitoring_array.size == 0:
         raise ValueError("Arrays `benchmark` and `monitoring` must be non-empty")
 
     edges: FloatArrayLike
@@ -173,21 +173,21 @@ def psi(
     if isinstance(bins, (list, tuple, np.ndarray)):
         edges = np.asarray(bins, dtype=float)
     elif isinstance(bins, int):
-        edges = np.histogram_bin_edges(bench_array, bins=bins, range=data_range)
+        edges = np.histogram_bin_edges(benchmark_array, bins=bins, range=data_range)
     elif isinstance(bins, str):
         rule: BinRule = bins
         if rule not in ALLOWED_BIN_RULES:
             raise ValueError(
                 f"Bin rule '{rule}' is invalid; allowed: {ALLOWED_BIN_RULES}"
             )
-        edges = np.histogram_bin_edges(bench_array, bins=rule, range=data_range)
+        edges = np.histogram_bin_edges(benchmark_array, bins=rule, range=data_range)
         rule_used = rule
 
     if edges.ndim != 1 or edges.size < 2:
         raise ValueError(
             "Invalid bin edges produced; must be 1-dimensional and have at least 2 elements"
         )
-    if np.any(np.diff(a=edges) <= 0):
+    if np.any(np.diff(edges) <= 0):
         raise ValueError("Bin edges must be strictly increasing")
 
     if open_ended:
@@ -195,7 +195,7 @@ def psi(
         edges[-1] = float(np.inf)
 
     psi_value: float = _psi_numba(
-        benchmark_array=bench_array,
+        benchmark_array=benchmark_array,
         monitoring_array=monitoring_array,
         bins=edges,
         eps=eps,
@@ -203,7 +203,7 @@ def psi(
 
     return PSIResult(
         psi=psi_value,
-        n_benchmark=int(bench_array.size),
+        n_benchmark=int(benchmark_array.size),
         n_monitoring=int(monitoring_array.size),
         bin_rule=rule_used,
         open_ended=open_ended,
