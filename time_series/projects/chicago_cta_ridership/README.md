@@ -39,7 +39,7 @@ $ poetry install
 1. Create a new conda environment named `ts_env` with Python `3.10`:
 
 ```bash
-$ yes | conda create --name ts_env python=3.10
+$ conda create --name ts_env -y python=3.10
 ```
 
 2. Install `poetry` within the `ts_env` environment:

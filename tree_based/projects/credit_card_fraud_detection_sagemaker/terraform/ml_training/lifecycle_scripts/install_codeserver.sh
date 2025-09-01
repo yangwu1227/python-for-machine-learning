@@ -42,7 +42,7 @@ ln -s ${CODE_SERVER_INSTALL_LOC}/lib/code-server-$CODE_SERVER_VERSION/bin/code-s
 # create separate conda environment
 if [ $CREATE_NEW_CONDA_ENV -eq 1 ]
 then
-    conda create --prefix $CONDA_ENV_LOCATION python=$CONDA_ENV_PYTHON_VERSION -y
+    conda create --prefix $CONDA_ENV_LOCATION -y python=$CONDA_ENV_PYTHON_VERSION
 fi
 
 # install ms-python extension

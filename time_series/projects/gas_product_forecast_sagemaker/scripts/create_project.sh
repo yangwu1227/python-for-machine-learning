@@ -11,7 +11,7 @@ export PATH="$HOME/.local/bin:$PATH"
 
 echo "Initializing conda environment..."
 source ~/anaconda3/etc/profile.d/conda.sh
-conda create -n forecast-project-env python=3.10 -y
+conda create -n forecast-project-env -y python=3.10
 
 echo "Activating conda environment..."
 conda activate forecast-project-env
