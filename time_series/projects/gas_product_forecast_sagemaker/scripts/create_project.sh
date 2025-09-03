@@ -32,7 +32,7 @@ done
 
 echo "Initializing conda environment..."
 source ~/anaconda3/etc/profile.d/conda.sh
-conda create -n forecast_env python=3.10 -y
+conda create -n forecast_env -y python=3.10
 
 echo "Activating conda environment..."
 conda activate forecast_env
