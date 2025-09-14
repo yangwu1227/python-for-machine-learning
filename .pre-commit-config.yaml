@@ -29,4 +29,4 @@ repos:
         stages: [post-checkout, post-merge, post-rewrite]
         always_run: true
       - id: uv-export
-        args: ["--frozen", "--output-file=requirements.txt"]
+        args: ["--frozen", "--all-groups", "--no-hashes", "--output-file=requirements.txt"]
