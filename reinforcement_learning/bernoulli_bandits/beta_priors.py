@@ -16,9 +16,13 @@ def main() -> int:
     # Define different observed data scenarios (number of successes and trials)
     data_scenarios = [
         (1, 1),  # Very little data
-        (5, 10),  # Moderate data
-        (20, 40),  # More data
-        (50, 100),  # Large dataset
+        (5, 100),  # P = 0.05
+        (10, 100),  # P = 0.10
+        (25, 100),  # P = 0.25
+        (50, 100),  # P = 0.50
+        (75, 100),  # P = 0.75
+        (90, 100),  # P = 0.90
+        (95, 100),  # P = 0.95
     ]
 
     fig, axes = plt.subplots(
@@ -60,6 +64,8 @@ def main() -> int:
         "Impact of Different Priors on the Posterior in a Beta-Bernoulli Model",
         fontsize=16,
     )
+    fig.supxlabel("Observed Data (Successes / Trials)", fontsize=14)
+    fig.supylabel("Prior and Posterior Distributions", fontsize=14)
     plt.tight_layout(rect=(0, 0, 1, 0.96))
     plt.show()
 
