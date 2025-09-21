@@ -4,8 +4,6 @@ import numpy as np
 import numpy.typing as npt
 from pydantic import BaseModel, ConfigDict, Field
 
-rng: np.random.Generator = np.random.default_rng(seed=1227)
-
 BetaPrior: TypeAlias = Tuple[float, float]
 MeanReward: TypeAlias = float
 ArmLabel: TypeAlias = str
@@ -92,7 +90,7 @@ class DynamicBernoulliBandit(object):
         self.arm_means: List[float] = list(config.initial_means)
         self.arm_labels: List[str] = [f"init_{i}" for i in range(len(self.arm_means))]
 
-    def add_arms(self, t: int) -> List[Optional[int]]:
+    def add_arms(self, t: int) -> List[int]:
         """
         Add any arms scheduled to appear at time t.
 
@@ -103,10 +101,10 @@ class DynamicBernoulliBandit(object):
 
         Returns
         -------
-        List[Optional[int]]
+        List[int]
             Indices of the arms that were added at this step. If no new arms are scheduled for time t, returns an empty list.
         """
-        new_indices: List[Optional[int]] = []
+        new_indices: List[int] = []
         # Check if any arms are scheduled to be added at time t
         if t in self._batch:
             for label, mean in self._batch[t].items():
@@ -157,9 +155,9 @@ class ThompsonSampling(object):
 
     Attributes
     ----------
-    alpha : List[float]
+    alpha : npt.NDArray[np.floating]
         Alpha parameters for the Beta posterior of each arm.
-    beta : List[float]
+    beta : npt.NDArray[np.floating]
         Beta parameters for the Beta posterior of each arm.
     """
 
@@ -176,8 +174,12 @@ class ThompsonSampling(object):
         -------
         None
         """
-        self.alpha: List[float] = [float(a) for a, _ in init_priors]
-        self.beta: List[float] = [float(b) for _, b in init_priors]
+        self.alpha: npt.NDArray[np.floating] = np.array(
+            [float(a) for a, _ in init_priors], dtype=float
+        )
+        self.beta: npt.NDArray[np.floating] = np.array(
+            [float(b) for _, b in init_priors], dtype=float
+        )
 
     def add_new_arms(self, priors: List[BetaPrior]) -> None:
         """
@@ -192,9 +194,14 @@ class ThompsonSampling(object):
         -------
         None
         """
-        for a, b in priors:
-            self.alpha.append(float(a))
-            self.beta.append(float(b))
+        new_alpha: npt.NDArray[np.floating] = np.array(
+            [float(a) for a, _ in priors], dtype=float
+        )
+        new_beta: npt.NDArray[np.floating] = np.array(
+            [float(b) for _, b in priors], dtype=float
+        )
+        self.alpha = np.concatenate([self.alpha, new_alpha])
+        self.beta = np.concatenate([self.beta, new_beta])
 
     def select_arm(self, rng: np.random.Generator) -> int:
         """
@@ -210,7 +217,7 @@ class ThompsonSampling(object):
         int
             Index of the arm selected (0-based).
         """
-        samples: List[float] = [rng.beta(a, b) for a, b in zip(self.alpha, self.beta)]
+        samples: npt.NDArray[np.floating] = rng.beta(self.alpha, self.beta)
         return int(np.argmax(samples))
 
     def update(self, arm_index: int, outcome: int) -> None:
@@ -262,7 +269,7 @@ class SimulationResult(BaseModel):
     chosen_arm_indices: npt.NDArray[np.int_] = Field(...)
     num_arms_hist: npt.NDArray[np.int_] = Field(...)
     arm_labels: List[str] = Field(...)
-    arrivals_map: Dict[int, List[Optional[int]]] = Field(...)
+    arrivals_map: Dict[int, List[int]] = Field(...)
 
 
 def _priors_for_added_labels(
@@ -292,7 +299,11 @@ def _priors_for_added_labels(
     List[BetaPrior]
         Priors aligned with `labels_added`.
     """
-    priors_map_t = config.batch_new_priors.get(t, {})
+    priors_map_t: Optional[Dict[ArmLabel, BetaPrior]] = config.batch_new_priors.get(
+        t, None
+    )
+    if priors_map_t is None:
+        raise KeyError(f"No new arm priors found for time step t = {t}")
     priors: List[BetaPrior] = []
     for label in labels_added:
         if label not in priors_map_t:
@@ -335,18 +346,19 @@ def simulate_once(
     chosen_arm_indices: npt.NDArray[np.int_] = np.zeros(horizon, dtype=int)
     num_arms_hist: npt.NDArray[np.int_] = np.zeros(horizon, dtype=int)
 
-    # Track which arm indices arrive at each time for this run
-    arrivals_map: Dict[int, List[Optional[int]]] = {}
+    # E.g. {5: [3, 4], 6: [], 7: [5]} means arms with indices 3 and 4 arrived at t = 5, no new arms at t = 6, and arm with index 5 arrived at t = 7
+    arrivals_map: Dict[int, List[int]] = {}
+
+    # For efficient cumulative regret calculation
+    cumulative_regret_sum: float = 0.0
 
     for time_step in range(horizon):
         # Apply scheduled arrivals and record indices of added arms
-        added_indices: List[Optional[int]] = env.add_arms(time_step)
+        added_indices: List[int] = env.add_arms(time_step)
         if added_indices:
             arrivals_map[time_step] = added_indices
             # Resolve priors for these labels in the same order they were appended
-            added_labels: List[ArmLabel] = [
-                env.arm_labels[j] for j in added_indices if j is not None
-            ]
+            added_labels: List[ArmLabel] = [env.arm_labels[j] for j in added_indices]
             added_priors: List[BetaPrior] = _priors_for_added_labels(
                 time_step, added_labels, config
             )
@@ -365,7 +377,8 @@ def simulate_once(
         chosen_mean_t: MeanReward = env.arm_means[arm_index]
         # Regret uses the gap between the best true mean at `t` and the chosen arm's true mean
         instantaneous_regrets[time_step] = best_mean_t - chosen_mean_t
-        cumulative_regrets[time_step] = instantaneous_regrets[: time_step + 1].sum()
+        cumulative_regret_sum += instantaneous_regrets[time_step]
+        cumulative_regrets[time_step] = cumulative_regret_sum
         chosen_arm_indices[time_step] = arm_index
         num_arms_hist[time_step] = len(env.arm_means)
 
@@ -450,7 +463,7 @@ def simulate_many(
 
     # Template run to fix mapping (arrival_time -> arm indices) used in aggregation
     template_result: SimulationResult = simulate_once(config=config, rng=template_rng)
-    arrivals_map: Dict[int, List[Optional[int]]] = template_result.arrivals_map
+    arrivals_map: Dict[int, List[int]] = template_result.arrivals_map
     arm_labels: List[ArmLabel] = template_result.arm_labels
 
     # Metadata for new arms: (arrival_time, arm_index, arm_label)
@@ -458,7 +471,6 @@ def simulate_many(
         (arrival_time, arm_index, arm_labels[arm_index])
         for arrival_time, arm_indices in arrivals_map.items()
         for arm_index in arm_indices
-        if arm_index is not None
     ]
 
     # Per-new-arm collectors across runs
@@ -485,36 +497,44 @@ def simulate_many(
             ]
 
             # Discovery lag: first offset where arm_index is chosen; max lag if never chosen
-            hits: np.ndarray = np.where(post_choices == arm_index)[0]
+            hits: npt.NDArray[np.int_] = np.where(post_choices == arm_index)[0]
             lag_steps: int = int(hits[0]) if hits.size > 0 else (T - arrival_time)
             discovery_lags[(arrival_time, arm_index)].append(lag_steps)
 
             # Adoption curve: cap by remaining horizon, then pad to `window_size` if needed
             remaining: int = T - arrival_time
-            window_eff: int = int(min(window_size, remaining))
-            if window_eff == 0:
-                # Arrived at the final step: adoption curve is all zeros
+            # Address scenario: if an arm arrives at a time step with fewer than `window_size` steps left
+            window_size_eff: int = int(min(window_size, remaining))
+            # # This means we have arrived at the final step, i.e., no steps left to observe adoption (assume zero adoption)
+            if window_size_eff == 0:
                 padded: npt.NDArray[np.floating] = np.zeros(window_size, dtype=float)
                 adoption_series[(arrival_time, arm_index)].append(padded)
+                # No steps left to observe adoption, move to the next new arm
                 continue
 
-            # These are the first `window_eff` choices after `arrival_time`
-            window: npt.NDArray[np.int_] = post_choices[:window_eff]
-            cumulative_rate: npt.NDArray[np.floating] = np.zeros(
-                window_eff, dtype=float
+            # Keep the `window_size_eff` arm choices after this arm's `arrival_time`
+            window: npt.NDArray[np.int_] = post_choices[:window_size_eff]
+
+            # E.g. window_size_eff = 5, window = [2, 0, 1, 2, 2], arm_index = 2, matches = [1., 0., 0., 1., 1.]
+            matches: npt.NDArray[np.floating] = (window == arm_index).astype(float)
+            # Then, [1., 1., 1., 2., 3.] represent the number of times this arm was chosen up to each time step within the window of size `window_size_eff` since arrival
+            cumulative_sums: npt.NDArray[np.floating] = np.cumsum(matches)
+            # Cumulative selection rates are ratios of (number of selections) / (number of opportunities)
+            positions: npt.NDArray[np.floating] = np.arange(
+                start=1, stop=window_size_eff + 1, dtype=float
             )
-            for k in range(window_eff):
-                # Fraction of selections in the first k + 1 post-arrival trials
-                cumulative_rate[k] = float(np.mean(window[: k + 1] == arm_index))
+            cumulative_rates: npt.NDArray[np.floating] = cumulative_sums / positions
 
-            # Pad to window_size by repeating the last valid rate
-            if window_eff < window_size:
+            # If the effective window size is less than `window_size`, pad by repeating the last valid rate
+            if window_size_eff < window_size:
                 pad_tail: npt.NDArray[np.floating] = np.full(
-                    window_size - window_eff, cumulative_rate[-1], dtype=float
+                    shape=(window_size - window_size_eff,),
+                    fill_value=cumulative_rates[-1],
+                    dtype=float,
                 )
-                cumulative_rate = np.concatenate([cumulative_rate, pad_tail], axis=0)
+                cumulative_rates = np.concatenate([cumulative_rates, pad_tail], axis=0)
 
-            adoption_series[(arrival_time, arm_index)].append(cumulative_rate)
+            adoption_series[(arrival_time, arm_index)].append(cumulative_rates)
 
     # Aggregate across runs
     mean_cum_regret: npt.NDArray[np.floating] = cumulative_regrets_matrix.mean(axis=0)
