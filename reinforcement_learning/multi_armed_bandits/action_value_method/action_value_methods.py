@@ -1,4 +1,4 @@
-from typing import List, Set, Tuple, Union
+from typing import List, Optional, Set, Tuple, Union
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -27,8 +27,8 @@ def find_greedy_actions(current_q: np.ndarray) -> Set[int]:
 def main(
     print_tables: bool = True,
     show_plots: bool = True,
-    actions: List[int] = None,
-    rewards: List[int] = None,
+    actions: Optional[List[int]] = None,
+    rewards: Optional[List[int]] = None,
 ) -> Union[int, Tuple[pl.DataFrame, pl.DataFrame, pl.DataFrame]]:
     if actions is None and rewards is None:
         # Define the forced sequence of actions (k = 4) and rewards
